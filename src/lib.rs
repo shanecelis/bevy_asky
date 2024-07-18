@@ -5,33 +5,99 @@ pub struct AskyPlugin;
 
 impl Plugin for AskyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, run_confirm);
+        app.add_systems(Update, (confirm_view, confirm_controller));
     }
 }
 
-fn run_confirm(mut query: Query<(Entity, &mut AskyState, &Confirm, Option<&mut ConfirmState>)>,
-               mut text: Query<&mut Text>,
-               input: Res<ButtonInput<KeyCode>>,
-               mut commands: Commands) {
+fn confirm_view(mut query: Query<(Entity, &mut AskyState, &Confirm, &ConfirmState), Or<(Changed<AskyState>, Changed<ConfirmState>)>>,
+                mut text: Query<&mut Text>,
+                mut commands: Commands) {
+    for (id, mut state, confirm, confirm_state) in query.iter_mut() {
+        match *state {
+            AskyState::Frozen => {
+            }
+            AskyState::Uninit => {
+                // commands.entity(id)
+                //         .with_children(|parent| {
+                //             parent.spawn(TextBundle::from(format!("[ ] {} ", confirm.message.as_ref())));
+                //             display = Some(parent.spawn(TextBundle::from(match confirm.init {
+                //                 Some(true) => "Y/n",
+                //                 Some(false) => "y/N",
+                //                 None => "y/n"
+                //             })).id());
+
+                //         })
+                //         .insert(ConfirmState { display: display.unwrap(),
+                //                                yes: None });
+
+                // *state = AskyState::Reading;
+            }
+            ref asky_state => {
+                eprint!(".");
+                let new_child = commands.spawn(TextBundle::from(format!("[{}] {} {}",
+                                                                            match asky_state {
+                                                                                AskyState::Reading => " ",
+                                                                                AskyState::Complete => "x",
+                                                                                AskyState::Error => "!",
+                                                                                _ => unreachable!()
+                                                                            },
+                                                                            confirm.message.as_ref(),
+                                                                        if matches!(asky_state, AskyState::Complete) {
+                                                                            match confirm_state.yes {
+                                                                                Some(true) => "Yes",
+                                                                                Some(false) => "No",
+                                                                                None => unreachable!(),
+                                                                            }
+                                                                        } else {
+
+                            match confirm_state.yes {
+                                Some(true) => "Y/n",
+                                Some(false) => "y/N",
+                                None => "y/n"
+                            }
+                                                                        }))).id();
+                    commands.entity(id)
+                            .despawn_descendants()
+                            .replace_children(&[new_child]);
+            }
+        }
+        // if let Some(ref mut confirm_state) = confirm_state {
+        //     if input.any_just_pressed([KeyCode::KeyY, KeyCode::KeyN, KeyCode::Enter]) {
+        //         if input.just_pressed(KeyCode::KeyY) {
+        //             confirm_state.yes = Some(true);
+        //         }
+        //         if input.just_pressed(KeyCode::KeyN) {
+        //             confirm_state.yes = Some(false);
+        //         }
+        //         let mut text  = text.get_mut(confirm_state.display).unwrap();
+        //         text.sections[0] = match confirm_state.yes {
+        //             Some(true) => "Y/n",
+        //             Some(false) => "y/N",
+        //             None => "y/n",
+        //         }.into();
+
+        //         if input.just_pressed(KeyCode::Enter) && confirm_state.yes.is_some() {
+        //             commands.trigger_targets(AskyEvent(Ok(confirm_state.yes.unwrap())), id);
+        //         }
+        //     }
+        // } else {
+        // }
+    }
+}
+
+fn confirm_controller(mut query: Query<(Entity, &mut AskyState, &Confirm, Option<&mut ConfirmState>)>,
+                      mut text: Query<&mut Text>,
+                      input: Res<ButtonInput<KeyCode>>,
+                      mut commands: Commands) {
     for (id, mut state, confirm, mut confirm_state) in query.iter_mut() {
         match *state {
             AskyState::Frozen => {
             }
             AskyState::Uninit => {
-            let mut display = None;
-            commands.entity(id)
-                .with_children(|parent| {
-                    parent.spawn(TextBundle::from(confirm.message.as_ref()));
-                    display = Some(parent.spawn(TextBundle::from(match confirm.init {
-                        Some(true) => "Y/n",
-                        Some(false) => "y/N",
-                        None => "y/n"
-                    })).id());
-
-                })
-                .insert(ConfirmState { display: display.unwrap(),
-                                        yes: None });
-
+                if confirm_state.is_none() {
+                    commands.entity(id)
+                            .insert(ConfirmState { yes: confirm.init });
+                }
                 *state = AskyState::Reading;
             }
             AskyState::Reading => {
@@ -44,21 +110,10 @@ fn run_confirm(mut query: Query<(Entity, &mut AskyState, &Confirm, Option<&mut C
                         if input.just_pressed(KeyCode::KeyN) {
                             confirm_state.yes = Some(false);
                         }
-                        let mut text  = text.get_mut(confirm_state.display).unwrap();
-                        text.sections[0] = match confirm_state.yes {
-                            Some(true) => "Y/n",
-                            Some(false) => "y/N",
-                            None => "y/n",
-                        }.into();
 
                         if input.just_pressed(KeyCode::Enter) && confirm_state.yes.is_some() {
                             commands.trigger_targets(AskyEvent(Ok(confirm_state.yes.unwrap())), id);
                             *state = AskyState::Complete;
-                            text.sections[0] = if confirm_state.yes.unwrap() {
-                                "Yes"
-                            } else {
-                                "No"
-                            }.into();
                         }
                     }
                 } else {
@@ -116,7 +171,6 @@ pub enum AskyState {
 
 #[derive(Component)]
 struct ConfirmState {
-    pub display: Entity,
     pub yes: Option<bool>,
 }
 
