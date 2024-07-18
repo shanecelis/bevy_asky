@@ -1,0 +1,11 @@
+[package]
+name = "bevy_asky"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { version = "0.14.0", default-features = false, features = [ "bevy_text", "bevy_ui", "default_font" ] }
+thiserror = "1.0.62"
+
+[dev-dependencies]
+bevy = { version = "0.14.0" }
