@@ -48,48 +48,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ColorText,
     ));
 
-    // Text with multiple sections
-    // commands.spawn((
-    //     // Create a TextBundle that has a Text with a list of sections.
-    //     TextBundle::from_sections([
-    //         TextSection::new(
-    //             "FPS: ",
-    //             TextStyle {
-    //                 // This font is loaded and will be used instead of the default font.
-    //                 font_size: 60.0,
-    //                 ..default()
-    //             },
-    //         ),
-    //         TextSection::from_style(
-    //             TextStyle {
-    //                 font_size: 60.0,
-    //                 color: GOLD.into(),
-    //                 // If no font is specified, the default font (a minimal subset of FiraMono) will be used.
-    //                 ..default()
-    //             }
-    //         ),
-    //     ]),
-    //     FpsText,
-    // ));
-
-    commands.spawn(
-        // Here we are able to call the `From` method instead of creating a new `TextSection`.
-        // This will use the default font (a minimal subset of FiraMono) and apply the default styling.
-        (
-        //  .with_style(
-        //     // Style {
-        //     //     position_type: PositionType::Absolute,
-        //     //     bottom: Val::Px(25.0),
-        //     //     left: Val::Px(15.0),
-        //     //     ..default()
-        //     // },
-        // ),
-        TextBundle::from(""),
-            AskyState::default(),
-            Confirm { message: "Do thing? ".into(), init: None },
-            // InheritedVisibility::VISIBLE,
-
-        ),
+    commands.spawn((
+        NodeBundle::default(),
+        AskyState::default(),
+        Confirm { message: "Do thing?".into(), init: None }),
     ).observe(|trigger: Trigger<AskyEvent<bool>>| {
         eprintln!("got trigger for {:?}", trigger.event());
     });
