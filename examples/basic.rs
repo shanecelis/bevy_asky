@@ -50,13 +50,18 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ColorText,
     ));
 
-    commands.spawn((
-        NodeBundle::default(),
-        AskyState::default(),
-        Confirm { message: "Do thing?".into(), init: None }),
-    ).observe(|trigger: Trigger<AskyEvent<bool>>| {
-        eprintln!("got trigger for {:?}", trigger.event());
-    });
+    commands
+        .spawn((
+            NodeBundle::default(),
+            AskyState::default(),
+            Confirm {
+                message: "Do thing?".into(),
+                init: None,
+            },
+        ))
+        .observe(|trigger: Trigger<AskyEvent<bool>>| {
+            eprintln!("got trigger for {:?}", trigger.event());
+        });
 
     commands.spawn(
         // Here we are able to call the `From` method instead of creating a new `TextSection`.
@@ -70,7 +75,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
         ),
     );
-
 }
 
 fn text_color_system(time: Res<Time>, mut query: Query<&mut Text, With<ColorText>>) {

@@ -4,7 +4,6 @@ pub mod view;
 
 pub struct AskyPlugin;
 
-
 /// AskySet defines when the input events are emitted.
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub enum AskySet {
@@ -35,20 +34,22 @@ impl Plugin for AskyPlugin {
     }
 }
 
-fn confirm_controller(mut query: Query<(Entity, &mut AskyState, &Confirm, Option<&mut ConfirmState>)>,
-                      input: Res<ButtonInput<KeyCode>>,
-                      mut commands: Commands) {
+fn confirm_controller(
+    mut query: Query<(Entity, &mut AskyState, &Confirm, Option<&mut ConfirmState>)>,
+    input: Res<ButtonInput<KeyCode>>,
+    mut commands: Commands,
+) {
     for (id, mut state, confirm, mut confirm_state) in query.iter_mut() {
         match *state {
             AskyState::Uninit => {
                 if confirm_state.is_none() {
-                    commands.entity(id)
-                            .insert(ConfirmState { yes: confirm.init });
+                    commands
+                        .entity(id)
+                        .insert(ConfirmState { yes: confirm.init });
                 }
                 *state = AskyState::Reading;
             }
             AskyState::Reading => {
-
                 if let Some(ref mut confirm_state) = confirm_state {
                     if input.any_just_pressed([KeyCode::KeyY, KeyCode::KeyN, KeyCode::Enter]) {
                         if input.just_pressed(KeyCode::KeyY) {
@@ -67,7 +68,7 @@ fn confirm_controller(mut query: Query<(Entity, &mut AskyState, &Confirm, Option
                     panic!("cannot get start while reading.");
                 }
             }
-            _ => ()
+            _ => (),
         }
     }
 }
@@ -90,9 +91,8 @@ pub enum AskyState {
     Uninit,
     Reading,
     Complete,
-    Error
+    Error,
 }
-
 
 #[derive(Component)]
 struct ConfirmState {
@@ -114,7 +114,7 @@ pub enum Error {
         /// Expected count
         expected: usize,
         /// Actual count
-        actual: usize
+        actual: usize,
     },
     /// Validation failed.
     #[error("validation fail")]
