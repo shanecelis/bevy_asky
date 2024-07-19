@@ -1,4 +1,7 @@
-use bevy::prelude::*;
+use bevy::{
+    ecs::component::{StorageType, ComponentHooks},
+    prelude::*
+};
 use std::borrow::Cow;
 pub mod view;
 
@@ -35,37 +38,31 @@ impl Plugin for AskyPlugin {
 }
 
 fn confirm_controller(
-    mut query: Query<(Entity, &mut AskyState, &Confirm, Option<&mut ConfirmState>)>,
+    mut query: Query<(Entity, &mut AskyState, &Confirm, &mut ConfirmState)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
 ) {
     for (id, mut state, confirm, mut confirm_state) in query.iter_mut() {
         match *state {
             AskyState::Uninit => {
-                if confirm_state.is_none() {
-                    commands
-                        .entity(id)
-                        .insert(ConfirmState { yes: confirm.init });
-                }
                 *state = AskyState::Reading;
             }
             AskyState::Reading => {
-                if let Some(ref mut confirm_state) = confirm_state {
-                    if input.any_just_pressed([KeyCode::KeyY, KeyCode::KeyN, KeyCode::Enter]) {
-                        if input.just_pressed(KeyCode::KeyY) {
-                            confirm_state.yes = Some(true);
-                        }
-                        if input.just_pressed(KeyCode::KeyN) {
-                            confirm_state.yes = Some(false);
-                        }
-
-                        if input.just_pressed(KeyCode::Enter) && confirm_state.yes.is_some() {
-                            commands.trigger_targets(AskyEvent(Ok(confirm_state.yes.unwrap())), id);
-                            *state = AskyState::Complete;
-                        }
+                if input.any_just_pressed([KeyCode::KeyY, KeyCode::KeyN, KeyCode::Enter, KeyCode::Escape]) {
+                    if input.just_pressed(KeyCode::KeyY) {
+                        confirm_state.yes = Some(true);
                     }
-                } else {
-                    panic!("cannot get start while reading.");
+                    if input.just_pressed(KeyCode::KeyN) {
+                        confirm_state.yes = Some(false);
+                    }
+                    if input.just_pressed(KeyCode::Enter) && confirm_state.yes.is_some() {
+                        commands.trigger_targets(AskyEvent(Ok(confirm_state.yes.unwrap())), id);
+                        *state = AskyState::Complete;
+                    }
+                    if input.just_pressed(KeyCode::Escape) {
+                        commands.trigger_targets(AskyEvent::<bool>(Err(Error::Cancel)), id);
+                        *state = AskyState::Error;
+                    }
                 }
             }
             _ => (),
@@ -76,12 +73,27 @@ fn confirm_controller(
 #[derive(Event, Deref, Debug)]
 pub struct AskyEvent<T>(Result<T, Error>);
 
-#[derive(Component)]
+// #[derive(Component)]
 pub struct Confirm {
     /// Message used to display in the prompt.
     pub message: Cow<'static, str>,
     /// Initial confirm_state of the prompt.
     pub init: Option<bool>,
+}
+
+impl Component for Confirm {
+    const STORAGE_TYPE: StorageType = StorageType::Table;
+
+    fn register_component_hooks(hooks: &mut ComponentHooks) {
+        hooks.on_add(|mut world, targeted_entity, _component_id|{
+            if world.get::<ConfirmState>(targeted_entity).is_none() {
+                let confirm_init = world.get::<Confirm>(targeted_entity).unwrap().init;
+                let mut commands = world.commands();
+                commands.entity(targeted_entity).insert(ConfirmState { yes: confirm_init });
+            }
+
+        });
+    }
 }
 
 #[derive(Debug, Component, Default)]

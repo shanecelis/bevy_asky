@@ -1,4 +1,4 @@
-use crate::{AskyState, Confirm, ConfirmState};
+use crate::{AskyState, Confirm, ConfirmState, AskyEvent};
 use bevy::{
     color::palettes::basic::*,
     prelude::*
@@ -110,12 +110,12 @@ fn confirm_view(
                         for b in bundles {
                             parent.spawn(b);
                         }
-                        if !matches!(asky_state, AskyState::Complete) {
+                        if !matches!(asky_state, AskyState::Complete | AskyState::Error) {
                             parent.spawn(NodeBundle {
-
+                                ..default()
                             }).with_children(|parent| {
-                                add_button(parent, " No ");
-                                add_button(parent, " Yes ");
+                                add_button(parent, " No ", ConfirmRef(id, false));
+                                add_button(parent, " Yes ", ConfirmRef(id, true));
                             });
                         }
                     })
@@ -134,7 +134,7 @@ const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
 const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 
 #[derive(Component)]
-struct ButtonIndex(usize);
+struct ConfirmRef(Entity, bool);
 
 fn button_system(
     mut interaction_query: Query<
@@ -143,26 +143,28 @@ fn button_system(
             &mut BackgroundColor,
             &mut BorderColor,
             &Children,
+            &ConfirmRef,
         ),
         (Changed<Interaction>, With<Button>),
     >,
-    mut text_query: Query<&mut Text>,
+    mut state_query: Query<(&mut ConfirmState, &mut AskyState)>,
+    mut commands: Commands,
 ) {
-    for (interaction, mut color, mut border_color, children) in &mut interaction_query {
-        let mut text = text_query.get_mut(children[0]).unwrap();
+    for (interaction, mut color, mut border_color, children, confirm_ref) in &mut interaction_query {
+        let (mut confirm_state, mut asky_state) = state_query.get_mut(confirm_ref.0).unwrap();
         match *interaction {
             Interaction::Pressed => {
-                // text.sections[0].value = "Press".to_string();
+                confirm_state.yes = Some(confirm_ref.1);
+                commands.trigger_targets(AskyEvent(Ok(confirm_state.yes.unwrap())), confirm_ref.0);
+                *asky_state = AskyState::Complete;
                 *color = PRESSED_BUTTON.into();
                 border_color.0 = RED.into();
             }
             Interaction::Hovered => {
-                // text.sections[0].value = "Hover".to_string();
                 *color = HOVERED_BUTTON.into();
                 border_color.0 = Color::WHITE;
             }
             Interaction::None => {
-                // text.sections[0].value = "Button".to_string();
                 *color = NORMAL_BUTTON.into();
                 border_color.0 = Color::BLACK;
             }
@@ -170,7 +172,7 @@ fn button_system(
     }
 }
 
-fn add_button(mut parent: &mut ChildBuilder<'_>, text: &str, index: usize) {
+fn add_button(mut parent: &mut ChildBuilder<'_>, text: &str, confirm_ref: ConfirmRef) {
     parent
         .spawn((ButtonBundle {
             style: Style {
@@ -187,7 +189,7 @@ fn add_button(mut parent: &mut ChildBuilder<'_>, text: &str, index: usize) {
             // border_radius: BorderRadius::MAX,
             background_color: NORMAL_BUTTON.into(),
             ..default()
-        }, ButtonIndex(index)))
+        }, confirm_ref))
         .with_children(|parent| {
             parent.spawn(TextBundle::from_section(
                 text,
