@@ -43,6 +43,11 @@ impl<T: Spawn> Widgets for T {
             Name::new("Button"),
             ButtonBundle {
                 style: Style {
+                    margin: UiRect {
+                        // right: Val::Px(5.0),
+                        left: Val::Px(10.0),
+                        ..default()
+                    },
                     // width: Px(200.0),
                     // height: Px(65.0),
                     border: UiRect::all(Val::Px(2.0)),

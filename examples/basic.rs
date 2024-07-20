@@ -54,13 +54,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((
             NodeBundle {
-                style: Style {
-                    margin: UiRect {
-                        right: Val::Px(5.0),
-                        ..default()
-                    },
-                    ..default()
-                },
                 ..default()
             },
             AskyState::default(),
