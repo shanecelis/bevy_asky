@@ -1,25 +1,41 @@
-//! Click event and plugin for Bevy.
-use bevy::ecs::entity::EntityHashMap;
+//! Click event for Bevy.
+//!
+//! [Interaction::Pressed] is not the same as a click, which is a press and
+//! release of a mouse button on the same UI object. use bevy::ecs::entity::EntityHashMap;
 use bevy::prelude::*;
+use bevy::ecs::entity::EntityHashMap;
 
 /// A trigger event that signifies a click on a button, which is a mouse button
 /// press and release on the same object.
+///
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_asky::view::click::{self, Click};
+/// fn setup(mut commands: Commands) {
+///     commands.spawn(ButtonBundle::default())
+///         .observe(|trigger: Trigger<Click>|
+///             eprintln!("Click on {}", trigger.entity()));
+/// }
 #[derive(Event, Debug)]
 pub struct Click;
 
 /// Adds a system that triggers a [Click] event when an entity with an
 /// [Interaction] component is pressed and released on that same UI element.
+///
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_asky::view::click;
+/// let mut app = App::new();
+/// app.add_plugins(click::plugin);
+/// ```
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, button_click);
 }
-
-/// [Interaction::Pressed] is not the same as a click, which is a press and
-/// release on the same UI object. This system notes the last state of
-/// interaction. If that state changes from [Interaction::Pressed] to
-/// [Interaction::Hovered] then it will trigger a [Click] event targeting the
-/// Entity with the [Interaction] component.
+/// This system looks at [Button] [Interaction] changes. If that state changes
+/// from [Interaction::Pressed] to [Interaction::Hovered] then it will trigger a
+/// [Click] event targeting the Entity with the [Interaction] component.
 ///
-/// TODO: The `Local<HashMap>` should be reset or drop elements that are stale
+/// TODO: The `Local<EntityHashMap>` should be reset or drop elements that are stale
 /// so it doesn't grow unbounded.
 fn button_click(
     mut interaction_query: Query<(Entity, &Interaction), (Changed<Interaction>, With<Button>)>,
