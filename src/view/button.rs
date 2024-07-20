@@ -1,4 +1,5 @@
 use crate::{AskyState, Confirm, ConfirmState, AskyEvent};
+use super::widget::*;
 use bevy::{
     color::palettes::basic::*,
     prelude::*
@@ -31,7 +32,7 @@ impl Default for ButtonView {
 
 impl Plugin for ButtonViewPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (button_system, confirm_view))
+        app.add_systems(Update, (button_interaction, confirm_view))
             .insert_resource(ButtonView::default());
     }
 }
@@ -58,7 +59,8 @@ fn confirm_view(
                     ..default()
                 };
 
-                let mut bundles = vec![TextBundle::from_sections([
+                let mut bundles = vec![
+                    TextBundle::from_sections([
                     TextSection::new(
                         format!(
                             "[{}] ",
@@ -111,12 +113,9 @@ fn confirm_view(
                             parent.spawn(b);
                         }
                         if !matches!(asky_state, AskyState::Complete | AskyState::Error) {
-                            parent.spawn(NodeBundle {
-                                ..default()
-                            }).with_children(|parent| {
-                                add_button(parent, " No ", ConfirmRef(id, false));
-                                add_button(parent, " Yes ", ConfirmRef(id, true));
-                            });
+                            // commands.button(" No ", &Palette::default()).insert(ConfirmRef(id, false));
+                            // add_button(parent, " No ", ConfirmRef(id, false));
+                            add_button(parent, " Yes ", ConfirmRef(id, true));
                         }
                     })
                     .id();
@@ -136,7 +135,7 @@ const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 #[derive(Component)]
 struct ConfirmRef(Entity, bool);
 
-fn button_system(
+fn button_interaction(
     mut interaction_query: Query<
         (
             &Interaction,
@@ -166,11 +165,59 @@ fn button_system(
             }
             Interaction::None => {
                 *color = NORMAL_BUTTON.into();
-                border_color.0 = Color::BLACK;
+                border_color.0 = match confirm_state.yes {
+                    None => Color::BLACK,
+                    Some(yes) => if yes == confirm_ref.1 {
+                        GREEN.into()
+                    } else {
+                        Color::BLACK
+                    }
+                }
             }
         }
     }
 }
+
+// fn button_view(
+//     mut interaction_query: Query<
+//         (
+//             &mut BackgroundColor,
+//             &mut BorderColor,
+//             &ConfirmRef,
+//         ),
+//         (Changed<Interaction>, With<Button>),
+//     >,
+//     mut state_query: Query<(&mut ConfirmState, &mut AskyState)>,
+//     mut commands: Commands,
+// ) {
+//     for (interaction, mut color, mut border_color, children, confirm_ref) in &mut interaction_query {
+//         let (mut confirm_state, mut asky_state) = state_query.get_mut(confirm_ref.0).unwrap();
+//         match *interaction {
+//             Interaction::Pressed => {
+//                 confirm_state.yes = Some(confirm_ref.1);
+//                 commands.trigger_targets(AskyEvent(Ok(confirm_state.yes.unwrap())), confirm_ref.0);
+//                 *asky_state = AskyState::Complete;
+//                 *color = PRESSED_BUTTON.into();
+//                 border_color.0 = RED.into();
+//             }
+//             Interaction::Hovered => {
+//                 *color = HOVERED_BUTTON.into();
+//                 border_color.0 = Color::WHITE;
+//             }
+//             Interaction::None => {
+//                 *color = NORMAL_BUTTON.into();
+//                 border_color.0 = match confirm_state.yes {
+//                     None => Color::BLACK,
+//                     Some(yes) => if yes == confirm_ref.1 {
+//                         GREEN.into()
+//                     } else {
+//                         Color::BLACK
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
 
 fn add_button(mut parent: &mut ChildBuilder<'_>, text: &str, confirm_ref: ConfirmRef) {
     parent
