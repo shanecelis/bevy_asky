@@ -2,7 +2,7 @@
 
 use bevy::{ecs::system::EntityCommands, prelude::*, ui::Val::*};
 
-use super::{interaction::InteractionPalette};
+use super::interaction::InteractionPalette;
 
 #[derive(Debug, Clone, Resource)]
 pub struct Palette {
@@ -59,7 +59,7 @@ impl<T: Spawn> Widgets for T {
                 background_color: palette.background.into(),
                 ..default()
             },
-            palette.interaction.clone()
+            palette.interaction.clone(),
         ));
         entity.with_children(|children| {
             children.spawn((

@@ -1,6 +1,6 @@
 use bevy::{
-    ecs::component::{StorageType, ComponentHooks},
-    prelude::*
+    ecs::component::{ComponentHooks, StorageType},
+    prelude::*,
 };
 use std::borrow::Cow;
 pub mod view;
@@ -48,7 +48,12 @@ fn confirm_controller(
                 *state = AskyState::Reading;
             }
             AskyState::Reading => {
-                if input.any_just_pressed([KeyCode::KeyY, KeyCode::KeyN, KeyCode::Enter, KeyCode::Escape]) {
+                if input.any_just_pressed([
+                    KeyCode::KeyY,
+                    KeyCode::KeyN,
+                    KeyCode::Enter,
+                    KeyCode::Escape,
+                ]) {
                     if input.just_pressed(KeyCode::KeyY) {
                         confirm_state.yes = Some(true);
                     }
@@ -85,13 +90,14 @@ impl Component for Confirm {
     const STORAGE_TYPE: StorageType = StorageType::Table;
 
     fn register_component_hooks(hooks: &mut ComponentHooks) {
-        hooks.on_add(|mut world, targeted_entity, _component_id|{
+        hooks.on_add(|mut world, targeted_entity, _component_id| {
             if world.get::<ConfirmState>(targeted_entity).is_none() {
                 let confirm_init = world.get::<Confirm>(targeted_entity).unwrap().init;
                 let mut commands = world.commands();
-                commands.entity(targeted_entity).insert(ConfirmState { yes: confirm_init });
+                commands
+                    .entity(targeted_entity)
+                    .insert(ConfirmState { yes: confirm_init });
             }
-
         });
     }
 }

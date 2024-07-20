@@ -1,10 +1,10 @@
-use std::collections::HashMap;
-use crate::{AskyState, Confirm, ConfirmState, AskyEvent};
-use super::{widget::*, click::{self, Click}};
-use bevy::{
-    color::palettes::basic::*,
-    prelude::*
+use super::{
+    click::{self, Click},
+    widget::*,
 };
+use crate::{AskyEvent, AskyState, Confirm, ConfirmState};
+use bevy::{color::palettes::basic::*, prelude::*};
+use std::collections::HashMap;
 
 pub struct ButtonViewPlugin;
 
@@ -33,7 +33,6 @@ impl Default for ButtonView {
 
 impl Plugin for ButtonViewPlugin {
     fn build(&self, app: &mut App) {
-
         click::plugin(app);
         app.add_systems(Update, (button_interaction, confirm_view))
             .insert_resource(ButtonView::default());
@@ -64,35 +63,40 @@ fn confirm_view(
                 };
 
                 let mut bundles = vec![];
-                bundles.push(commands.spawn(
-                    TextBundle::from_sections([
-                    TextSection::new(
-                        format!(
-                            "[{}] ",
-                            match asky_state {
-                                AskyState::Reading => " ",
-                                AskyState::Complete => "x",
-                                AskyState::Error => "!",
-                                _ => unreachable!(),
-                            }
-                        ),
-                        highlight.clone(),
-                    ),
-                    TextSection::new(confirm.message.as_ref(), TextStyle::default()),
-                ])).id());
+                bundles.push(
+                    commands
+                        .spawn(TextBundle::from_sections([
+                            TextSection::new(
+                                format!(
+                                    "[{}] ",
+                                    match asky_state {
+                                        AskyState::Reading => " ",
+                                        AskyState::Complete => "x",
+                                        AskyState::Error => "!",
+                                        _ => unreachable!(),
+                                    }
+                                ),
+                                highlight.clone(),
+                            ),
+                            TextSection::new(confirm.message.as_ref(), TextStyle::default()),
+                        ]))
+                        .id(),
+                );
 
                 if matches!(asky_state, AskyState::Complete) {
-                    let id = commands.spawn(TextBundle::from_section(
-                        match confirm_state.yes {
-                            Some(true) => " Yes",
-                            Some(false) => " No",
-                            None => unreachable!(),
-                        },
-                        TextStyle {
-                            color: color_view.answer.into(),
-                            ..default()
-                        },
-                    )).id();
+                    let id = commands
+                        .spawn(TextBundle::from_section(
+                            match confirm_state.yes {
+                                Some(true) => " Yes",
+                                Some(false) => " No",
+                                None => unreachable!(),
+                            },
+                            TextStyle {
+                                color: color_view.answer.into(),
+                                ..default()
+                            },
+                        ))
+                        .id();
                     bundles.push(id);
                 } else {
                     // bundles.push(commands.spawn(TextBundle::from_section(" ", TextStyle::default())).id());
@@ -113,22 +117,40 @@ fn confirm_view(
                     // );
                 }
                 if !matches!(asky_state, AskyState::Complete | AskyState::Error) {
-                    bundles.push(commands.button(" No ", &Palette::default()).insert(ConfirmRef(id, false))
-                                 .observe(move |trigger: Trigger<Click>, mut query: Query<(&mut AskyState, &mut ConfirmState)>, mut commands: Commands| {
-                                     let (mut asky_state, mut confirm_state) = query.get_mut(id).unwrap();
-                                     *asky_state = AskyState::Complete;
-                                     confirm_state.yes = Some(false);
-                                     commands.trigger_targets(AskyEvent(Ok(false)), id);
-                                 })
-                                 .id());
-                    bundles.push(commands.button(" Yes ", &Palette::default()).insert(ConfirmRef(id, false))
-                                 .observe(move |trigger: Trigger<Click>, mut query: Query<(&mut AskyState, &mut ConfirmState)>, mut commands: Commands| {
-                                     let (mut asky_state, mut confirm_state) = query.get_mut(id).unwrap();
-                                     *asky_state = AskyState::Complete;
-                                     confirm_state.yes = Some(true);
-                                     commands.trigger_targets(AskyEvent(Ok(true)), id);
-                                 })
-                                 .id());
+                    bundles.push(
+                        commands
+                            .button(" No ", &Palette::default())
+                            .insert(ConfirmRef(id, false))
+                            .observe(
+                                move |trigger: Trigger<Click>,
+                                      mut query: Query<(&mut AskyState, &mut ConfirmState)>,
+                                      mut commands: Commands| {
+                                    let (mut asky_state, mut confirm_state) =
+                                        query.get_mut(id).unwrap();
+                                    *asky_state = AskyState::Complete;
+                                    confirm_state.yes = Some(false);
+                                    commands.trigger_targets(AskyEvent(Ok(false)), id);
+                                },
+                            )
+                            .id(),
+                    );
+                    bundles.push(
+                        commands
+                            .button(" Yes ", &Palette::default())
+                            .insert(ConfirmRef(id, false))
+                            .observe(
+                                move |trigger: Trigger<Click>,
+                                      mut query: Query<(&mut AskyState, &mut ConfirmState)>,
+                                      mut commands: Commands| {
+                                    let (mut asky_state, mut confirm_state) =
+                                        query.get_mut(id).unwrap();
+                                    *asky_state = AskyState::Complete;
+                                    confirm_state.yes = Some(true);
+                                    commands.trigger_targets(AskyEvent(Ok(true)), id);
+                                },
+                            )
+                            .id(),
+                    );
                     // add_button(parent, " No ", ConfirmRef(id, false));
                     // add_button(parent, " Yes ", ConfirmRef(id, true));
                 }
@@ -164,7 +186,9 @@ fn button_interaction(
     mut commands: Commands,
     mut last_state: Local<HashMap<Entity, Interaction>>,
 ) {
-    for (id, interaction, mut color, mut border_color, children, confirm_ref) in &mut interaction_query {
+    for (id, interaction, mut color, mut border_color, children, confirm_ref) in
+        &mut interaction_query
+    {
         let (mut confirm_state, mut asky_state) = state_query.get_mut(confirm_ref.0).unwrap();
         let last = last_state.get(&id);
         dbg!(id.index(), *interaction);
@@ -186,10 +210,12 @@ fn button_interaction(
                 *color = NORMAL_BUTTON.into();
                 border_color.0 = match confirm_state.yes {
                     None => Color::BLACK,
-                    Some(yes) => if yes == confirm_ref.1 {
-                        GREEN.into()
-                    } else {
-                        Color::BLACK
+                    Some(yes) => {
+                        if yes == confirm_ref.1 {
+                            GREEN.into()
+                        } else {
+                            Color::BLACK
+                        }
                     }
                 }
             }
@@ -241,22 +267,25 @@ fn button_interaction(
 
 fn add_button(mut parent: &mut ChildBuilder<'_>, text: &str, confirm_ref: ConfirmRef) {
     parent
-        .spawn((ButtonBundle {
-            style: Style {
-                // width: Val::Px(150.0),
-                // height: Val::Px(65.0),
-                border: UiRect::all(Val::Px(2.0)),
-                // horizontally center child text
-                justify_content: JustifyContent::Center,
-                // vertically center child text
-                align_items: AlignItems::Center,
+        .spawn((
+            ButtonBundle {
+                style: Style {
+                    // width: Val::Px(150.0),
+                    // height: Val::Px(65.0),
+                    border: UiRect::all(Val::Px(2.0)),
+                    // horizontally center child text
+                    justify_content: JustifyContent::Center,
+                    // vertically center child text
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
+                border_color: BorderColor(Color::BLACK),
+                // border_radius: BorderRadius::MAX,
+                background_color: NORMAL_BUTTON.into(),
                 ..default()
             },
-            border_color: BorderColor(Color::BLACK),
-            // border_radius: BorderRadius::MAX,
-            background_color: NORMAL_BUTTON.into(),
-            ..default()
-        }, confirm_ref))
+            confirm_ref,
+        ))
         .with_children(|parent| {
             parent.spawn(TextBundle::from_section(
                 text,

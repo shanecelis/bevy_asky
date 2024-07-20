@@ -1,6 +1,6 @@
 //! Click event and plugin for Bevy.
-use bevy::prelude::*;
 use bevy::ecs::entity::EntityHashMap;
+use bevy::prelude::*;
 
 /// A trigger event that signifies a click on a button, which is a mouse button
 /// press and release on the same object.
@@ -24,7 +24,7 @@ pub fn plugin(app: &mut App) {
 fn button_click(
     mut interaction_query: Query<(Entity, &Interaction), (Changed<Interaction>, With<Button>)>,
     mut last_state: Local<EntityHashMap<Interaction>>,
-    mut commands: Commands
+    mut commands: Commands,
 ) {
     for (id, interaction) in &mut interaction_query {
         let last = last_state.get(&id);

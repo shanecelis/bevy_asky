@@ -53,9 +53,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands
         .spawn((
-            NodeBundle {
-                ..default()
-            },
+            NodeBundle { ..default() },
             AskyState::default(),
             Confirm {
                 message: "Do thing?".into(),
