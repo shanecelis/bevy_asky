@@ -104,9 +104,10 @@ impl Component for Confirm {
 
 #[derive(Debug, Component, Default)]
 pub enum AskyState {
-    Frozen,
+    Frozen, // XXX: Drop frozen
     #[default]
     Uninit,
+    //Construct,
     Reading,
     Complete,
     Error,

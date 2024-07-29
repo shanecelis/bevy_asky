@@ -13,7 +13,7 @@ fn main() {
         // .add_plugins(view::ColorViewPlugin)
         .add_plugins(view::ButtonViewPlugin)
         .add_systems(Startup, setup)
-        .add_systems(Update, (text_update_system, text_color_system))
+        .add_systems(Update, (text_update_system, text_color_system, read_keys))
         .run();
 }
 
@@ -88,6 +88,16 @@ fn text_color_system(time: Res<Time>, mut query: Query<&mut Text, With<ColorText
             (0.75 * seconds).sin() / 2.0 + 0.5,
             (0.50 * seconds).sin() / 2.0 + 0.5,
         );
+    }
+}
+
+fn read_keys(input: Res<ButtonInput<KeyCode>>,
+             mut query: Query<&mut AskyState>) {
+    if input.just_pressed(KeyCode::KeyR) {
+        for mut state in query.iter_mut() {
+            *state = AskyState::Reading;
+
+        }
     }
 }
 

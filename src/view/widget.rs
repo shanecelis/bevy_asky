@@ -37,6 +37,9 @@ pub trait Widgets {
     // fn label(&mut self, text: impl Into<String>, palette: &Palette) -> EntityCommands;
 }
 
+#[derive(Component)]
+pub struct AskyElement;
+
 impl<T: Spawn> Widgets for T {
     fn button(&mut self, text: impl Into<String>, palette: &Palette) -> EntityCommands {
         let mut entity = self.spawn((
@@ -59,6 +62,7 @@ impl<T: Spawn> Widgets for T {
                 background_color: palette.background.into(),
                 ..default()
             },
+            AskyElement,
             palette.interaction.clone(),
         ));
         entity.with_children(|children| {

@@ -119,7 +119,6 @@ fn setup_view(
                     bundles.push(
                         commands
                             .button(" No ", &Palette::default())
-                            .insert(ConfirmRef(id, false))
                             .observe(
                                 move |trigger: Trigger<Click>,
                                       mut query: Query<(&mut AskyState, &mut ConfirmState)>,
@@ -136,7 +135,6 @@ fn setup_view(
                     bundles.push(
                         commands
                             .button(" Yes ", &Palette::default())
-                            .insert(ConfirmRef(id, false))
                             .observe(
                                 move |trigger: Trigger<Click>,
                                       mut query: Query<(&mut AskyState, &mut ConfirmState)>,
@@ -150,8 +148,6 @@ fn setup_view(
                             )
                             .id(),
                     );
-                    // add_button(parent, " No ", ConfirmRef(id, false));
-                    // add_button(parent, " Yes ", ConfirmRef(id, true));
                 }
                 commands
                     .entity(id)
@@ -243,7 +239,6 @@ fn confirm_view(
                     bundles.push(
                         commands
                             .button(" No ", &Palette::default())
-                            .insert(ConfirmRef(id, false))
                             .observe(
                                 move |trigger: Trigger<Click>,
                                       mut query: Query<(&mut AskyState, &mut ConfirmState)>,
@@ -260,7 +255,6 @@ fn confirm_view(
                     bundles.push(
                         commands
                             .button(" Yes ", &Palette::default())
-                            .insert(ConfirmRef(id, false))
                             .observe(
                                 move |trigger: Trigger<Click>,
                                       mut query: Query<(&mut AskyState, &mut ConfirmState)>,
@@ -274,8 +268,6 @@ fn confirm_view(
                             )
                             .id(),
                     );
-                    // add_button(parent, " No ", ConfirmRef(id, false));
-                    // add_button(parent, " Yes ", ConfirmRef(id, true));
                 }
                 commands
                     .entity(id)
@@ -290,9 +282,6 @@ const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
 const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 
-#[derive(Component)]
-struct ConfirmRef(Entity, bool);
-
 fn button_interaction(
     mut interaction_query: Query<
         (
@@ -300,19 +289,18 @@ fn button_interaction(
             &Interaction,
             &mut BackgroundColor,
             &mut BorderColor,
-            &Children,
-            &ConfirmRef,
+            &Parent,
         ),
-        (Changed<Interaction>, With<Button>),
+        (Changed<Interaction>, With<Button>, With<AskyElement>),
     >,
     mut state_query: Query<(&mut ConfirmState, &mut AskyState)>,
     mut commands: Commands,
     mut last_state: Local<HashMap<Entity, Interaction>>,
 ) {
-    for (id, interaction, mut color, mut border_color, children, confirm_ref) in
+    for (id, interaction, mut color, mut border_color, parent) in
         &mut interaction_query
     {
-        let (mut confirm_state, mut asky_state) = state_query.get_mut(confirm_ref.0).unwrap();
+        let (mut confirm_state, mut asky_state) = state_query.get_mut(parent.get()).unwrap();
         let last = last_state.get(&id);
         dbg!(id.index(), *interaction);
         match *interaction {
@@ -334,11 +322,11 @@ fn button_interaction(
                 border_color.0 = match confirm_state.yes {
                     None => Color::BLACK,
                     Some(yes) => {
-                        if yes == confirm_ref.1 {
+                        // if yes == confirm_ref.1 {
                             GREEN.into()
-                        } else {
-                            Color::BLACK
-                        }
+                        // } else {
+                        //     Color::BLACK
+                        // }
                     }
                 }
             }
@@ -388,35 +376,3 @@ fn button_interaction(
 //     }
 // }
 
-fn add_button(mut parent: &mut ChildBuilder<'_>, text: &str, confirm_ref: ConfirmRef) {
-    parent
-        .spawn((
-            ButtonBundle {
-                style: Style {
-                    // width: Val::Px(150.0),
-                    // height: Val::Px(65.0),
-                    border: UiRect::all(Val::Px(2.0)),
-                    // horizontally center child text
-                    justify_content: JustifyContent::Center,
-                    // vertically center child text
-                    align_items: AlignItems::Center,
-                    ..default()
-                },
-                border_color: BorderColor(Color::BLACK),
-                // border_radius: BorderRadius::MAX,
-                background_color: NORMAL_BUTTON.into(),
-                ..default()
-            },
-            confirm_ref,
-        ))
-        .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-                text,
-                TextStyle {
-                    // font_size: 40.0,
-                    color: Color::srgb(0.9, 0.9, 0.9),
-                    ..default()
-                },
-            ));
-        });
-}
