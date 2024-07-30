@@ -4,6 +4,7 @@ use bevy::{
 };
 use std::borrow::Cow;
 pub mod view;
+pub mod construct;
 
 pub struct AskyPlugin;
 
