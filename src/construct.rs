@@ -1,4 +1,4 @@
-//! Playing around with Cart's proposal.
+//! Playing around with [Cart's proposal](https://github.com/bevyengine/bevy/discussions/14437).
 use bevy::{
     prelude::*,
     asset::AssetPath,
