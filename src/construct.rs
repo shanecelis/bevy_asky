@@ -9,7 +9,9 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum ConstructError {
     #[error("invalid properties {message:?}")]
-    InvalidProps { message: Cow<'static, str> }
+    InvalidProps { message: Cow<'static, str> },
+    #[error("missing resource {message:?}")]
+    MissingResource { message: Cow<'static, str> },
 }
 
 pub struct Requirements {

@@ -10,7 +10,7 @@ impl Plugin for AsciiViewPlugin {
     }
 }
 
-fn confirm_view(
+pub (crate) fn confirm_view(
     mut query: Query<
         (&AskyState, &ConfirmState, &mut Text),
         (With<View<Confirm>>, Or<(Changed<AskyState>, Changed<ConfirmState>)>)
@@ -49,7 +49,7 @@ fn confirm_view(
 }
 
 #[derive(Component)]
-pub struct View<T>(T);
+pub struct View<T>(pub T);
 
 
 impl Construct for View<Confirm> {
@@ -69,7 +69,7 @@ impl Construct for View<Confirm> {
                     ["[_] ".into(), // 0
                      confirm.message.to_string().into(), // 1
                      " ".into(), // 2
-                     "_".into()  // 3
+                     "".into()  // 3
                     ]),
                 ..default()
             });
