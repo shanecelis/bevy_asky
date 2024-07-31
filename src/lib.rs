@@ -2,6 +2,7 @@ use bevy::{
     ecs::component::{ComponentHooks, StorageType},
     prelude::*,
 };
+use crate::construct::*;
 use std::borrow::Cow;
 pub mod view;
 pub mod construct;
@@ -87,6 +88,28 @@ pub struct Confirm {
     pub init: Option<bool>,
 }
 
+impl Construct for Confirm {
+    type Props = Cow<'static,str>;
+
+    fn construct(
+        context: &mut ConstructContext,
+        path: Self::Props,
+    ) -> Result<Self, ConstructError> {
+        // Our requirements.
+        let state: AskyState = context.construct(AskyState::default())?;
+        let mut commands = context.world.commands();
+        commands
+            .entity(context.id)
+            .insert(state)
+            .insert(NodeBundle::default());
+
+        Ok(Confirm {
+            message: path,
+            init: None
+        })
+    }
+}
+
 impl Component for Confirm {
     const STORAGE_TYPE: StorageType = StorageType::Table;
 
@@ -103,7 +126,7 @@ impl Component for Confirm {
     }
 }
 
-#[derive(Debug, Component, Default)]
+#[derive(Debug, Component, Default, Clone)]
 pub enum AskyState {
     Frozen, // XXX: Drop frozen
     #[default]

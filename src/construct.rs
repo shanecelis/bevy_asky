@@ -4,9 +4,21 @@ use bevy::{
     asset::AssetPath,
 };
 use std::borrow::Cow;
+use thiserror::Error;
 
+#[derive(Error, Debug)]
 pub enum ConstructError {
+    #[error("invalid properties {message:?}")]
     InvalidProps { message: Cow<'static, str> }
+}
+
+pub struct Requirements {
+
+}
+
+pub enum ConstructProp<T: Construct> {
+    Value(T),
+    Prop(T::Props)
 }
 
 pub trait Construct: Sized {
@@ -19,21 +31,27 @@ pub struct ConstructContext<'a> {
     pub world: &'a mut World,
 }
 
-impl<T: Asset> Construct for Handle<T> {
-    type Props = AssetPath<'static>;
-
-    fn construct(
-        context: &mut ConstructContext,
-        path: Self::Props,
-    ) -> Result<Self, ConstructError> {
-        // if let Err(err) = path.validate() {
-        //     return Err(ConstructError::InvalidProps {
-        //         message: format!("Invalid Asset Path: {err}").into(),
-        //     });
-        // }
-        Ok(context.world.resource::<AssetServer>().load(path))
+impl<'a> ConstructContext<'a> {
+    pub fn construct<T: Construct>(&mut self, props: impl Into<T::Props>) -> Result<T, ConstructError> {
+        T::construct(self, props.into())
     }
 }
+
+// impl<T: Asset> Construct for Handle<T> {
+//     type Props = AssetPath<'static>;
+
+//     fn construct(
+//         context: &mut ConstructContext,
+//         path: Self::Props,
+//     ) -> Result<Self, ConstructError> {
+//         // if let Err(err) = path.validate() {
+//         //     return Err(ConstructError::InvalidProps {
+//         //         message: format!("Invalid Asset Path: {err}").into(),
+//         //     });
+//         // }
+//         Ok(context.world.resource::<AssetServer>().load(path))
+//     }
+// }
 
 pub trait ConstructExt {
     fn construct<T: Construct + Component>(&mut self, props: T::Props) -> &mut Self where <T as Construct>::Props: Send;
@@ -48,7 +66,8 @@ where <T as Construct>::Props: Send {
             id,
             world
         };
-        let c = T::construct(&mut context, self.0);
+        let c = T::construct(&mut context, self.0).expect("component");
+        world.entity_mut(id).insert(c);
     }
 }
 
@@ -67,10 +86,10 @@ impl ConstructExt for bevy::ecs::system::EntityCommands<'_> {
     }
 }
 
-// impl<T: Default + Clone> Construct for T {
-//     type Props = T;
-//     #[inline]
-//     fn construct(context: &mut ConstructContext, props: Self::Props) -> Result<Self, ConstructError> {
-//         Ok(props)
-//     }
-// }
+impl<T: Default + Clone> Construct for T {
+    type Props = T;
+    #[inline]
+    fn construct(context: &mut ConstructContext, props: Self::Props) -> Result<Self, ConstructError> {
+        Ok(props)
+    }
+}
