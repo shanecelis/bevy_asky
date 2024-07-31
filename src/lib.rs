@@ -40,11 +40,11 @@ impl Plugin for AskyPlugin {
 }
 
 fn confirm_controller(
-    mut query: Query<(Entity, &mut AskyState, &Confirm, &mut ConfirmState)>,
+    mut query: Query<(Entity, &mut AskyState, &mut ConfirmState)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
 ) {
-    for (id, mut state, confirm, mut confirm_state) in query.iter_mut() {
+    for (id, mut state, mut confirm_state) in query.iter_mut() {
         match *state {
             AskyState::Uninit => {
                 *state = AskyState::Reading;
@@ -93,18 +93,22 @@ impl Construct for Confirm {
 
     fn construct(
         context: &mut ConstructContext,
-        path: Self::Props,
+        props: Self::Props,
     ) -> Result<Self, ConstructError> {
         // Our requirements.
         let state: AskyState = context.construct(AskyState::default())?;
+        let confirm_state = ConfirmState {
+            yes: None,
+        };
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
-            .insert(state)
-            .insert(NodeBundle::default());
+            .insert(confirm_state)
+            .insert(state);
 
+        context.world.flush();
         Ok(Confirm {
-            message: path,
+            message: props,
             init: None
         })
     }
@@ -140,6 +144,14 @@ pub enum AskyState {
 #[derive(Component)]
 struct ConfirmState {
     pub yes: Option<bool>,
+}
+
+impl From<&Confirm> for ConfirmState {
+    fn from(confirm: &Confirm) -> Self {
+        ConfirmState {
+            yes: confirm.init
+        }
+    }
 }
 
 /// Asky errors

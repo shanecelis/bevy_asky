@@ -1,4 +1,5 @@
 use crate::{AskyState, Confirm, ConfirmState};
+use crate::construct::*;
 use bevy::prelude::*;
 
 pub struct AsciiViewPlugin;
@@ -8,28 +9,26 @@ impl Plugin for AsciiViewPlugin {
         app.add_systems(Update, confirm_view);
     }
 }
+
 fn confirm_view(
     mut query: Query<
-        (Entity, &mut AskyState, &Confirm, &ConfirmState),
-        Or<(Changed<AskyState>, Changed<ConfirmState>)>,
+        (&AskyState, &ConfirmState, &mut Text),
+        (With<View<Confirm>>, Or<(Changed<AskyState>, Changed<ConfirmState>)>)
     >,
-    mut text: Query<&mut Text>,
-    mut commands: Commands,
 ) {
-    for (id, mut state, confirm, confirm_state) in query.iter_mut() {
+    for (mut state, confirm_state, mut text) in query.iter_mut() {
         match *state {
             AskyState::Frozen | AskyState::Uninit => (),
             ref asky_state => {
                 eprint!(".");
-                let text = format!(
-                    "[{}] {} {}",
+                text.sections[0].value.replace_range(1..=1,
                     match asky_state {
                         AskyState::Reading => " ",
                         AskyState::Complete => "x",
                         AskyState::Error => "!",
                         _ => unreachable!(),
-                    },
-                    confirm.message.as_ref(),
+                    });
+                text.sections[3].value.replace_range(..,
                     if matches!(asky_state, AskyState::Complete) {
                         match confirm_state.yes {
                             Some(true) => "Yes",
@@ -44,12 +43,38 @@ fn confirm_view(
                         }
                     }
                 );
-                let new_child = commands.spawn(TextBundle::from(text)).id();
-                commands
-                    .entity(id)
-                    .despawn_descendants()
-                    .replace_children(&[new_child]);
             }
         }
+    }
+}
+
+#[derive(Component)]
+pub struct View<T>(T);
+
+
+impl Construct for View<Confirm> {
+    type Props = <Confirm as Construct>::Props;
+
+    fn construct(
+        context: &mut ConstructContext,
+        props: Self::Props,
+    ) -> Result<Self, ConstructError> {
+        // Our requirements.
+        let confirm: Confirm = context.construct(props)?;
+        let mut commands = context.world.commands();
+        commands
+            .entity(context.id)
+            .insert(TextBundle {
+                text: Text::from_sections(
+                    ["[_] ".into(), // 0
+                     confirm.message.to_string().into(), // 1
+                     " ".into(), // 2
+                     "_".into()  // 3
+                    ]),
+                ..default()
+            });
+        context.world.flush();
+
+        Ok(View(confirm))
     }
 }
