@@ -3,8 +3,6 @@ use super::*;
 use crate::{AskyState, Confirm, ConfirmState};
 use bevy::prelude::*;
 
-pub struct ColorViewPlugin;
-
 #[derive(Debug, Resource, Component)]
 struct ColorView {
     text_color: Srgba,
@@ -28,11 +26,9 @@ impl Default for ColorView {
     }
 }
 
-impl Plugin for ColorViewPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(Update, confirm_view)
-            .insert_resource(ColorView::default());
-    }
+pub fn plugin(app: &mut App) {
+    app.add_systems(Update, confirm_view)
+        .insert_resource(ColorView::default());
 }
 
 pub(crate) fn confirm_view(

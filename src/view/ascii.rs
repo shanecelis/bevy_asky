@@ -2,12 +2,8 @@ use crate::construct::*;
 use crate::{AskyState, Confirm, ConfirmState};
 use bevy::prelude::*;
 
-pub struct AsciiViewPlugin;
-
-impl Plugin for AsciiViewPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(Update, confirm_view);
-    }
+pub fn plugin(app: &mut App) {
+    app.add_systems(Update, confirm_view);
 }
 
 pub(crate) fn confirm_view(

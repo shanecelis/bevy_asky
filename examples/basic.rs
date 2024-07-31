@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_asky::{construct::*, *};
 // use crate::view::ascii::*;
-use bevy_asky::view::color::*;
+use bevy_asky::view::button::*;
 
 use bevy::{
     color::palettes::css::GOLD,
@@ -11,9 +11,9 @@ use bevy::{
 fn main() {
     App::new()
         .add_plugins((DefaultPlugins, FrameTimeDiagnosticsPlugin, AskyPlugin))
-        // .add_plugins(view::ascii::AsciiViewPlugin)
-        .add_plugins(view::color::ColorViewPlugin)
-        // .add_plugins(view::ButtonViewPlugin)
+        // .add_plugins(view::ascii::plugin)
+        // .add_plugins(view::color::plugin)
+        .add_plugins(view::button::plugin)
         .add_systems(Startup, setup)
         .add_systems(Update, (text_update_system, text_color_system, read_keys))
         .run();
@@ -54,9 +54,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
 
     commands
-        .construct::<View<Confirm>>("Do thing ASDF?".into())
+        .construct::<View<Confirm>>("Do thing?".into())
         .observe(|trigger: Trigger<AskyEvent<bool>>| {
-            eprintln!("got trigger for {:?}", trigger.event());
+            eprintln!("trigger {:?}", trigger.event());
         });
     // commands
     //     .spawn((

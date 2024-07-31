@@ -1,12 +1,11 @@
 use bevy::prelude::*;
 
 pub mod ascii;
-mod button;
+pub mod button;
 pub mod click;
 pub mod color;
 pub(crate) mod interaction;
 pub(crate) mod widget;
-pub use button::*;
 
 #[derive(Component)]
 pub struct Question;

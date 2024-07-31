@@ -1,12 +1,12 @@
 use super::{
+    *,
     click::{self, Click},
     widget::*,
 };
+use crate::construct::*;
 use crate::{AskyEvent, AskyState, Confirm, ConfirmState};
 use bevy::{color::palettes::basic::*, prelude::*};
 use std::collections::HashMap;
-
-pub struct ButtonViewPlugin;
 
 #[derive(Debug, Resource, Component)]
 struct ButtonView {
@@ -31,12 +31,11 @@ impl Default for ButtonView {
     }
 }
 
-impl Plugin for ButtonViewPlugin {
-    fn build(&self, app: &mut App) {
-        click::plugin(app);
-        app.add_systems(Update, (button_interaction, confirm_view))
-            .insert_resource(ButtonView::default());
-    }
+pub fn plugin(app: &mut App) {
+    click::plugin(app);
+    app
+        .insert_resource(ButtonView::default())
+        .add_systems(Update, (button_interaction, confirm_view));
 }
 
 fn setup_view(
@@ -331,43 +330,93 @@ fn button_interaction(
     }
 }
 
-// fn button_view(
-//     mut interaction_query: Query<
-//         (
-//             &mut BackgroundColor,
-//             &mut BorderColor,
-//             &ConfirmRef,
-//         ),
-//         (Changed<Interaction>, With<Button>),
-//     >,
-//     mut state_query: Query<(&mut ConfirmState, &mut AskyState)>,
-//     mut commands: Commands,
-// ) {
-//     for (interaction, mut color, mut border_color, children, confirm_ref) in &mut interaction_query {
-//         let (mut confirm_state, mut asky_state) = state_query.get_mut(confirm_ref.0).unwrap();
-//         match *interaction {
-//             Interaction::Pressed => {
-//                 confirm_state.yes = Some(confirm_ref.1);
-//                 commands.trigger_targets(AskyEvent(Ok(confirm_state.yes.unwrap())), confirm_ref.0);
-//                 *asky_state = AskyState::Complete;
-//                 *color = PRESSED_BUTTON.into();
-//                 border_color.0 = RED.into();
-//             }
-//             Interaction::Hovered => {
-//                 *color = HOVERED_BUTTON.into();
-//                 border_color.0 = Color::WHITE;
-//             }
-//             Interaction::None => {
-//                 *color = NORMAL_BUTTON.into();
-//                 border_color.0 = match confirm_state.yes {
-//                     None => Color::BLACK,
-//                     Some(yes) => if yes == confirm_ref.1 {
-//                         GREEN.into()
-//                     } else {
-//                         Color::BLACK
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
+
+#[derive(Component)]
+pub struct View<T>(T);
+
+impl Construct for View<Confirm> {
+    type Props = <Confirm as Construct>::Props;
+
+    fn construct(
+        context: &mut ConstructContext,
+        props: Self::Props,
+    ) -> Result<Self, ConstructError> {
+        // Our requirements.
+        let confirm: Confirm = context.construct(props)?;
+        let color_view =
+            context
+                .world
+                .get_resource::<ButtonView>()
+                .ok_or(ConstructError::MissingResource {
+                    message: "No ButtonView".into(),
+                })?;
+        let (bg_no, bg_yes) = (color_view.highlight, color_view.lowlight);
+        let answer_color = color_view.answer;
+
+        let id = context.id;
+        let mut commands = context.world.commands();
+        commands
+            .entity(context.id)
+            .insert(NodeBundle::default())
+            .with_children(|parent| {
+                parent.spawn((
+                    Question,
+                    TextBundle {
+                        text: Text::from_sections([
+                            "[_] ".into(),                      // 0
+                            confirm.message.to_string().into(), // 1
+                            " ".into(),                         // 2
+                        ]),
+                        ..default()
+                    },
+                ));
+
+                parent.spawn((
+                    Answer::<bool>::Final,
+                    TextBundle {
+                        text: Text::from_sections([
+                            TextSection::new(
+                                "",
+                                TextStyle {
+                                    color: answer_color.into(),
+                                    ..default()
+                                },
+                            ),
+                        ]),
+                        ..default()
+                    },
+                ));
+                parent.button(" No ", &Palette::default())
+                      .insert(Answer::Selection(false))
+                      .observe(
+                        move |trigger: Trigger<Click>,
+                                mut query: Query<(&mut AskyState, &mut ConfirmState)>,
+                                mut commands: Commands| {
+                            let (mut asky_state, mut confirm_state) =
+                                query.get_mut(id).unwrap();
+                            *asky_state = AskyState::Complete;
+                            confirm_state.yes = Some(false);
+                            commands.trigger_targets(AskyEvent(Ok(false)), id);
+                        },
+                    );
+                parent.spawn(TextBundle::from_section(" ", TextStyle::default()));
+
+                parent.button(" Yes ", &Palette::default())
+                      .insert(Answer::Selection(false))
+                      .observe(
+                        move |trigger: Trigger<Click>,
+                                mut query: Query<(&mut AskyState, &mut ConfirmState)>,
+                                mut commands: Commands| {
+                            let (mut asky_state, mut confirm_state) =
+                                query.get_mut(id).unwrap();
+                            *asky_state = AskyState::Complete;
+                            confirm_state.yes = Some(true);
+                            commands.trigger_targets(AskyEvent(Ok(true)), id);
+                        },
+                    );
+            });
+        context.world.flush();
+
+        Ok(View(confirm))
+    }
+}
