@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_asky::{*, construct::*};
+use bevy_asky::{construct::*, *};
 // use crate::view::ascii::*;
 use bevy_asky::view::color::*;
 
@@ -98,12 +98,10 @@ fn text_color_system(time: Res<Time>, mut query: Query<&mut Text, With<ColorText
     }
 }
 
-fn read_keys(input: Res<ButtonInput<KeyCode>>,
-             mut query: Query<&mut AskyState>) {
+fn read_keys(input: Res<ButtonInput<KeyCode>>, mut query: Query<&mut AskyState>) {
     if input.just_pressed(KeyCode::KeyR) {
         for mut state in query.iter_mut() {
             *state = AskyState::Reading;
-
         }
     }
 }

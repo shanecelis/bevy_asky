@@ -1,5 +1,5 @@
-use crate::{AskyState, Confirm, ConfirmState};
 use crate::construct::*;
+use crate::{AskyState, Confirm, ConfirmState};
 use bevy::prelude::*;
 
 pub struct AsciiViewPlugin;
@@ -10,10 +10,13 @@ impl Plugin for AsciiViewPlugin {
     }
 }
 
-pub (crate) fn confirm_view(
+pub(crate) fn confirm_view(
     mut query: Query<
         (&AskyState, &ConfirmState, &mut Text),
-        (With<View<Confirm>>, Or<(Changed<AskyState>, Changed<ConfirmState>)>)
+        (
+            With<View<Confirm>>,
+            Or<(Changed<AskyState>, Changed<ConfirmState>)>,
+        ),
     >,
 ) {
     for (mut state, confirm_state, mut text) in query.iter_mut() {
@@ -21,14 +24,17 @@ pub (crate) fn confirm_view(
             AskyState::Frozen | AskyState::Uninit => (),
             ref asky_state => {
                 eprint!(".");
-                text.sections[0].value.replace_range(1..=1,
+                text.sections[0].value.replace_range(
+                    1..=1,
                     match asky_state {
                         AskyState::Reading => " ",
                         AskyState::Complete => "x",
                         AskyState::Error => "!",
                         _ => unreachable!(),
-                    });
-                text.sections[3].value.replace_range(..,
+                    },
+                );
+                text.sections[3].value.replace_range(
+                    ..,
                     if matches!(asky_state, AskyState::Complete) {
                         match confirm_state.yes {
                             Some(true) => "Yes",
@@ -41,7 +47,7 @@ pub (crate) fn confirm_view(
                             Some(false) => "y/N",
                             None => "y/n",
                         }
-                    }
+                    },
                 );
             }
         }
@@ -50,7 +56,6 @@ pub (crate) fn confirm_view(
 
 #[derive(Component)]
 pub struct View<T>(pub T);
-
 
 impl Construct for View<Confirm> {
     type Props = <Confirm as Construct>::Props;
@@ -62,17 +67,15 @@ impl Construct for View<Confirm> {
         // Our requirements.
         let confirm: Confirm = context.construct(props)?;
         let mut commands = context.world.commands();
-        commands
-            .entity(context.id)
-            .insert(TextBundle {
-                text: Text::from_sections(
-                    ["[_] ".into(), // 0
-                     confirm.message.to_string().into(), // 1
-                     " ".into(), // 2
-                     "".into()  // 3
-                    ]),
-                ..default()
-            });
+        commands.entity(context.id).insert(TextBundle {
+            text: Text::from_sections([
+                "[_] ".into(),                      // 0
+                confirm.message.to_string().into(), // 1
+                " ".into(),                         // 2
+                "".into(),                          // 3
+            ]),
+            ..default()
+        });
         context.world.flush();
 
         Ok(View(confirm))

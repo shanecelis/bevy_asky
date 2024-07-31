@@ -36,9 +36,8 @@
 //!             eprintln!("Clicked on {}", trigger.entity()));
 //! }
 //! ```
-use bevy::prelude::*;
 use bevy::ecs::entity::EntityHashMap;
-
+use bevy::prelude::*;
 
 /// Adds a system that triggers a [Click] event when [Button] with an
 /// [Interaction] component is pressed and released.

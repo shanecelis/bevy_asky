@@ -40,9 +40,7 @@ impl Plugin for ButtonViewPlugin {
 }
 
 fn setup_view(
-    mut query: Query<
-        (Entity, &mut AskyState, &Confirm, &ConfirmState),
-        Without<Children>>,
+    mut query: Query<(Entity, &mut AskyState, &Confirm, &ConfirmState), Without<Children>>,
     color_view: Res<ButtonView>,
     mut text: Query<&mut Text>,
     mut commands: Commands,
@@ -297,9 +295,7 @@ fn button_interaction(
     mut commands: Commands,
     mut last_state: Local<HashMap<Entity, Interaction>>,
 ) {
-    for (id, interaction, mut color, mut border_color, parent) in
-        &mut interaction_query
-    {
+    for (id, interaction, mut color, mut border_color, parent) in &mut interaction_query {
         let (mut confirm_state, mut asky_state) = state_query.get_mut(parent.get()).unwrap();
         let last = last_state.get(&id);
         dbg!(id.index(), *interaction);
@@ -323,7 +319,7 @@ fn button_interaction(
                     None => Color::BLACK,
                     Some(yes) => {
                         // if yes == confirm_ref.1 {
-                            GREEN.into()
+                        GREEN.into()
                         // } else {
                         //     Color::BLACK
                         // }
@@ -375,4 +371,3 @@ fn button_interaction(
 //         }
 //     }
 // }
-

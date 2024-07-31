@@ -1,11 +1,11 @@
+use crate::construct::*;
 use bevy::{
     ecs::component::{ComponentHooks, StorageType},
     prelude::*,
 };
-use crate::construct::*;
 use std::borrow::Cow;
-pub mod view;
 pub mod construct;
+pub mod view;
 
 pub struct AskyPlugin;
 
@@ -89,7 +89,7 @@ pub struct Confirm {
 }
 
 impl Construct for Confirm {
-    type Props = Cow<'static,str>;
+    type Props = Cow<'static, str>;
 
     fn construct(
         context: &mut ConstructContext,
@@ -97,9 +97,7 @@ impl Construct for Confirm {
     ) -> Result<Self, ConstructError> {
         // Our requirements.
         let state: AskyState = context.construct(AskyState::default())?;
-        let confirm_state = ConfirmState {
-            yes: None,
-        };
+        let confirm_state = ConfirmState { yes: None };
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
@@ -109,7 +107,7 @@ impl Construct for Confirm {
         context.world.flush();
         Ok(Confirm {
             message: props,
-            init: None
+            init: None,
         })
     }
 }
@@ -148,9 +146,7 @@ struct ConfirmState {
 
 impl From<&Confirm> for ConfirmState {
     fn from(confirm: &Confirm) -> Self {
-        ConfirmState {
-            yes: confirm.init
-        }
+        ConfirmState { yes: confirm.init }
     }
 }
 

@@ -1,8 +1,5 @@
 //! Playing around with [Cart's proposal](https://github.com/bevyengine/bevy/discussions/14437).
-use bevy::{
-    prelude::*,
-    asset::AssetPath,
-};
+use bevy::{asset::AssetPath, prelude::*};
 use std::borrow::Cow;
 use thiserror::Error;
 
@@ -14,18 +11,19 @@ pub enum ConstructError {
     MissingResource { message: Cow<'static, str> },
 }
 
-pub struct Requirements {
-
-}
+pub struct Requirements {}
 
 pub enum ConstructProp<T: Construct> {
     Value(T),
-    Prop(T::Props)
+    Prop(T::Props),
 }
 
 pub trait Construct: Sized {
     type Props: Default + Clone;
-    fn construct(context: &mut ConstructContext, props: Self::Props) -> Result<Self, ConstructError>;
+    fn construct(
+        context: &mut ConstructContext,
+        props: Self::Props,
+    ) -> Result<Self, ConstructError>;
 }
 
 pub struct ConstructContext<'a> {
@@ -34,7 +32,10 @@ pub struct ConstructContext<'a> {
 }
 
 impl<'a> ConstructContext<'a> {
-    pub fn construct<T: Construct>(&mut self, props: impl Into<T::Props>) -> Result<T, ConstructError> {
+    pub fn construct<T: Construct>(
+        &mut self,
+        props: impl Into<T::Props>,
+    ) -> Result<T, ConstructError> {
         T::construct(self, props.into())
     }
 }
@@ -56,33 +57,39 @@ impl<'a> ConstructContext<'a> {
 // }
 
 pub trait ConstructExt {
-    fn construct<T: Construct + Component>(&mut self, props: T::Props) -> &mut Self where <T as Construct>::Props: Send;
+    fn construct<T: Construct + Component>(&mut self, props: T::Props) -> &mut Self
+    where
+        <T as Construct>::Props: Send;
 }
 
 struct ConstructCommand<T: Construct>(T::Props);
 
 impl<T: Construct + Component> bevy::ecs::system::EntityCommand for ConstructCommand<T>
-where <T as Construct>::Props: Send {
+where
+    <T as Construct>::Props: Send,
+{
     fn apply(self, id: Entity, world: &mut World) {
-        let mut context = ConstructContext {
-            id,
-            world
-        };
+        let mut context = ConstructContext { id, world };
         let c = T::construct(&mut context, self.0).expect("component");
         world.entity_mut(id).insert(c);
     }
 }
 
 impl ConstructExt for Commands<'_, '_> {
-    fn construct<T: Construct + Component>(&mut self, props: T::Props) -> &mut Self where <T as Construct>::Props: Send {
-        self.spawn_empty()
-            .add(ConstructCommand::<T>(props));
+    fn construct<T: Construct + Component>(&mut self, props: T::Props) -> &mut Self
+    where
+        <T as Construct>::Props: Send,
+    {
+        self.spawn_empty().add(ConstructCommand::<T>(props));
         self
     }
 }
 
 impl ConstructExt for bevy::ecs::system::EntityCommands<'_> {
-    fn construct<T: Construct + Component>(&mut self, props: T::Props) -> &mut Self where <T as Construct>::Props: Send {
+    fn construct<T: Construct + Component>(&mut self, props: T::Props) -> &mut Self
+    where
+        <T as Construct>::Props: Send,
+    {
         self.add(ConstructCommand::<T>(props));
         self
     }
@@ -91,7 +98,10 @@ impl ConstructExt for bevy::ecs::system::EntityCommands<'_> {
 impl<T: Default + Clone> Construct for T {
     type Props = T;
     #[inline]
-    fn construct(context: &mut ConstructContext, props: Self::Props) -> Result<Self, ConstructError> {
+    fn construct(
+        context: &mut ConstructContext,
+        props: Self::Props,
+    ) -> Result<Self, ConstructError> {
         Ok(props)
     }
 }

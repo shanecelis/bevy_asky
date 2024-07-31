@@ -1,6 +1,6 @@
+use crate::construct::*;
 use crate::{AskyState, Confirm, ConfirmState};
 use bevy::prelude::*;
-use crate::construct::*;
 
 pub struct ColorViewPlugin;
 
@@ -34,11 +34,13 @@ impl Plugin for ColorViewPlugin {
     }
 }
 
-
-pub (crate) fn confirm_view(
+pub(crate) fn confirm_view(
     mut query: Query<
         (&AskyState, &ConfirmState, &Children),
-        (With<View<Confirm>>, Or<(Changed<AskyState>, Changed<ConfirmState>)>)
+        (
+            With<View<Confirm>>,
+            Or<(Changed<AskyState>, Changed<ConfirmState>)>,
+        ),
     >,
     mut question: Query<&mut Text, With<Question>>,
     mut answers: Query<(&mut BackgroundColor, &mut Visibility, &Answer<bool>)>,
@@ -52,51 +54,55 @@ pub (crate) fn confirm_view(
 
                 for child in children {
                     if let Ok(mut text) = question.get_mut(*child) {
-                let highlight = TextStyle {
-                    color: if matches!(asky_state, AskyState::Reading) {
-                        color_view.highlight.into()
-                    } else {
-                        color_view.complete.into()
-                    },
-                    ..default()
-                };
-                text.sections[0].value.replace_range(1..=1,
-                    match asky_state {
-                        AskyState::Reading => " ",
-                        AskyState::Complete => "x",
-                        AskyState::Error => "!",
-                        _ => unreachable!(),
-                    });
-                text.sections[0].style = highlight;
+                        let highlight = TextStyle {
+                            color: if matches!(asky_state, AskyState::Reading) {
+                                color_view.highlight.into()
+                            } else {
+                                color_view.complete.into()
+                            },
+                            ..default()
+                        };
+                        text.sections[0].value.replace_range(
+                            1..=1,
+                            match asky_state {
+                                AskyState::Reading => " ",
+                                AskyState::Complete => "x",
+                                AskyState::Error => "!",
+                                _ => unreachable!(),
+                            },
+                        );
+                        text.sections[0].style = highlight;
 
-                if matches!(asky_state, AskyState::Complete) {
-                    text.sections[3].value.replace_range(..,
-                        match confirm_state.yes {
-                            Some(true) => " Yes",
-                            Some(false) => " No",
-                            None => unreachable!(),
-                        });
-                    text.sections[3].style.color = color_view.answer.into();
-                } else {
-                    let (bg_no, bg_yes) = if confirm_state.yes.unwrap_or(false) {
-                        (color_view.lowlight, color_view.highlight)
-                    } else {
-                        (color_view.highlight, color_view.lowlight)
-                    };
+                        if matches!(asky_state, AskyState::Complete) {
+                            text.sections[3].value.replace_range(
+                                ..,
+                                match confirm_state.yes {
+                                    Some(true) => " Yes",
+                                    Some(false) => " No",
+                                    None => unreachable!(),
+                                },
+                            );
+                            text.sections[3].style.color = color_view.answer.into();
+                        } else {
+                            let (bg_no, bg_yes) = if confirm_state.yes.unwrap_or(false) {
+                                (color_view.lowlight, color_view.highlight)
+                            } else {
+                                (color_view.highlight, color_view.lowlight)
+                            };
+                        }
 
-                }
-
-                if matches!(asky_state, AskyState::Complete) {
-                    text.sections[3].value.replace_range(..,
-                                                         match confirm_state.yes {
-                                                             Some(true) => "Yes",
-                                                             Some(false) => "No",
-                                                             None => unreachable!(),
-                                                         })
-                }
-
+                        if matches!(asky_state, AskyState::Complete) {
+                            text.sections[3].value.replace_range(
+                                ..,
+                                match confirm_state.yes {
+                                    Some(true) => "Yes",
+                                    Some(false) => "No",
+                                    None => unreachable!(),
+                                },
+                            )
+                        }
                     }
-                // for (mut background, mut visibility) in answers.iter_many_mut(children) {
+                    // for (mut background, mut visibility) in answers.iter_many_mut(children) {
                     if let Ok((mut background, mut visibility, answer)) = answers.get_mut(*child) {
                         if matches!(asky_state, AskyState::Complete) {
                             *visibility = Visibility::Hidden;
@@ -112,13 +118,10 @@ pub (crate) fn confirm_view(
                                 *background = bg_yes.into();
                             }
                         }
-
                     }
 
-
-                // }
+                    // }
                 }
-
             }
         }
     }
@@ -171,7 +174,6 @@ pub (crate) fn confirm_view(
 //                             None => unreachable!(),
 //                         },
 //                     ));
-
 
 //                         TextStyle {
 //                             color: color_view.answer.into(),
@@ -231,7 +233,13 @@ impl Construct for View<Confirm> {
         // Our requirements.
         let confirm: Confirm = context.construct(props)?;
         // let answer_color = context.world.get_resource::<ColorView>()?;
-        let color_view = context.world.get_resource::<ColorView>().ok_or(ConstructError::MissingResource { message: "No ColorView".into() })?;
+        let color_view =
+            context
+                .world
+                .get_resource::<ColorView>()
+                .ok_or(ConstructError::MissingResource {
+                    message: "No ColorView".into(),
+                })?;
         let (bg_no, bg_yes) = (color_view.highlight, color_view.lowlight);
         let answer_color = color_view.answer;
 
@@ -240,26 +248,35 @@ impl Construct for View<Confirm> {
             .entity(context.id)
             .insert(NodeBundle::default())
             .with_children(|parent| {
-                parent.spawn((Question,
-                              TextBundle {
-                                  text: Text::from_sections(
-                                      ["[_] ".into(), // 0
-                                       confirm.message.to_string().into(), // 1
-                                       " ".into(), // 2
-                                       TextSection::new("",
-                                                        TextStyle {
-                                                            color: answer_color.into(),
-                                                            ..default()
-                                                        }) // 3
-                                      ]),
-                                  ..default()
-                              }));
-                parent.spawn((Answer(false), TextBundle::from_section(" No ", TextStyle::default())
-                             .with_background_color(bg_no.into())));
+                parent.spawn((
+                    Question,
+                    TextBundle {
+                        text: Text::from_sections([
+                            "[_] ".into(),                      // 0
+                            confirm.message.to_string().into(), // 1
+                            " ".into(),                         // 2
+                            TextSection::new(
+                                "",
+                                TextStyle {
+                                    color: answer_color.into(),
+                                    ..default()
+                                },
+                            ), // 3
+                        ]),
+                        ..default()
+                    },
+                ));
+                parent.spawn((
+                    Answer(false),
+                    TextBundle::from_section(" No ", TextStyle::default())
+                        .with_background_color(bg_no.into()),
+                ));
                 parent.spawn(TextBundle::from_section(" ", TextStyle::default()));
-                parent.spawn((Answer(true), TextBundle::from_section(" Yes ", TextStyle::default())
-                             .with_background_color(bg_yes.into())));
-
+                parent.spawn((
+                    Answer(true),
+                    TextBundle::from_section(" Yes ", TextStyle::default())
+                        .with_background_color(bg_yes.into()),
+                ));
             });
         context.world.flush();
 
