@@ -38,242 +38,6 @@ pub fn plugin(app: &mut App) {
         .add_systems(Update, (button_interaction, confirm_view));
 }
 
-fn setup_view(
-    mut query: Query<(Entity, &mut AskyState, &Confirm, &ConfirmState), Without<Children>>,
-    color_view: Res<ButtonView>,
-    mut text: Query<&mut Text>,
-    mut commands: Commands,
-) {
-    for (id, mut state, confirm, confirm_state) in query.iter_mut() {
-        match *state {
-            AskyState::Frozen | AskyState::Uninit => (),
-            ref asky_state => {
-                eprint!(".");
-                let highlight = TextStyle {
-                    color: if matches!(asky_state, AskyState::Reading) {
-                        color_view.highlight.into()
-                    } else {
-                        color_view.complete.into()
-                    },
-                    ..default()
-                };
-
-                let mut bundles = vec![];
-                bundles.push(
-                    commands
-                        .spawn(TextBundle::from_sections([
-                            TextSection::new(
-                                format!(
-                                    "[{}] ",
-                                    match asky_state {
-                                        AskyState::Reading => " ",
-                                        AskyState::Complete => "x",
-                                        AskyState::Error => "!",
-                                        _ => unreachable!(),
-                                    }
-                                ),
-                                highlight.clone(),
-                            ),
-                            TextSection::new(confirm.message.as_ref(), TextStyle::default()),
-                        ]))
-                        .id(),
-                );
-
-                if matches!(asky_state, AskyState::Complete) {
-                    let id = commands
-                        .spawn(TextBundle::from_section(
-                            match confirm_state.yes {
-                                Some(true) => " Yes",
-                                Some(false) => " No",
-                                None => unreachable!(),
-                            },
-                            TextStyle {
-                                color: color_view.answer.into(),
-                                ..default()
-                            },
-                        ))
-                        .id();
-                    bundles.push(id);
-                } else {
-                    // bundles.push(commands.spawn(TextBundle::from_section(" ", TextStyle::default())).id());
-                    // let (bg_no, bg_yes) = if confirm_state.yes.unwrap_or(false) {
-                    //     (color_view.lowlight, color_view.highlight)
-                    // } else {
-                    //     (color_view.highlight, color_view.lowlight)
-                    // };
-
-                    // bundles.push(
-                    //     TextBundle::from_section(" No ", TextStyle::default())
-                    //         .with_background_color(bg_no.into()),
-                    // );
-                    // bundles.push(TextBundle::from_section(" ", TextStyle::default()));
-                    // bundles.push(
-                    //     TextBundle::from_section(" Yes ", TextStyle::default())
-                    //         .with_background_color(bg_yes.into()),
-                    // );
-                }
-                if !matches!(asky_state, AskyState::Complete | AskyState::Error) {
-                    bundles.push(
-                        commands
-                            .button(" No ", &Palette::default())
-                            .observe(
-                                move |trigger: Trigger<Click>,
-                                      mut query: Query<(&mut AskyState, &mut ConfirmState)>,
-                                      mut commands: Commands| {
-                                    let (mut asky_state, mut confirm_state) =
-                                        query.get_mut(id).unwrap();
-                                    *asky_state = AskyState::Complete;
-                                    confirm_state.yes = Some(false);
-                                    commands.trigger_targets(AskyEvent(Ok(false)), id);
-                                },
-                            )
-                            .id(),
-                    );
-                    bundles.push(
-                        commands
-                            .button(" Yes ", &Palette::default())
-                            .observe(
-                                move |trigger: Trigger<Click>,
-                                      mut query: Query<(&mut AskyState, &mut ConfirmState)>,
-                                      mut commands: Commands| {
-                                    let (mut asky_state, mut confirm_state) =
-                                        query.get_mut(id).unwrap();
-                                    *asky_state = AskyState::Complete;
-                                    confirm_state.yes = Some(true);
-                                    commands.trigger_targets(AskyEvent(Ok(true)), id);
-                                },
-                            )
-                            .id(),
-                    );
-                }
-                commands
-                    .entity(id)
-                    .despawn_descendants()
-                    .replace_children(&bundles);
-            }
-        }
-    }
-}
-fn confirm_view(
-    mut query: Query<
-        (Entity, &mut AskyState, &Confirm, &ConfirmState),
-        // Or<(Changed<AskyState>, Changed<ConfirmState>)>,
-        Changed<AskyState>,
-    >,
-    color_view: Res<ButtonView>,
-    mut text: Query<&mut Text>,
-    mut commands: Commands,
-) {
-    for (id, mut state, confirm, confirm_state) in query.iter_mut() {
-        match *state {
-            AskyState::Frozen | AskyState::Uninit => (),
-            ref asky_state => {
-                eprint!(".");
-                let highlight = TextStyle {
-                    color: if matches!(asky_state, AskyState::Reading) {
-                        color_view.highlight.into()
-                    } else {
-                        color_view.complete.into()
-                    },
-                    ..default()
-                };
-
-                let mut bundles = vec![];
-                bundles.push(
-                    commands
-                        .spawn(TextBundle::from_sections([
-                            TextSection::new(
-                                format!(
-                                    "[{}] ",
-                                    match asky_state {
-                                        AskyState::Reading => " ",
-                                        AskyState::Complete => "x",
-                                        AskyState::Error => "!",
-                                        _ => unreachable!(),
-                                    }
-                                ),
-                                highlight.clone(),
-                            ),
-                            TextSection::new(confirm.message.as_ref(), TextStyle::default()),
-                        ]))
-                        .id(),
-                );
-
-                if matches!(asky_state, AskyState::Complete) {
-                    let id = commands
-                        .spawn(TextBundle::from_section(
-                            match confirm_state.yes {
-                                Some(true) => " Yes",
-                                Some(false) => " No",
-                                None => unreachable!(),
-                            },
-                            TextStyle {
-                                color: color_view.answer.into(),
-                                ..default()
-                            },
-                        ))
-                        .id();
-                    bundles.push(id);
-                } else {
-                    // bundles.push(commands.spawn(TextBundle::from_section(" ", TextStyle::default())).id());
-                    // let (bg_no, bg_yes) = if confirm_state.yes.unwrap_or(false) {
-                    //     (color_view.lowlight, color_view.highlight)
-                    // } else {
-                    //     (color_view.highlight, color_view.lowlight)
-                    // };
-
-                    // bundles.push(
-                    //     TextBundle::from_section(" No ", TextStyle::default())
-                    //         .with_background_color(bg_no.into()),
-                    // );
-                    // bundles.push(TextBundle::from_section(" ", TextStyle::default()));
-                    // bundles.push(
-                    //     TextBundle::from_section(" Yes ", TextStyle::default())
-                    //         .with_background_color(bg_yes.into()),
-                    // );
-                }
-                if !matches!(asky_state, AskyState::Complete | AskyState::Error) {
-                    bundles.push(
-                        commands
-                            .button(" No ", &Palette::default())
-                            .observe(
-                                move |trigger: Trigger<Click>,
-                                      mut query: Query<(&mut AskyState, &mut ConfirmState)>,
-                                      mut commands: Commands| {
-                                    let (mut asky_state, mut confirm_state) =
-                                        query.get_mut(id).unwrap();
-                                    *asky_state = AskyState::Complete;
-                                    confirm_state.yes = Some(false);
-                                    commands.trigger_targets(AskyEvent(Ok(false)), id);
-                                },
-                            )
-                            .id(),
-                    );
-                    bundles.push(
-                        commands
-                            .button(" Yes ", &Palette::default())
-                            .observe(
-                                move |trigger: Trigger<Click>,
-                                      mut query: Query<(&mut AskyState, &mut ConfirmState)>,
-                                      mut commands: Commands| {
-                                    let (mut asky_state, mut confirm_state) =
-                                        query.get_mut(id).unwrap();
-                                    *asky_state = AskyState::Complete;
-                                    confirm_state.yes = Some(true);
-                                    commands.trigger_targets(AskyEvent(Ok(true)), id);
-                                },
-                            )
-                            .id(),
-                    );
-                }
-                commands
-                    .entity(id)
-                    .despawn_descendants()
-                    .replace_children(&bundles);
-            }
-        }
-    }
-}
 
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
@@ -297,7 +61,7 @@ fn button_interaction(
     for (id, interaction, mut color, mut border_color, parent) in &mut interaction_query {
         let (mut confirm_state, mut asky_state) = state_query.get_mut(parent.get()).unwrap();
         let last = last_state.get(&id);
-        dbg!(id.index(), *interaction);
+        // dbg!(id.index(), *interaction);
         match *interaction {
             Interaction::Pressed => {
                 // confirm_state.yes = Some(confirm_ref.1);
@@ -329,6 +93,85 @@ fn button_interaction(
         last_state.insert(id, *interaction);
     }
 }
+
+pub(crate) fn confirm_view(
+    mut query: Query<
+        (&AskyState, &ConfirmState, &Children),
+        (
+            With<View<Confirm>>,
+            Or<(Changed<AskyState>, Changed<ConfirmState>)>,
+        ),
+    >,
+    mut question: Query<&mut Text, With<Question>>,
+    mut answers: Query<(Option<&mut Text>, &mut BackgroundColor, &mut Visibility, &Answer<bool>), Without<Question>>,
+    color_view: Res<ButtonView>,
+) {
+    for (mut state, confirm_state, children) in query.iter_mut() {
+        match *state {
+            AskyState::Frozen | AskyState::Uninit => (),
+            ref asky_state => {
+                eprint!(".");
+
+                for child in children {
+                    if let Ok(mut text) = question.get_mut(*child) {
+                        let highlight = TextStyle {
+                            color: if matches!(asky_state, AskyState::Reading) {
+                                color_view.highlight.into()
+                            } else {
+                                color_view.complete.into()
+                            },
+                            ..default()
+                        };
+                        text.sections[0].value.replace_range(
+                            1..=1,
+                            match asky_state {
+                                AskyState::Reading => " ",
+                                AskyState::Complete => "x",
+                                AskyState::Error => "!",
+                                _ => unreachable!(),
+                            },
+                        );
+                        text.sections[0].style = highlight;
+
+                    }
+                    // for (mut background, mut visibility) in answers.iter_many_mut(children) {
+                    if let Ok((mut text, mut background, mut visibility, answer)) = answers.get_mut(*child) {
+                        let mut vis;
+                        match answer {
+                            Answer::Final => {
+                                vis = matches!(asky_state, AskyState::Complete);
+                                text.unwrap().sections[0].value.replace_range(
+                                    ..,
+                                    if vis {
+                                        match confirm_state.yes {
+                                            Some(true) => "Yes",
+                                            Some(false) => "No",
+                                            None => "N/A",
+                                        }
+                                    } else {
+                                        ""
+                                    },
+                                )
+                            }
+                            Answer::Selection(yes) => {
+                                vis = ! matches!(asky_state, AskyState::Complete);
+                                if vis {
+                                    *background = if confirm_state.yes.map(|x| x == *yes).unwrap_or(false) {
+                                        color_view.highlight
+                                    } else {
+                                        color_view.lowlight
+                                    }.into();
+                                }
+                            }
+                        }
+                        *visibility = if vis { Visibility::Visible } else { Visibility::Hidden };
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 
 #[derive(Component)]
@@ -402,7 +245,7 @@ impl Construct for View<Confirm> {
                 parent.spawn(TextBundle::from_section(" ", TextStyle::default()));
 
                 parent.button(" Yes ", &Palette::default())
-                      .insert(Answer::Selection(false))
+                      .insert(Answer::Selection(true))
                       .observe(
                         move |trigger: Trigger<Click>,
                                 mut query: Query<(&mut AskyState, &mut ConfirmState)>,
