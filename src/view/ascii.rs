@@ -1,6 +1,6 @@
 use crate::construct::*;
 use crate::{
-    prompt::{Confirm, ConfirmState, TextInput, LineInput},
+    prompt::{Confirm, ConfirmState, TextInput, TextInputState},
     AskyState,
 };
 use bevy::prelude::*;
@@ -56,10 +56,10 @@ pub(crate) fn confirm_view(
 
 pub(crate) fn text_view(
     mut query: Query<
-        (&AskyState, &LineInput, &mut Text),
+        (&AskyState, &TextInputState, &mut Text),
         (
             With<View<TextInput>>,
-            Or<(Changed<AskyState>, Changed<LineInput>)>,
+            Or<(Changed<AskyState>, Changed<TextInputState>)>,
         ),
     >,
 ) {

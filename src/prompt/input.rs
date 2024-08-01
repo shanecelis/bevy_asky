@@ -19,7 +19,7 @@ pub enum Direction {
 ///
 /// **Note**: This structure is not expected to be created, but it can be consumed when using a custom formatter.
 #[derive(Debug, PartialEq, Eq, Default, Component)]
-pub struct LineInput {
+pub struct TextInputState {
     /// Current value of the input.
     pub value: String,
     /// Current index of the cursor (kept on ut8 char boundaries).
@@ -30,7 +30,7 @@ pub fn plugin(app: &mut App) {
     app.add_systems(Update, text_controller);
 }
 
-impl LineInput {
+impl TextInputState {
     pub(crate) fn set_value(&mut self, value: impl Into<String>) {
         self.value = value.into();
         self.index = self.value.len();
@@ -126,7 +126,7 @@ pub struct TextInput {
     /// Message used to display in the prompt
     pub message: Cow<'static, str>,
     // TextInput state for the prompt
-    // pub input: LineInput,
+    // pub input: TextInputState,
     /// Placeholder to show when the input is empty
     pub placeholder: Option<Cow<'static, str>>,
     /// Default value to submit when the input is empty
@@ -138,7 +138,7 @@ pub struct TextInput {
 
 // pub struct TextInputState {
 //     /// TextInput state for the prompt
-//     pub input: LineInput,
+//     pub input: TextInputState,
 //     /// State of the validation of the user input
 //     // pub validator_result: Result<(), Cow<'a, str>>,
 //     // validator: Option<Box<InputValidator<'a>>>,
@@ -174,7 +174,7 @@ impl Construct for TextInput {
     ) -> Result<Self, ConstructError> {
         // Our requirements.
         let state: AskyState = context.construct(AskyState::default())?;
-        let input_state = LineInput::default();
+        let input_state = TextInputState::default();
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
@@ -220,7 +220,7 @@ impl TextInput {
 }
 
 fn text_controller(
-    mut query: Query<(Entity, &mut AskyState, &mut LineInput)>,
+    mut query: Query<(Entity, &mut AskyState, &mut TextInputState)>,
     mut input: EventReader<KeyboardInput>,
     mut commands: Commands,
     focus: Option<Res<Focus>>,
