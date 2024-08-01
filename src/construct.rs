@@ -57,7 +57,7 @@ impl<'a> ConstructContext<'a> {
 // }
 
 pub trait ConstructExt {
-    fn construct<T: Construct + Component>(&mut self, props: T::Props) -> &mut Self
+    fn construct<T: Construct + Component>(&mut self, props: impl Into<T::Props>) -> &mut Self
     where
         <T as Construct>::Props: Send;
 }
@@ -76,21 +76,31 @@ where
 }
 
 impl ConstructExt for Commands<'_, '_> {
-    fn construct<T: Construct + Component>(&mut self, props: T::Props) -> &mut Self
+    fn construct<T: Construct + Component>(&mut self, props: impl Into<T::Props>) -> &mut Self
     where
         <T as Construct>::Props: Send,
     {
-        self.spawn_empty().add(ConstructCommand::<T>(props));
+        self.spawn_empty().add(ConstructCommand::<T>(props.into()));
+        self
+    }
+}
+
+impl ConstructExt for ChildBuilder<'_> {
+    fn construct<T: Construct + Component>(&mut self, props: impl Into<T::Props>) -> &mut Self
+    where
+        <T as Construct>::Props: Send,
+    {
+        self.spawn_empty().add(ConstructCommand::<T>(props.into()));
         self
     }
 }
 
 impl ConstructExt for bevy::ecs::system::EntityCommands<'_> {
-    fn construct<T: Construct + Component>(&mut self, props: T::Props) -> &mut Self
+    fn construct<T: Construct + Component>(&mut self, props: impl Into<T::Props>) -> &mut Self
     where
         <T as Construct>::Props: Send,
     {
-        self.add(ConstructCommand::<T>(props));
+        self.add(ConstructCommand::<T>(props.into()));
         self
     }
 }

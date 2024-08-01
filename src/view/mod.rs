@@ -14,5 +14,5 @@ pub struct Question;
 // pub struct Answer<T>(T);
 pub enum Answer<T> {
     Selection(T),
-    Final//(Option<T>)
+    Final, //(Option<T>)
 }

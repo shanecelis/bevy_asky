@@ -1,7 +1,7 @@
 use bevy::prelude::*;
-use bevy_asky::{construct::*, *};
+use bevy_asky::{construct::*, prompt::*, view::*, *};
 // use crate::view::ascii::*;
-use bevy_asky::view::button::*;
+// use bevy_asky::view::button::*;
 
 use bevy::{
     color::palettes::css::GOLD,
@@ -11,8 +11,8 @@ use bevy::{
 fn main() {
     App::new()
         .add_plugins((DefaultPlugins, FrameTimeDiagnosticsPlugin, AskyPlugin))
-        // .add_plugins(view::ascii::plugin)
-        // .add_plugins(view::color::plugin)
+        .add_plugins(view::ascii::plugin)
+        .add_plugins(view::color::plugin)
         .add_plugins(view::button::plugin)
         .add_systems(Startup, setup)
         .add_systems(Update, (text_update_system, text_color_system, read_keys))
@@ -53,11 +53,43 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ColorText,
     ));
 
-    commands
-        .construct::<View<Confirm>>("Do thing?".into())
-        .observe(|trigger: Trigger<AskyEvent<bool>>| {
-            eprintln!("trigger {:?}", trigger.event());
-        });
+    let column = commands
+        .spawn(NodeBundle {
+            style: Style {
+                flex_direction: FlexDirection::Column,
+                ..default()
+            },
+            ..default()
+        })
+        .id();
+    commands.construct::<ascii::View<Confirm>>("What up?");
+
+    commands.entity(column).with_children(|parent| {
+        parent
+            .spawn_empty()
+            .construct::<ascii::View<Confirm>>("Do you like ascii?")
+            .observe(
+                move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
+                    eprintln!("trigger {:?}", trigger.event());
+                    let answer = trigger.event().as_ref().unwrap();
+                    commands.entity(column).with_children(|parent| {
+                        parent.spawn(TextBundle::from_section(
+                            if *answer {
+                                "Me too."
+                            } else {
+                                "We have other options."
+                            },
+                            TextStyle::default(),
+                        ));
+
+                    parent
+                        .spawn_empty()
+                        .construct::<color::View<Confirm>>("Do you prefer color?");
+                    });
+
+                },
+            );
+    });
     // commands
     //     .spawn((
     //         NodeBundle { ..default() },
@@ -68,7 +100,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     //         },
     //     ))
     //     .observe(|trigger: Trigger<AskyEvent<bool>>| {
-    //         eprintln!("got trigger for {:?}", trigger.event());
+    //         eprintln!("trigger {:?}", trigger.event());
     //     });
 
     commands.spawn(

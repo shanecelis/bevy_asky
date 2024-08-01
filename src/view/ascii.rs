@@ -1,5 +1,8 @@
 use crate::construct::*;
-use crate::{AskyState, Confirm, ConfirmState};
+use crate::{
+    prompt::{Confirm, ConfirmState},
+    AskyState,
+};
 use bevy::prelude::*;
 
 pub fn plugin(app: &mut App) {

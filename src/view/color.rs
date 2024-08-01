@@ -1,6 +1,9 @@
-use crate::construct::*;
 use super::*;
-use crate::{AskyState, Confirm, ConfirmState};
+use crate::construct::*;
+use crate::{
+    prompt::{Confirm, ConfirmState},
+    AskyEvent, AskyState,
+};
 use bevy::prelude::*;
 
 #[derive(Debug, Resource, Component)]
@@ -40,7 +43,15 @@ pub(crate) fn confirm_view(
         ),
     >,
     mut question: Query<&mut Text, With<Question>>,
-    mut answers: Query<(&mut Text, &mut BackgroundColor, &mut Visibility, &Answer<bool>), Without<Question>>,
+    mut answers: Query<
+        (
+            &mut Text,
+            &mut BackgroundColor,
+            &mut Visibility,
+            &Answer<bool>,
+        ),
+        Without<Question>,
+    >,
     color_view: Res<ColorView>,
 ) {
     for (mut state, confirm_state, children) in query.iter_mut() {
@@ -69,10 +80,11 @@ pub(crate) fn confirm_view(
                             },
                         );
                         text.sections[0].style = highlight;
-
                     }
                     // for (mut background, mut visibility) in answers.iter_many_mut(children) {
-                    if let Ok((mut text, mut background, mut visibility, answer)) = answers.get_mut(*child) {
+                    if let Ok((mut text, mut background, mut visibility, answer)) =
+                        answers.get_mut(*child)
+                    {
                         let mut vis;
                         match answer {
                             Answer::Final => {
@@ -91,17 +103,23 @@ pub(crate) fn confirm_view(
                                 )
                             }
                             Answer::Selection(yes) => {
-                                vis = ! matches!(asky_state, AskyState::Complete);
+                                vis = !matches!(asky_state, AskyState::Complete);
                                 if vis {
-                                    *background = if confirm_state.yes.map(|x| x == *yes).unwrap_or(false) {
-                                        color_view.highlight
-                                    } else {
-                                        color_view.lowlight
-                                    }.into();
+                                    *background =
+                                        if confirm_state.yes.map(|x| x == *yes).unwrap_or(false) {
+                                            color_view.highlight
+                                        } else {
+                                            color_view.lowlight
+                                        }
+                                        .into();
                                 }
                             }
                         }
-                        *visibility = if vis { Visibility::Visible } else { Visibility::Hidden };
+                        *visibility = if vis {
+                            Visibility::Visible
+                        } else {
+                            Visibility::Hidden
+                        };
                     }
                 }
             }
@@ -152,15 +170,13 @@ impl Construct for View<Confirm> {
                 parent.spawn((
                     Answer::<bool>::Final,
                     TextBundle {
-                        text: Text::from_sections([
-                            TextSection::new(
-                                "",
-                                TextStyle {
-                                    color: answer_color.into(),
-                                    ..default()
-                                },
-                            ),
-                        ]),
+                        text: Text::from_sections([TextSection::new(
+                            "",
+                            TextStyle {
+                                color: answer_color.into(),
+                                ..default()
+                            },
+                        )]),
                         ..default()
                     },
                 ));
