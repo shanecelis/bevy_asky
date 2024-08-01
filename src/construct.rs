@@ -19,7 +19,8 @@ pub enum ConstructProp<T: Construct> {
 }
 
 pub trait Construct: Sized {
-    type Props: Default + Clone;
+    // type Props: Default + Clone;
+    type Props: Clone;
     fn construct(
         context: &mut ConstructContext,
         props: Self::Props,

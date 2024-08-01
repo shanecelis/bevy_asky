@@ -1,12 +1,13 @@
 use crate::construct::*;
 use crate::{
-    prompt::{Confirm, ConfirmState},
+    prompt::{Confirm, ConfirmState, TextInput, LineInput},
     AskyState,
 };
 use bevy::prelude::*;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, confirm_view);
+    app.add_systems(Update, text_view);
 }
 
 pub(crate) fn confirm_view(
@@ -53,6 +54,38 @@ pub(crate) fn confirm_view(
     }
 }
 
+pub(crate) fn text_view(
+    mut query: Query<
+        (&AskyState, &LineInput, &mut Text),
+        (
+            With<View<TextInput>>,
+            Or<(Changed<AskyState>, Changed<LineInput>)>,
+        ),
+    >,
+) {
+    for (mut state, text_state, mut text) in query.iter_mut() {
+        match *state {
+            AskyState::Frozen | AskyState::Uninit => (),
+            ref asky_state => {
+                eprint!(".");
+                text.sections[0].value.replace_range(
+                    1..=1,
+                    match asky_state {
+                        AskyState::Reading => " ",
+                        AskyState::Complete => "x",
+                        AskyState::Error => "!",
+                        _ => unreachable!(),
+                    },
+                );
+                text.sections[2].value.replace_range(
+                    ..,
+                    &text_state.value
+                );
+            }
+        }
+    }
+}
+
 #[derive(Component)]
 pub struct View<T>(pub T);
 
@@ -78,5 +111,29 @@ impl Construct for View<Confirm> {
         context.world.flush();
 
         Ok(View(confirm))
+    }
+}
+
+impl Construct for View<TextInput> {
+    type Props = <TextInput as Construct>::Props;
+
+    fn construct(
+        context: &mut ConstructContext,
+        props: Self::Props,
+    ) -> Result<Self, ConstructError> {
+        // Our requirements.
+        let text_input: TextInput = context.construct(props)?;
+        let mut commands = context.world.commands();
+        commands.entity(context.id).insert(TextBundle {
+            text: Text::from_sections([
+                "[_] ".into(),                      // 0
+                text_input.message.to_string().into(), // 1
+                "".into(),                          // 2
+            ]),
+            ..default()
+        });
+        context.world.flush();
+
+        Ok(View(text_input))
     }
 }
