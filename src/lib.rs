@@ -54,6 +54,12 @@ pub enum AskyState {
     Error,
 }
 
+impl AskyState {
+    fn is_done(&self) -> bool {
+        matches!(self, AskyState::Complete | AskyState::Error)
+    }
+}
+
 /// Asky errors
 #[derive(Debug, thiserror::Error)]
 pub enum Error {

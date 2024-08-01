@@ -1,6 +1,6 @@
 use crate::construct::*;
 use crate::{
-    prompt::{Confirm, ConfirmState, TextInput, TextInputState},
+    prompt::{Confirm, ConfirmState, Input, InputState},
     AskyState,
 };
 use bevy::prelude::*;
@@ -56,10 +56,10 @@ pub(crate) fn confirm_view(
 
 pub(crate) fn text_view(
     mut query: Query<
-        (&AskyState, &TextInputState, &mut Text),
+        (&AskyState, &InputState, &mut Text),
         (
-            With<View<TextInput>>,
-            Or<(Changed<AskyState>, Changed<TextInputState>)>,
+            With<View<Input>>,
+            Or<(Changed<AskyState>, Changed<InputState>)>,
         ),
     >,
 ) {
@@ -114,15 +114,15 @@ impl Construct for View<Confirm> {
     }
 }
 
-impl Construct for View<TextInput> {
-    type Props = <TextInput as Construct>::Props;
+impl Construct for View<Input> {
+    type Props = <Input as Construct>::Props;
 
     fn construct(
         context: &mut ConstructContext,
         props: Self::Props,
     ) -> Result<Self, ConstructError> {
         // Our requirements.
-        let text_input: TextInput = context.construct(props)?;
+        let text_input: Input = context.construct(props)?;
         let mut commands = context.world.commands();
         commands.entity(context.id).insert(TextBundle {
             text: Text::from_sections([

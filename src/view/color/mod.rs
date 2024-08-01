@@ -5,6 +5,7 @@ use crate::{
 };
 use bevy::prelude::*;
 mod confirm;
+mod text;
 
 #[derive(Component)]
 pub struct View<T>(T);
@@ -33,6 +34,8 @@ impl Default for ColorView {
 }
 
 pub fn plugin(app: &mut App) {
-    app.add_plugins(confirm::plugin)
+    app
+        .add_plugins(confirm::plugin)
+        .add_plugins(text::plugin)
         .insert_resource(ColorView::default());
 }

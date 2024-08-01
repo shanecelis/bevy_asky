@@ -62,7 +62,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         })
         .id();
-    commands.construct::<ascii::View<TextInput>>("Name? ")
+    // commands.construct::<ascii::View<Input>>("Name? ")
+    commands.construct::<color::View<Input>>("Name? ")
             .observe(
                 move |trigger: Trigger<AskyEvent<String>>, mut commands: Commands| {
                     eprintln!("trigger {:?}", trigger.event());

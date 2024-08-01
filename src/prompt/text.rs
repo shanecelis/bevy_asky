@@ -15,11 +15,11 @@ pub enum Direction {
     Right,
 }
 
-/// State of the user input for read-line text prompts (like [`TextInput`]).
+/// State of the user input for read-line text prompts (like [`Input`]).
 ///
 /// **Note**: This structure is not expected to be created, but it can be consumed when using a custom formatter.
 #[derive(Debug, PartialEq, Eq, Default, Component)]
-pub struct TextInputState {
+pub struct InputState {
     /// Current value of the input.
     pub value: String,
     /// Current index of the cursor (kept on ut8 char boundaries).
@@ -30,7 +30,7 @@ pub fn plugin(app: &mut App) {
     app.add_systems(Update, text_controller);
 }
 
-impl TextInputState {
+impl InputState {
     pub(crate) fn set_value(&mut self, value: impl Into<String>) {
         self.value = value.into();
         self.index = self.value.len();
@@ -53,6 +53,14 @@ impl TextInputState {
         }
     }
 
+    pub(crate) fn next_index(&self) -> usize {
+        ceil_char_boundary(&self.value, self.index + 1)
+    }
+
+    pub(crate) fn prev_index(&self) -> usize {
+        floor_char_boundary(&self.value, self.index.saturating_sub(1))
+    }
+
     pub(crate) fn delete(&mut self) {
         if !self.value.is_empty() && self.index < self.value.len() {
             self.value.remove(self.index);
@@ -70,7 +78,7 @@ impl TextInputState {
     }
 }
 
-fn floor_char_boundary(s: &str, mut i: usize) -> usize {
+pub fn floor_char_boundary(s: &str, mut i: usize) -> usize {
     if i > s.len() {
         s.len()
     } else {
@@ -81,7 +89,7 @@ fn floor_char_boundary(s: &str, mut i: usize) -> usize {
     }
 }
 
-fn ceil_char_boundary(s: &str, mut i: usize) -> usize {
+pub fn ceil_char_boundary(s: &str, mut i: usize) -> usize {
     if i > s.len() {
         s.len()
     } else {
@@ -113,7 +121,7 @@ fn ceil_char_boundary(s: &str, mut i: usize) -> usize {
 ///
 /// # fn main() -> Result<(), Error> {
 /// # #[cfg(feature = "terminal")]
-/// let name = TextInput::new("What is your name?").prompt()?;
+/// let name = Input::new("What is your name?").prompt()?;
 ///
 /// # #[cfg(feature = "terminal")]
 /// println!("Hello, {}!", name);
@@ -122,11 +130,11 @@ fn ceil_char_boundary(s: &str, mut i: usize) -> usize {
 /// # }
 /// ```
 #[derive(Debug, Clone)]
-pub struct TextInput {
+pub struct Input {
     /// Message used to display in the prompt
     pub message: Cow<'static, str>,
-    // TextInput state for the prompt
-    // pub input: TextInputState,
+    // Input state for the prompt
+    // pub input: InputState,
     /// Placeholder to show when the input is empty
     pub placeholder: Option<Cow<'static, str>>,
     /// Default value to submit when the input is empty
@@ -136,16 +144,16 @@ pub struct TextInput {
     // validator: Option<Box<InputValidator<'a>>>,
 }
 
-// pub struct TextInputState {
-//     /// TextInput state for the prompt
-//     pub input: TextInputState,
+// pub struct InputState {
+//     /// Input state for the prompt
+//     pub input: InputState,
 //     /// State of the validation of the user input
 //     // pub validator_result: Result<(), Cow<'a, str>>,
 //     // validator: Option<Box<InputValidator<'a>>>,
 // }
 //
 
-impl From<Cow<'static, str>> for TextInput {
+impl From<Cow<'static, str>> for Input {
     fn from(message: Cow<'static, str>) -> Self {
         Self {
             message,
@@ -155,7 +163,7 @@ impl From<Cow<'static, str>> for TextInput {
     }
 }
 
-impl From<&'static str> for TextInput {
+impl From<&'static str> for Input {
     fn from(message: &'static str) -> Self {
         Self {
             message: message.into(),
@@ -165,8 +173,8 @@ impl From<&'static str> for TextInput {
     }
 }
 
-impl Construct for TextInput {
-    type Props = TextInput;
+impl Construct for Input {
+    type Props = Input;
 
     fn construct(
         context: &mut ConstructContext,
@@ -174,7 +182,7 @@ impl Construct for TextInput {
     ) -> Result<Self, ConstructError> {
         // Our requirements.
         let state: AskyState = context.construct(AskyState::default())?;
-        let input_state = TextInputState::default();
+        let input_state = InputState::default();
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
@@ -186,10 +194,10 @@ impl Construct for TextInput {
     }
 }
 
-impl TextInput {
+impl Input {
     /// Create a new text prompt.
     pub fn new(message: impl Into<Cow<'static, str>>) -> Self {
-        TextInput {
+        Input {
             message: message.into(),
             placeholder: None,
             default_value: None,
@@ -220,7 +228,7 @@ impl TextInput {
 }
 
 fn text_controller(
-    mut query: Query<(Entity, &mut AskyState, &mut TextInputState)>,
+    mut query: Query<(Entity, &mut AskyState, &mut InputState)>,
     mut input: EventReader<KeyboardInput>,
     mut commands: Commands,
     focus: Option<Res<Focus>>,
@@ -245,6 +253,7 @@ fn text_controller(
                                 text_state.insert(c);
                             }
                         }
+                        Key::Space => text_state.insert(' '),
                         Key::Backspace => text_state.backspace(),
                         Key::Delete => text_state.delete(),
                         Key::ArrowLeft => text_state.move_cursor(Direction::Left),
@@ -257,7 +266,7 @@ fn text_controller(
                             commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
                             *state = AskyState::Error;
                         }
-                        _ => todo!()
+                        x => eprintln!("Unhandled key {x:?}")
                     }
                 }
             }
