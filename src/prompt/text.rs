@@ -31,8 +31,9 @@ pub fn plugin(app: &mut App) {
 }
 
 impl InputState {
-    pub(crate) fn set_value(&mut self, value: impl Into<String>) {
-        self.value = value.into();
+    #[allow(dead_code)]
+    pub(crate) fn set_value(&mut self, value: &str) {
+        self.value.replace_range(.., value);
         self.index = self.value.len();
     }
 
@@ -45,11 +46,10 @@ impl InputState {
         if self.index >= self.value.len() {
             self.value.pop();
             self.index = self.value.len();
-        } else if self.index >= 0 {
+        } else {
             let start = floor_char_boundary(&self.value, self.index.saturating_sub(1));
             let _ = self.value.drain(start..self.index);
             self.index = start;
-            // self.index -= c.len_utf8();
         }
     }
 
@@ -71,9 +71,9 @@ impl InputState {
         self.index = match position {
             // TODO: When round_char_boundary is stabilized, use std's impl.
             // Direction::Left => self.value.floor_char_boundary(self.index.saturating_sub(1)),
-            Direction::Left => floor_char_boundary(&self.value, self.index.saturating_sub(1)),
+            Direction::Left => self.prev_index(),
             // Direction::Right => self.value.ceil_char_boundary(self.index + 1),
-            Direction::Right => ceil_char_boundary(&self.value, self.index + 1),
+            Direction::Right => self.next_index(),
         }
     }
 }

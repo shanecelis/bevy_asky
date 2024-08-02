@@ -26,7 +26,7 @@ struct FpsText;
 #[derive(Component)]
 struct ColorText;
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
     // Text with one section
@@ -121,9 +121,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     );
 }
 
-fn add_marker(query: Query<(Entity, &Children), With<InputState>>,
+fn add_marker(query: Query<&Children, With<InputState>>,
               mut commands: Commands) {
-    for (id, children) in query.iter() {
+    for children in query.iter() {
         for (i, child) in children.into_iter().enumerate() {
             if i >= 2 {
                 commands.entity(*child).insert(ColorText);

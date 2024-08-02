@@ -26,7 +26,7 @@ struct FpsText;
 #[derive(Component)]
 struct ColorText;
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
     // Text with one section

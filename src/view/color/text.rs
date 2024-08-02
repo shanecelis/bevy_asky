@@ -49,7 +49,7 @@ pub(crate) fn text_view(
                 eprint!(".");
 
                 for (i, child) in children.into_iter().enumerate() {
-                    let mut vis = true;
+                    let vis: bool;
                     if let Ok((mut text, mut visibility)) = text_query.get_mut(*child) {
                     match PromptPart::from_usize(i).expect("prompt part") {
                          Question => {
@@ -124,7 +124,6 @@ pub(crate) fn text_view(
                                     },
                                 );
                         }
-                        _ => ()
                     }
                     *visibility = if vis {
                         Visibility::Visible

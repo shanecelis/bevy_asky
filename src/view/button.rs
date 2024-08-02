@@ -12,13 +12,13 @@ use bevy::{color::palettes::basic::*};
 use std::collections::HashMap;
 
 #[derive(Debug, Resource, Component)]
-struct ButtonView {
-    text_color: Srgba,
-    background: Option<Srgba>,
-    highlight: Srgba,
-    complete: Srgba,
-    answer: Srgba,
-    lowlight: Srgba,
+pub struct ButtonView {
+    pub text_color: Srgba,
+    pub background: Option<Srgba>,
+    pub highlight: Srgba,
+    pub complete: Srgba,
+    pub answer: Srgba,
+    pub lowlight: Srgba,
 }
 
 impl Default for ButtonView {
@@ -56,12 +56,11 @@ fn button_interaction(
         (Changed<Interaction>, With<Button>, With<AskyElement>),
     >,
     mut state_query: Query<(&mut ConfirmState, &mut AskyState)>,
-    commands: Commands,
     mut last_state: Local<HashMap<Entity, Interaction>>,
 ) {
     for (id, interaction, mut color, mut border_color, parent) in &mut interaction_query {
-        let (confirm_state, asky_state) = state_query.get_mut(parent.get()).unwrap();
-        let last = last_state.get(&id);
+        let (confirm_state, _asky_state) = state_query.get_mut(parent.get()).unwrap();
+        // let last = last_state.get(&id);
         // dbg!(id.index(), *interaction);
         match *interaction {
             Interaction::Pressed => {
@@ -81,7 +80,7 @@ fn button_interaction(
                 *color = NORMAL_BUTTON.into();
                 border_color.0 = match confirm_state.yes {
                     None => Color::BLACK,
-                    Some(yes) => {
+                    Some(_yes) => {
                         // if yes == confirm_ref.1 {
                         GREEN.into()
                         // } else {
@@ -207,7 +206,6 @@ impl Construct for View<Confirm> {
                 .ok_or(ConstructError::MissingResource {
                     message: "No ButtonView".into(),
                 })?;
-        let (bg_no, bg_yes) = (color_view.highlight, color_view.lowlight);
         let answer_color = color_view.answer;
 
         let id = context.id;
@@ -245,7 +243,7 @@ impl Construct for View<Confirm> {
                     .button(" No ", &Palette::default())
                     .insert(Answer::Selection(false))
                     .observe(
-                        move |trigger: Trigger<Click>,
+                        move |_trigger: Trigger<Click>,
                               mut query: Query<(&mut AskyState, &mut ConfirmState)>,
                               mut commands: Commands| {
                             let (mut asky_state, mut confirm_state) = query.get_mut(id).unwrap();
@@ -260,7 +258,7 @@ impl Construct for View<Confirm> {
                     .button(" Yes ", &Palette::default())
                     .insert(Answer::Selection(true))
                     .observe(
-                        move |trigger: Trigger<Click>,
+                        move |_trigger: Trigger<Click>,
                               mut query: Query<(&mut AskyState, &mut ConfirmState)>,
                               mut commands: Commands| {
                             let (mut asky_state, mut confirm_state) = query.get_mut(id).unwrap();

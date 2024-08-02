@@ -110,7 +110,7 @@ impl<T: Default + Clone> Construct for T {
     type Props = T;
     #[inline]
     fn construct(
-        context: &mut ConstructContext,
+        _context: &mut ConstructContext,
         props: Self::Props,
     ) -> Result<Self, ConstructError> {
         Ok(props)
