@@ -125,8 +125,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 fn add_marker(query: Query<(Entity, &Children), With<InputState>>,
               mut commands: Commands) {
     for (id, children) in query.iter() {
-        for child in children {
-            commands.entity(*child).insert(ColorText);
+        for (i, child) in children.into_iter().enumerate() {
+            if i >= 2 {
+                commands.entity(*child).insert(ColorText);
+            }
         }
     }
 }
