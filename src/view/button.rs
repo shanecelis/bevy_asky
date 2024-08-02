@@ -8,7 +8,7 @@ use crate::{
     prompt::{Confirm, ConfirmState},
     AskyEvent, AskyState,
 };
-use bevy::{color::palettes::basic::*, prelude::*};
+use bevy::{color::palettes::basic::*};
 use std::collections::HashMap;
 
 #[derive(Debug, Resource, Component)]
@@ -56,11 +56,11 @@ fn button_interaction(
         (Changed<Interaction>, With<Button>, With<AskyElement>),
     >,
     mut state_query: Query<(&mut ConfirmState, &mut AskyState)>,
-    mut commands: Commands,
+    commands: Commands,
     mut last_state: Local<HashMap<Entity, Interaction>>,
 ) {
     for (id, interaction, mut color, mut border_color, parent) in &mut interaction_query {
-        let (mut confirm_state, mut asky_state) = state_query.get_mut(parent.get()).unwrap();
+        let (confirm_state, asky_state) = state_query.get_mut(parent.get()).unwrap();
         let last = last_state.get(&id);
         // dbg!(id.index(), *interaction);
         match *interaction {
@@ -115,7 +115,7 @@ pub(crate) fn confirm_view(
     >,
     color_view: Res<ButtonView>,
 ) {
-    for (mut state, confirm_state, children) in query.iter_mut() {
+    for (state, confirm_state, children) in query.iter_mut() {
         match *state {
             AskyState::Frozen | AskyState::Uninit => (),
             ref asky_state => {
@@ -143,10 +143,10 @@ pub(crate) fn confirm_view(
                         text.sections[0].style = highlight;
                     }
                     // for (mut background, mut visibility) in answers.iter_many_mut(children) {
-                    if let Ok((mut text, mut background, mut visibility, answer)) =
+                    if let Ok((text, mut background, mut visibility, answer)) =
                         answers.get_mut(*child)
                     {
-                        let mut vis;
+                        let vis;
                         match answer {
                             Answer::Final => {
                                 vis = matches!(asky_state, AskyState::Complete);

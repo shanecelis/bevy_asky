@@ -4,7 +4,6 @@ use bevy_asky::{construct::*, prompt::*, view::*, *};
 // use bevy_asky::view::button::*;
 
 use bevy::{
-    color::palettes::css::GOLD,
     diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
 };
 
@@ -65,7 +64,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // commands.construct::<ascii::View<Input>>("Name? ")
     commands.construct::<color::View<Input>>("Name? ")
             .observe(
-                move |trigger: Trigger<AskyEvent<String>>, mut commands: Commands| {
+                move |trigger: Trigger<AskyEvent<String>>, commands: Commands| {
                     eprintln!("trigger {:?}", trigger.event());
                 });
 

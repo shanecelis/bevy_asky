@@ -1,11 +1,8 @@
 use super::*;
-use crate::construct::*;
 use crate::{
     view::*,
-    prompt::{Confirm, ConfirmState},
-    AskyEvent, AskyState,
+    prompt::{Confirm, ConfirmState}, AskyState,
 };
-use bevy::prelude::*;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, confirm_view);
@@ -31,7 +28,7 @@ pub(crate) fn confirm_view(
     >,
     color_view: Res<ColorView>,
 ) {
-    for (mut state, confirm_state, children) in query.iter_mut() {
+    for (state, confirm_state, children) in query.iter_mut() {
         match *state {
             AskyState::Frozen | AskyState::Uninit => (),
             ref asky_state => {
@@ -62,7 +59,7 @@ pub(crate) fn confirm_view(
                     if let Ok((mut text, mut background, mut visibility, answer)) =
                         answers.get_mut(*child)
                     {
-                        let mut vis;
+                        let vis;
                         match answer {
                             Answer::Final => {
                                 vis = matches!(asky_state, AskyState::Complete);

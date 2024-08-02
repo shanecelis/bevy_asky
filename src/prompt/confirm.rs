@@ -68,7 +68,7 @@ fn confirm_controller(
     mut commands: Commands,
     focus: Option<Res<Focus>>,
 ) {
-    let focused = focus.map(|res| res.0.clone()).unwrap_or(None);
+    let focused = focus.map(|res| res.0).unwrap_or(None);
     for (id, mut state, mut confirm_state) in query.iter_mut() {
         if focused.map(|x| x != id).unwrap_or(false) {
             continue;

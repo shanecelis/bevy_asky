@@ -233,7 +233,7 @@ fn text_controller(
     mut commands: Commands,
     focus: Option<Res<Focus>>,
 ) {
-    let focused = focus.map(|res| res.0.clone()).unwrap_or(None);
+    let focused = focus.map(|res| res.0).unwrap_or(None);
     for (id, mut state, mut text_state) in query.iter_mut() {
         if focused.map(|x| x != id).unwrap_or(false) {
             continue;
@@ -285,12 +285,12 @@ mod test {
         assert_eq!(s.len(), 26);
         assert!(!s.is_char_boundary(13));
 
-        let closest = floor_char_boundary(&s, 13);
+        let closest = floor_char_boundary(s, 13);
         assert_eq!(closest, 10);
         assert_eq!(&s[..closest], "❤️🧡");
-        assert_eq!(floor_char_boundary(&s, 0), 0);
-        assert_eq!(floor_char_boundary(&s, 26), 26);
-        assert_eq!(floor_char_boundary(&s, 27), 26);
+        assert_eq!(floor_char_boundary(s, 0), 0);
+        assert_eq!(floor_char_boundary(s, 26), 26);
+        assert_eq!(floor_char_boundary(s, 27), 26);
     }
 
     #[test]
@@ -299,11 +299,11 @@ mod test {
         assert_eq!(s.len(), 26);
         assert!(!s.is_char_boundary(13));
 
-        let closest = ceil_char_boundary(&s, 13);
+        let closest = ceil_char_boundary(s, 13);
         assert_eq!(closest, 14);
         assert_eq!(&s[..closest], "❤️🧡💛");
-        assert_eq!(ceil_char_boundary(&s, 0), 0);
-        assert_eq!(ceil_char_boundary(&s, 26), 26);
-        assert_eq!(ceil_char_boundary(&s, 27), 26);
+        assert_eq!(ceil_char_boundary(s, 0), 0);
+        assert_eq!(ceil_char_boundary(s, 26), 26);
+        assert_eq!(ceil_char_boundary(s, 27), 26);
     }
 }

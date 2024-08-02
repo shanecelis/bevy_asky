@@ -19,7 +19,7 @@ pub(crate) fn confirm_view(
         ),
     >,
 ) {
-    for (mut state, confirm_state, mut text) in query.iter_mut() {
+    for (state, confirm_state, mut text) in query.iter_mut() {
         match *state {
             AskyState::Frozen | AskyState::Uninit => (),
             ref asky_state => {
@@ -63,7 +63,7 @@ pub(crate) fn text_view(
         ),
     >,
 ) {
-    for (mut state, text_state, mut text) in query.iter_mut() {
+    for (state, text_state, mut text) in query.iter_mut() {
         match *state {
             AskyState::Frozen | AskyState::Uninit => (),
             ref asky_state => {

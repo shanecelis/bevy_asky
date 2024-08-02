@@ -1,8 +1,4 @@
 use crate::construct::*;
-use crate::{
-    prompt::{Confirm, ConfirmState},
-    AskyEvent, AskyState,
-};
 use bevy::prelude::*;
 mod confirm;
 mod text;

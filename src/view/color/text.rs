@@ -1,11 +1,7 @@
 use super::*;
-use crate::construct::*;
 use crate::{
-    view::*,
-    prompt::{Input, InputState},
-    AskyEvent, AskyState,
+    prompt::{Input, InputState}, AskyState,
 };
-use bevy::prelude::*;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, text_view);
@@ -45,7 +41,7 @@ pub(crate) fn text_view(
     mut text_query: Query<(&mut Text, &mut Visibility)>,
     color_view: Res<ColorView>,
 ) {
-    for (mut state, text_state, children) in query.iter_mut() {
+    for (state, text_state, children) in query.iter_mut() {
         match *state {
             AskyState::Frozen | AskyState::Uninit => (),
             ref asky_state => {
@@ -192,12 +188,11 @@ impl Construct for View<Input> {
                 parent.spawn(( // 2
                     TextBundle::from_section("Pre", TextStyle::default()),
                 ));
-                parent.spawn(( // 3
-                              TextBundle::from_section("", TextStyle {
+                parent.spawn(TextBundle::from_section("", TextStyle {
                                   color: Color::BLACK,
                                   ..default()
                               })
-                              .with_background_color(Color::WHITE.into())));
+                              .with_background_color(Color::WHITE));
                 parent.spawn(( // 4
                     TextBundle::from_section("Post", TextStyle::default()),
                 ));

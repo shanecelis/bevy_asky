@@ -4,7 +4,6 @@ use bevy_asky::{construct::*, prompt::*, view::*, *};
 // use bevy_asky::view::button::*;
 
 use bevy::{
-    color::palettes::css::GOLD,
     diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
 };
 
