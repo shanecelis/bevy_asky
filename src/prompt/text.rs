@@ -266,7 +266,7 @@ fn text_controller(
                             commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
                             *state = AskyState::Error;
                         }
-                        x => eprintln!("Unhandled key {x:?}")
+                        x => info!("Unhandled key {x:?}")
                     }
                 }
             }

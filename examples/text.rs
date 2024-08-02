@@ -14,7 +14,7 @@ fn main() {
         .add_plugins(view::ascii::plugin)
         .add_plugins(view::color::plugin)
         .add_plugins(view::button::plugin)
-        .add_systems(Startup, setup)
+        .add_systems(Startup, (setup, add_marker).chain())
         .add_systems(Update, (text_update_system, text_color_system, read_keys))
         .run();
 }
@@ -120,6 +120,15 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
         ),
     );
+}
+
+fn add_marker(query: Query<(Entity, &Children), With<InputState>>,
+              mut commands: Commands) {
+    for (id, children) in query.iter() {
+        for child in children {
+            commands.entity(*child).insert(ColorText);
+        }
+    }
 }
 
 fn text_color_system(time: Res<Time>, mut query: Query<&mut Text, With<ColorText>>) {

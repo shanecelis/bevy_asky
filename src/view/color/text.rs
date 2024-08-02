@@ -11,6 +11,29 @@ pub fn plugin(app: &mut App) {
     app.add_systems(Update, text_view);
 }
 
+#[repr(u8)]
+enum PromptPart {
+    Question = 0,
+    Answer = 1,
+    PreCursor = 2,
+    Cursor = 3,
+    PostCursor = 4,
+}
+
+impl PromptPart {
+    pub fn from_usize(v: usize) -> Option<Self> {
+        use PromptPart::*;
+        match v {
+            0 => Some(Question),
+            1 => Some(Answer),
+            2 => Some(PreCursor),
+            3 => Some(Cursor),
+            4 => Some(PostCursor),
+            _ => None
+        }
+    }
+}
+
 pub(crate) fn text_view(
     mut query: Query<
         (&AskyState, &InputState, &Children),
@@ -26,13 +49,14 @@ pub(crate) fn text_view(
         match *state {
             AskyState::Frozen | AskyState::Uninit => (),
             ref asky_state => {
+                use PromptPart::*;
                 eprint!(".");
 
                 for (i, child) in children.into_iter().enumerate() {
                     let mut vis = true;
                     if let Ok((mut text, mut visibility)) = text_query.get_mut(*child) {
-                    match i {
-                        0 => {
+                    match PromptPart::from_usize(i).expect("prompt part") {
+                         Question => {
                             let highlight = TextStyle {
                                 color: if matches!(asky_state, AskyState::Reading) {
                                     color_view.highlight.into()
@@ -53,7 +77,7 @@ pub(crate) fn text_view(
                             text.sections[0].style = highlight;
                             vis = true;
                         }
-                        1 => {
+                        Answer => {
                                 vis = asky_state.is_done();
                                 text.sections[0].value.replace_range(
                                     ..,
@@ -64,7 +88,7 @@ pub(crate) fn text_view(
                                     },
                                 )
                         }
-                        2 => {
+                        PreCursor => {
                             // pre cursor
                                 vis = !asky_state.is_done();
                                 text.sections[0].value.replace_range(
@@ -76,10 +100,10 @@ pub(crate) fn text_view(
                                     },
                                 )
                         }
-                        3 => {
+                        Cursor => {
                             // cursor
                                 vis = !asky_state.is_done();
-                                if text_state.next_index() >= text_state.value.len() {
+                                if text_state.index >= text_state.value.len() {
                                     text.sections[0].value.replace_range(.., " ");
                                 } else {
                                     text.sections[0].value.replace_range(
@@ -92,7 +116,7 @@ pub(crate) fn text_view(
                                     );
                                 }
                         }
-                        4 => {
+                        PostCursor => {
                             // post cursor
                                 vis = !asky_state.is_done();
                                 text.sections[0].value.replace_range(
@@ -117,13 +141,6 @@ pub(crate) fn text_view(
             }
         }
     }
-}
-
-#[derive(Component)]
-enum CursorPart {
-    Pre,
-    Cursor,
-    Post
 }
 
 impl Construct for View<Input> {
@@ -151,7 +168,6 @@ impl Construct for View<Input> {
             .insert(NodeBundle::default())
             .with_children(|parent| {
                 parent.spawn(( // 0
-                    Question,
                     TextBundle {
                         text: Text::from_sections([
                             "[_] ".into(),                      // 0
@@ -162,7 +178,6 @@ impl Construct for View<Input> {
                 ));
 
                 parent.spawn(( // 1
-                    Answer::<bool>::Final,
                     TextBundle {
                         text: Text::from_sections([TextSection::new(
                             "",
@@ -175,17 +190,15 @@ impl Construct for View<Input> {
                     },
                 ));
                 parent.spawn(( // 2
-                    CursorPart::Pre,
                     TextBundle::from_section("Pre", TextStyle::default()),
                 ));
-                parent.spawn((CursorPart::Cursor, // 3
+                parent.spawn(( // 3
                               TextBundle::from_section("", TextStyle {
                                   color: Color::BLACK,
                                   ..default()
                               })
                               .with_background_color(Color::WHITE.into())));
                 parent.spawn(( // 4
-                    CursorPart::Post,
                     TextBundle::from_section("Post", TextStyle::default()),
                 ));
             });
