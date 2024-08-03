@@ -1,4 +1,5 @@
 // #![feature(round_char_boundary)]
+#![allow(clippy::type_complexity)]
 use bevy::{
     prelude::*,
 };
