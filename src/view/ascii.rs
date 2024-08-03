@@ -1,6 +1,6 @@
 use crate::construct::*;
 use crate::{
-    prompt::{Confirm, ConfirmState, Input, InputState, Prompt},
+    prompt::{Confirm, ConfirmState, TextField, InputState, Prompt},
     AskyState,
 };
 use bevy::prelude::*;
@@ -12,14 +12,14 @@ pub fn plugin(app: &mut App) {
 
 pub(crate) fn confirm_view(
     mut query: Query<
-        (&AskyState, &ConfirmState, &mut Text, &Confirm),
+        (&AskyState, &ConfirmState, &mut Text, &Confirm, Option<&Prompt>),
         (
             With<View>,
             Or<(Changed<AskyState>, Changed<ConfirmState>)>,
         ),
     >,
 ) {
-    for (state, confirm_state, mut text, confirm) in query.iter_mut() {
+    for (state, confirm_state, mut text, confirm, prompt_maybe) in query.iter_mut() {
         match *state {
             AskyState::Frozen | AskyState::Uninit => (),
             ref asky_state => {
@@ -33,6 +33,10 @@ pub(crate) fn confirm_view(
                         _ => unreachable!(),
                     },
                 );
+                if let Some(ref prompt) = prompt_maybe {
+                    text.sections[1].value.replace_range(..,
+                                                         &prompt.0);
+                }
                 text.sections[3].value.replace_range(
                     ..,
                     if matches!(asky_state, AskyState::Complete) {
@@ -133,12 +137,12 @@ impl Construct for View {
                 "[_] ".into(),                      // 0
                 "".into(), //text_input.message.to_string().into(), // 1
                 "".into(),                          // 2
+                "".into(),                          // 3
             ]),
             ..default()
         });
         context.world.flush();
 
-        dbg!(context);
         Ok(View)
     }
 }

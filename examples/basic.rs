@@ -61,12 +61,15 @@ fn setup(mut commands: Commands) {
             ..default()
         })
         .id();
-    commands.construct::<ascii::View<Confirm>>("What up?");
+    // commands
+    //     .construct::<Confirm>("What up?")
+    //     .construct::<ascii::View>(());
 
-    commands.entity(column).with_children(|parent| {
+    commands.entity(column)
+            .with_children(|parent| {
         parent
-            .spawn_empty()
-            .construct::<ascii::View<Confirm>>("Do you like ascii?")
+            .construct::<Confirm>("Do you like ascii?")
+            .construct::<ascii::View>(())
             .observe(
                 move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
                     eprintln!("trigger {:?}", trigger.event());

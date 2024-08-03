@@ -61,9 +61,9 @@ fn setup(mut commands: Commands) {
             ..default()
         })
         .id();
-    // commands.construct::<ascii::View<Input>>("Name? ")
+    // commands.construct::<ascii::View<TextField>>("Name? ")
     commands
-        .construct::<Input>("Name? ")
+        .construct::<TextField>("Name? ")
         .construct::<ascii::View>(())
             .observe(
                 move |trigger: Trigger<AskyEvent<String>>, commands: Commands| {

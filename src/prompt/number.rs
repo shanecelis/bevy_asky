@@ -1,4 +1,5 @@
 use crate::construct::*;
+use super::Prompt;
 use bevy::{
     input::{
         ButtonState,
@@ -121,6 +122,7 @@ impl<T: NumLike> Construct for Number<T> {
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
+            .insert(Prompt(props.message.clone()))
             .insert(input_state)
             .insert(state);
 

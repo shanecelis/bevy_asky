@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use std::borrow::Cow;
 
 mod confirm;
 mod text;
@@ -8,9 +9,9 @@ pub use text::*;
 pub use number::*;
 
 #[derive(Component)]
-pub struct Prompt(pub String);
+pub struct Prompt(pub Cow<'static, str>);
 #[derive(Component)]
-pub struct Placeholder(pub String);
+pub struct Placeholder(pub Cow<'static, str>);
 #[derive(Component)]
 pub struct DefaultValue<T: std::fmt::Display>(pub T);
 

@@ -1,5 +1,6 @@
 use crate::construct::*;
 use crate::{AskyEvent, AskyState, Error};
+use super::Prompt;
 use bevy::{
     a11y::Focus,
     prelude::*
@@ -41,6 +42,7 @@ impl Construct for Confirm {
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
+            .insert(Prompt(props.clone()))
             .insert(confirm_state)
             .insert(state);
 

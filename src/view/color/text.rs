@@ -1,6 +1,6 @@
 use super::*;
 use crate::{
-    prompt::{Input, InputState}, AskyState,
+    prompt::{TextField, InputState}, AskyState,
 };
 
 pub fn plugin(app: &mut App) {
@@ -34,7 +34,7 @@ pub(crate) fn text_view(
     mut query: Query<
         (&AskyState, &InputState, &Children),
         (
-            With<View<Input>>,
+            With<View<TextField>>,
             Or<(Changed<AskyState>, Changed<InputState>)>,
         ),
     >,
@@ -138,15 +138,15 @@ pub(crate) fn text_view(
     }
 }
 
-impl Construct for View<Input> {
-    type Props = <Input as Construct>::Props;
+impl Construct for View<TextField> {
+    type Props = <TextField as Construct>::Props;
 
     fn construct(
         context: &mut ConstructContext,
         props: Self::Props,
     ) -> Result<Self, ConstructError> {
         // Our requirements.
-        let confirm: Input = context.construct(props)?;
+        let confirm: TextField = context.construct(props)?;
         // let answer_color = context.world.get_resource::<ColorView>()?;
         let color_view =
             context
