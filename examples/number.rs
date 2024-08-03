@@ -62,11 +62,10 @@ fn setup(mut commands: Commands) {
         })
         .id();
     // commands.construct::<ascii::View<Input>>("Name? ")
-    commands
-        .construct::<Input>("Name? ")
-        .construct::<ascii::View>(())
+    commands.construct::<Number<i8>>("Age? ")
+            .construct::<ascii::View>(())
             .observe(
-                move |trigger: Trigger<AskyEvent<String>>, commands: Commands| {
+                move |trigger: Trigger<AskyEvent<i8>>, commands: Commands| {
                     eprintln!("trigger {:?}", trigger.event());
                 });
 

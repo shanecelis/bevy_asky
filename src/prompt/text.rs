@@ -10,7 +10,8 @@ use bevy::{
 use crate::{AskyEvent, AskyState, Error};
 use std::borrow::Cow;
 
-pub enum Direction {
+#[derive(Debug)]
+pub enum InputDirection {
     Left,
     Right,
 }
@@ -67,13 +68,13 @@ impl InputState {
         }
     }
 
-    pub(crate) fn move_cursor(&mut self, position: Direction) {
+    pub(crate) fn move_cursor(&mut self, position: InputDirection) {
         self.index = match position {
             // TODO: When round_char_boundary is stabilized, use std's impl.
-            // Direction::Left => self.value.floor_char_boundary(self.index.saturating_sub(1)),
-            Direction::Left => self.prev_index(),
-            // Direction::Right => self.value.ceil_char_boundary(self.index + 1),
-            Direction::Right => self.next_index(),
+            // InputDirection::Left => self.value.floor_char_boundary(self.index.saturating_sub(1)),
+            InputDirection::Left => self.prev_index(),
+            // InputDirection::Right => self.value.ceil_char_boundary(self.index + 1),
+            InputDirection::Right => self.next_index(),
         }
     }
 }
@@ -129,7 +130,7 @@ pub fn ceil_char_boundary(s: &str, mut i: usize) -> usize {
 /// # Ok(())
 /// # }
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Component)]
 pub struct Input {
     /// Message used to display in the prompt
     pub message: Cow<'static, str>,
@@ -143,6 +144,12 @@ pub struct Input {
     // pub validator_result: Result<(), Cow<'a, str>>,
     // validator: Option<Box<InputValidator<'a>>>,
 }
+
+// impl TextModel for Input {
+//     fn message<'a>(&'a self) -> &'a str { &self.message }
+//     fn placeholder<'a>(&'a self) -> Option<&'a str> { self.placeholder.as_deref() }
+//     fn default_value<'a>(&'a self) -> Option<&'a str> { self.default_value.as_deref() }
+// }
 
 // pub struct InputState {
 //     /// Input state for the prompt
@@ -190,6 +197,8 @@ impl Construct for Input {
             .insert(state);
 
         context.world.flush();
+        dbg!(context);
+
         Ok(props)
     }
 }
@@ -217,18 +226,69 @@ impl Input {
         self.default_value = Some(value.into());
         self
     }
-
-    // pub(crate) fn validate_to_submit(&mut self) -> bool {
-    //     if let Some(validator) = &self.validator {
-    //         self.validator_result = validator(self.get_value());
-    //     }
-
-    //     self.validator_result.is_ok()
-    // }
 }
 
+// fn trigger<T: Send + Sync + 'static, I: Iterator<Item=(Entity, Result<T, Error>)>>(In(iter): In<I>, mut commands: Commands, mut query: Query<&mut AskyState>) {
+//     for (id, result) in iter {
+//         if let Ok(mut state) = query.get_mut(id) {
+//             *state = if result.is_ok() {
+//                 AskyState::Complete
+//             } else {
+//                 AskyState::Error
+//             };
+//         }
+//         commands.trigger_targets(AskyEvent(result), id);
+//     }
+// }
+
+// fn text_controller_raw(
+//     mut query: Query<(Entity, &mut AskyState, &mut InputState)>,
+//     mut input: EventReader<KeyboardInput>,
+//     mut commands: Commands,
+//     focus: Option<Res<Focus>>,
+// ) -> impl Iterator<Item = (Entity, Result<String, Error>)> {
+//     let focused = focus.map(|res| res.0).unwrap_or(None);
+//     for (id, mut state, mut text_state) in query.iter_mut() {
+//         if focused.map(|x| x != id).unwrap_or(false) {
+//             continue;
+//         }
+//         match *state {
+//             AskyState::Uninit => {
+//                 *state = AskyState::Reading;
+//             }
+//             AskyState::Reading => {
+//                 for ev in input.read() {
+//                     if ev.state != ButtonState::Pressed {
+//                         continue;
+//                     }
+//                     match &ev.logical_key {
+//                         Key::Character(s) => {
+//                             for c in s.chars() {
+//                                 text_state.insert(c);
+//                             }
+//                         }
+//                         Key::Space => text_state.insert(' '),
+//                         Key::Backspace => text_state.backspace(),
+//                         Key::Delete => text_state.delete(),
+//                         Key::ArrowLeft => text_state.move_cursor(InputDirection::Left),
+//                         Key::ArrowRight => text_state.move_cursor(InputDirection::Right),
+//                         Key::Enter => {
+//                             commands.trigger_targets(AskyEvent(Ok(text_state.value.clone())), id);
+//                         }
+//                         Key::Escape => {
+//                             commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
+//                         }
+//                         x => info!("Unhandled key {x:?}")
+//                     }
+//                 }
+//             }
+//             _ => (),
+//         }
+//     }
+// }
+
 fn text_controller(
-    mut query: Query<(Entity, &mut AskyState, &mut InputState)>,
+    mut query: Query<(Entity, &mut AskyState, &mut InputState), With<Input>>,
     mut input: EventReader<KeyboardInput>,
     mut commands: Commands,
     focus: Option<Res<Focus>>,
@@ -256,8 +316,8 @@ fn text_controller(
                         Key::Space => text_state.insert(' '),
                         Key::Backspace => text_state.backspace(),
                         Key::Delete => text_state.delete(),
-                        Key::ArrowLeft => text_state.move_cursor(Direction::Left),
-                        Key::ArrowRight => text_state.move_cursor(Direction::Right),
+                        Key::ArrowLeft => text_state.move_cursor(InputDirection::Left),
+                        Key::ArrowRight => text_state.move_cursor(InputDirection::Right),
                         Key::Enter => {
                             commands.trigger_targets(AskyEvent(Ok(text_state.value.clone())), id);
                             *state = AskyState::Complete;

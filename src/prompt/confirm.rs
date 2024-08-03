@@ -6,6 +6,7 @@ use bevy::{
 };
 use std::borrow::Cow;
 
+#[derive(Component)]
 pub struct Confirm {
     /// Message used to display in the prompt.
     pub message: Cow<'static, str>,

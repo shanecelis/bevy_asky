@@ -1,5 +1,5 @@
 //! Playing around with [Cart's proposal](https://github.com/bevyengine/bevy/discussions/14437).
-use bevy::{prelude::*};
+use bevy::{prelude::*, ecs::system::EntityCommands};
 use std::borrow::Cow;
 use thiserror::Error;
 
@@ -27,6 +27,7 @@ pub trait Construct: Sized {
     ) -> Result<Self, ConstructError>;
 }
 
+#[derive(Debug)]
 pub struct ConstructContext<'a> {
     pub id: Entity,
     pub world: &'a mut World,
@@ -58,7 +59,7 @@ impl<'a> ConstructContext<'a> {
 // }
 
 pub trait ConstructExt {
-    fn construct<T: Construct + Component>(&mut self, props: impl Into<T::Props>) -> &mut Self
+    fn construct<T: Construct + Component>(&mut self, props: impl Into<T::Props>) -> EntityCommands
     where
         <T as Construct>::Props: Send;
 }
@@ -76,33 +77,38 @@ where
     }
 }
 
-impl ConstructExt for Commands<'_, '_> {
-    fn construct<T: Construct + Component>(&mut self, props: impl Into<T::Props>) -> &mut Self
+impl<'w> ConstructExt for Commands<'w, '_> {
+    // type Out = EntityCommands;
+    fn construct<T: Construct + Component>(&mut self, props: impl Into<T::Props>) -> EntityCommands
     where
         <T as Construct>::Props: Send,
     {
-        self.spawn_empty().add(ConstructCommand::<T>(props.into()));
-        self
+        let mut s = self.spawn_empty();
+        s.add(ConstructCommand::<T>(props.into()));
+        s
     }
 }
 
-impl ConstructExt for ChildBuilder<'_> {
-    fn construct<T: Construct + Component>(&mut self, props: impl Into<T::Props>) -> &mut Self
+impl<'w> ConstructExt for ChildBuilder<'w> {
+    // type Out = EntityCommands;
+    fn construct<T: Construct + Component>(&mut self, props: impl Into<T::Props>) -> EntityCommands
     where
         <T as Construct>::Props: Send,
     {
-        self.spawn_empty().add(ConstructCommand::<T>(props.into()));
-        self
+        let mut s = self.spawn_empty();
+        s.add(ConstructCommand::<T>(props.into()));
+        s
     }
 }
 
-impl ConstructExt for bevy::ecs::system::EntityCommands<'_> {
-    fn construct<T: Construct + Component>(&mut self, props: impl Into<T::Props>) -> &mut Self
+impl<'w> ConstructExt for bevy::ecs::system::EntityCommands<'w> {
+    // type Out = EntityCommands;
+    fn construct<T: Construct + Component>(&mut self, props: impl Into<T::Props>) -> EntityCommands
     where
         <T as Construct>::Props: Send,
     {
         self.add(ConstructCommand::<T>(props.into()));
-        self
+        self.reborrow()
     }
 }
 

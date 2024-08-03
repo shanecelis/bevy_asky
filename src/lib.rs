@@ -7,6 +7,8 @@ use std::borrow::Cow;
 pub mod construct;
 pub mod prompt;
 pub mod view;
+mod num_like;
+pub use num_like::*;
 
 pub struct AskyPlugin;
 
@@ -68,14 +70,16 @@ pub enum Error {
     /// Input was invalid.
     #[error("invalid input")]
     InvalidInput,
+    #[error("invalid number")]
+    InvalidNumber,
     /// Invalid count with expected and actual.
-    #[error("invalid count, expected {expected} actual {actual}")]
-    InvalidCount {
-        /// Expected count
-        expected: usize,
-        /// Actual count
-        actual: usize,
-    },
+    // #[error("invalid count, expected {expected} actual {actual}")]
+    // InvalidCount {
+    //     /// Expected count
+    //     expected: usize,
+    //     /// Actual count
+    //     actual: usize,
+    // },
     /// Validation failed.
     #[error("validation fail")]
     ValidationFail,
