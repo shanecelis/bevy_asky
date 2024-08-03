@@ -1,4 +1,5 @@
 use crate::construct::*;
+use super::Prompt;
 use bevy::{
     input::{
         ButtonState,
@@ -131,18 +132,9 @@ pub fn ceil_char_boundary(s: &str, mut i: usize) -> usize {
 /// # }
 /// ```
 #[derive(Debug, Clone, Component)]
-pub struct Input {
+pub struct TextField {
     /// Message used to display in the prompt
     pub message: Cow<'static, str>,
-    // Input state for the prompt
-    // pub input: InputState,
-    /// Placeholder to show when the input is empty
-    pub placeholder: Option<Cow<'static, str>>,
-    /// Default value to submit when the input is empty
-    pub default_value: Option<Cow<'static, str>>,
-    // State of the validation of the user input
-    // pub validator_result: Result<(), Cow<'a, str>>,
-    // validator: Option<Box<InputValidator<'a>>>,
 }
 
 // impl TextModel for Input {
@@ -160,28 +152,24 @@ pub struct Input {
 // }
 //
 
-impl From<Cow<'static, str>> for Input {
+impl From<Cow<'static, str>> for TextField {
     fn from(message: Cow<'static, str>) -> Self {
         Self {
             message,
-            placeholder: None,
-            default_value: None
         }
     }
 }
 
-impl From<&'static str> for Input {
+impl From<&'static str> for TextField {
     fn from(message: &'static str) -> Self {
         Self {
             message: message.into(),
-            placeholder: None,
-            default_value: None
         }
     }
 }
 
-impl Construct for Input {
-    type Props = Input;
+impl Construct for TextField {
+    type Props = TextField;
 
     fn construct(
         context: &mut ConstructContext,
@@ -193,38 +181,22 @@ impl Construct for Input {
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
+            .insert(Prompt(props.message.clone()))
             .insert(input_state)
             .insert(state);
 
         context.world.flush();
-        dbg!(context);
 
         Ok(props)
     }
 }
 
-impl Input {
+impl TextField {
     /// Create a new text prompt.
     pub fn new(message: impl Into<Cow<'static, str>>) -> Self {
-        Input {
+        TextField {
             message: message.into(),
-            placeholder: None,
-            default_value: None,
         }
-    }
-
-    /// Set text to show when the input is empty.
-    ///
-    /// This not will not be submitted when the input is empty.
-    pub fn placeholder(mut self, value: impl Into<Cow<'static, str>>) -> Self {
-        self.placeholder = Some(value.into());
-        self
-    }
-
-    /// Set default value to submit when the input is empty.
-    pub fn default(mut self, value: impl Into<Cow<'static, str>>) -> Self {
-        self.default_value = Some(value.into());
-        self
     }
 }
 
@@ -288,7 +260,7 @@ impl Input {
 // }
 
 fn text_controller(
-    mut query: Query<(Entity, &mut AskyState, &mut InputState), With<Input>>,
+    mut query: Query<(Entity, &mut AskyState, &mut InputState), With<TextField>>,
     mut input: EventReader<KeyboardInput>,
     mut commands: Commands,
     focus: Option<Res<Focus>>,
