@@ -27,7 +27,7 @@ pub struct InputState {
 }
 
 pub fn plugin(app: &mut App) {
-    app.add_systems(Update, text_controller);
+    app.add_systems(PreUpdate, text_controller);
 }
 
 impl InputState {
