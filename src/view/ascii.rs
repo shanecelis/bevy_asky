@@ -1,7 +1,7 @@
 use std::fmt::Write;
 use crate::construct::*;
 use crate::{
-    prompt::{Confirm, ConfirmState, Prompt, Feedback},
+    prompt::{Confirm, ConfirmState, Prompt, Feedback, Placeholder},
     StringCursor,
     AskyState,
 };
@@ -57,14 +57,14 @@ pub(crate) fn confirm_view(
 
 pub(crate) fn text_view(
     mut query: Query<
-        (&AskyState, &StringCursor, &mut Text, Option<&Prompt>, Option<&Feedback>),
+        (&AskyState, &StringCursor, &mut Text, Option<&Prompt>, Option<&Feedback>, Option<&Placeholder>),
         (
             With<View>,
             Or<(Changed<AskyState>, Changed<StringCursor>, Changed<Feedback>, Changed<Prompt>)>,
         ),
     >,
 ) {
-    for (asky_state, text_state, mut text, prompt_maybe, feedback_maybe) in query.iter_mut() {
+    for (asky_state, text_state, mut text, prompt, feedback_maybe, placeholder) in query.iter_mut() {
         eprint!(".");
         text.sections[0].value.replace_range(
             1..=1,
@@ -74,15 +74,19 @@ pub(crate) fn text_view(
                 AskyState::Error => "!",
             },
         );
-        text.sections[1].value.clear();
-        if let Some(prompt) = prompt_maybe {
-            text.sections[1].value.replace_range(..,
-                                                 &prompt.0);
+
+        text.sections[1].value.replace_range(.., prompt.map(|x| x.as_ref()).unwrap_or(""));
+
+        if text_state.value.is_empty() && placeholder.is_some() {
+            text.sections[2].value.clear();
+            let _ = write!(text.sections[2].value, "[{}]", &placeholder.map(|x| x.as_ref()).unwrap());
+            // text.sections[2].value.replace_range(.., placeholder.map(|x| x.as_ref()).unwrap_or(""));
+        } else {
+            text.sections[2].value.replace_range(
+                ..,
+                &text_state.value
+            );
         }
-        text.sections[2].value.replace_range(
-            ..,
-            &text_state.value
-        );
 
         text.sections[4].value.clear();
         if let Some(ref feedback) = feedback_maybe {

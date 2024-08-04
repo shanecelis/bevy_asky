@@ -26,7 +26,7 @@ pub(crate) fn confirm_view(
         ),
         Without<Question>,
     >,
-    color_view: Res<ColorView>,
+    color_view: Res<Palette>,
     mut commands: Commands,
 ) {
     for (id, asky_state, confirm_state, prompt, children_maybe) in query.iter_mut() {

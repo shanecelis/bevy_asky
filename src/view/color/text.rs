@@ -40,7 +40,7 @@ pub(crate) fn text_view(
         >,
     mut text_query: Query<(&mut Text, &mut Visibility)>,
     mut commands: Commands,
-    color_view: Res<ColorView>,
+    color_view: Res<Palette>,
 ) {
     for (id, asky_state, text_state, prompt, children_maybe) in query.iter_mut() {
         if let Some(children) = children_maybe {

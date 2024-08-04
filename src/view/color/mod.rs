@@ -25,7 +25,7 @@ impl Construct for View {
 }
 
 #[derive(Debug, Resource, Component)]
-struct ColorView {
+struct Palette {
     text_color: Srgba,
     background: Option<Srgba>,
     highlight: Srgba,
@@ -34,7 +34,7 @@ struct ColorView {
     lowlight: Srgba,
 }
 
-impl Default for ColorView {
+impl Default for Palette {
     fn default() -> Self {
         Self {
             text_color: Srgba::WHITE,
@@ -51,5 +51,5 @@ pub fn plugin(app: &mut App) {
     app
         .add_plugins(confirm::plugin)
         .add_plugins(text::plugin)
-        .insert_resource(ColorView::default());
+        .insert_resource(Palette::default());
 }

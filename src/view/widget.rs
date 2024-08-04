@@ -1,6 +1,10 @@
 //! Helper traits for creating common widgets.
 
-use bevy::{ecs::system::EntityCommands, prelude::*, ui::Val::*};
+use bevy::{
+    ecs::system::EntityCommands,
+    prelude::*,
+    // ui::Val::*
+};
 
 #[derive(Debug, Clone, Resource)]
 pub struct Palette {

@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use std::borrow::Cow;
+use crate::construct::*;
 use std::fmt;
 
 mod confirm;
@@ -14,7 +15,29 @@ pub struct Prompt(pub Cow<'static, str>);
 #[derive(Component, Deref, DerefMut)]
 pub struct Placeholder(pub Cow<'static, str>);
 #[derive(Component)]
-pub struct DefaultValue<T: std::fmt::Display>(pub T);
+// pub struct DefaultValue<T: std::fmt::Display>(pub T);
+pub struct DefaultValue<T>(pub T);
+
+impl Construct for Placeholder {
+    type Props = Cow<'static, str>;
+    fn construct(
+        _context: &mut ConstructContext,
+        props: Self::Props,
+    ) -> Result<Self, ConstructError> {
+        Ok(Placeholder(props.into()))
+    }
+}
+
+impl<T: std::fmt::Display + Clone> Construct for DefaultValue<T> {
+    type Props = T;
+    fn construct(
+        _context: &mut ConstructContext,
+        props: Self::Props,
+    ) -> Result<Self, ConstructError> {
+        Ok(DefaultValue(props))
+    }
+}
+
 #[derive(Component)]
 pub struct Feedback {
     pub kind: FeedbackKind,
