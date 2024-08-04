@@ -1,15 +1,14 @@
 use std::fmt::Write;
 use crate::construct::*;
 use crate::{
-    prompt::{Confirm, ConfirmState, Prompt, Feedback, Placeholder},
+    prompt::{Confirm, ConfirmState, Prompt, Feedback, Placeholder, Password},
     StringCursor,
     AskyState,
 };
 use bevy::prelude::*;
 
 pub fn plugin(app: &mut App) {
-    app.add_systems(Update, confirm_view);
-    app.add_systems(Update, text_view);
+    app.add_systems(Update, (confirm_view, text_view, password_view));
 }
 
 pub(crate) fn confirm_view(
@@ -51,7 +50,6 @@ pub(crate) fn confirm_view(
             text.sections[4].value.clear();
             let _ = write!(&mut text.sections[4].value, " {}", &feedback);
         }
-
     }
 }
 
@@ -60,6 +58,7 @@ pub(crate) fn text_view(
         (&AskyState, &StringCursor, &mut Text, Option<&Prompt>, Option<&Feedback>, Option<&Placeholder>),
         (
             With<View>,
+            Without<Password>,
             Or<(Changed<AskyState>, Changed<StringCursor>, Changed<Feedback>, Changed<Prompt>)>,
         ),
     >,
@@ -85,6 +84,47 @@ pub(crate) fn text_view(
             text.sections[2].value.replace_range(
                 ..,
                 &text_state.value
+            );
+        }
+
+        text.sections[4].value.clear();
+        if let Some(ref feedback) = feedback_maybe {
+            let _ = write!(&mut text.sections[4].value, " {}", &feedback);
+        }
+    }
+}
+
+pub(crate) fn password_view(
+    mut query: Query<
+        (&AskyState, &StringCursor, &mut Text, Option<&Prompt>, Option<&Feedback>, Option<&Placeholder>),
+        (
+            With<View>,
+            With<Password>,
+            Or<(Changed<AskyState>, Changed<StringCursor>, Changed<Feedback>, Changed<Prompt>)>,
+        ),
+    >,
+) {
+    for (asky_state, text_state, mut text, prompt, feedback_maybe, placeholder) in query.iter_mut() {
+        eprint!(".");
+        text.sections[0].value.replace_range(
+            1..=1,
+            match asky_state {
+                AskyState::Reading => " ",
+                AskyState::Complete => "x",
+                AskyState::Error => "!",
+            },
+        );
+
+        text.sections[1].value.replace_range(.., prompt.map(|x| x.as_ref()).unwrap_or(""));
+
+        if text_state.value.is_empty() && placeholder.is_some() {
+            text.sections[2].value.clear();
+            let _ = write!(text.sections[2].value, "[{}]", &placeholder.map(|x| x.as_ref()).unwrap());
+            // text.sections[2].value.replace_range(.., placeholder.map(|x| x.as_ref()).unwrap_or(""));
+        } else {
+            text.sections[2].value.replace_range(
+                ..,
+                &"*".repeat(text_state.value.len()), // TODO: This allocates a String. Don't do that.
             );
         }
 

@@ -1,5 +1,5 @@
 use crate::construct::*;
-use super::{Feedback, Prompt};
+use super::{Feedback, Prompt, Password};
 use bevy::{
     input::{
         ButtonState,
@@ -14,8 +14,6 @@ use std::borrow::Cow;
 pub fn plugin(app: &mut App) {
     app.add_systems(PreUpdate, text_controller);
 }
-
-// pub type InputValidator<'a> = dyn Fn(&str) -> Result<(), Cow<'a, str>> + 'a + Send + Sync;
 
 /// Prompt to get one-line user input.
 ///
@@ -45,10 +43,10 @@ pub fn plugin(app: &mut App) {
 /// # }
 /// ```
 #[derive(Debug, Clone, Component)]
-pub struct TextField {
-    /// Message used to display in the prompt
-    pub message: Cow<'static, str>,
-}
+pub struct TextField;
+    // Message used to display in the prompt
+    // pub message: Cow<'static, str>,
+
 
 // impl TextModel for Input {
 //     fn message<'a>(&'a self) -> &'a str { &self.message }
@@ -65,24 +63,24 @@ pub struct TextField {
 // }
 //
 
-impl From<Cow<'static, str>> for TextField {
-    fn from(message: Cow<'static, str>) -> Self {
-        Self {
-            message,
-        }
-    }
-}
+// impl From<Cow<'static, str>> for TextField {
+//     fn from(message: Cow<'static, str>) -> Self {
+//         Self {
+//             message,
+//         }
+//     }
+// }
 
-impl From<&'static str> for TextField {
-    fn from(message: &'static str) -> Self {
-        Self {
-            message: message.into(),
-        }
-    }
-}
+// impl From<&'static str> for TextField {
+//     fn from(message: &'static str) -> Self {
+//         Self {
+//             message: message.into(),
+//         }
+//     }
+// }
 
 impl Construct for TextField {
-    type Props = TextField;
+    type Props = Cow<'static, str>;
 
     fn construct(
         context: &mut ConstructContext,
@@ -94,22 +92,13 @@ impl Construct for TextField {
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
-            .insert(Prompt(props.message.clone()))
+            .insert(Prompt(props))
             .insert(input_state)
             .insert(state);
 
         context.world.flush();
 
-        Ok(props)
-    }
-}
-
-impl TextField {
-    /// Create a new text prompt.
-    pub fn new(message: impl Into<Cow<'static, str>>) -> Self {
-        TextField {
-            message: message.into(),
-        }
+        Ok(TextField)
     }
 }
 
@@ -126,54 +115,8 @@ impl TextField {
 //     }
 // }
 
-// fn text_controller_raw(
-//     mut query: Query<(Entity, &mut AskyState, &mut StringCursor)>,
-//     mut input: EventReader<KeyboardInput>,
-//     mut commands: Commands,
-//     focus: Option<Res<Focus>>,
-// ) -> impl Iterator<Item = (Entity, Result<String, Error>)> {
-//     let focused = focus.map(|res| res.0).unwrap_or(None);
-//     for (id, mut state, mut text_state) in query.iter_mut() {
-//         if focused.map(|x| x != id).unwrap_or(false) {
-//             continue;
-//         }
-//         match *state {
-//             AskyState::Uninit => {
-//                 *state = AskyState::Reading;
-//             }
-//             AskyState::Reading => {
-//                 for ev in input.read() {
-//                     if ev.state != ButtonState::Pressed {
-//                         continue;
-//                     }
-//                     match &ev.logical_key {
-//                         Key::Character(s) => {
-//                             for c in s.chars() {
-//                                 text_state.insert(c);
-//                             }
-//                         }
-//                         Key::Space => text_state.insert(' '),
-//                         Key::Backspace => text_state.backspace(),
-//                         Key::Delete => text_state.delete(),
-//                         Key::ArrowLeft => text_state.move_cursor(InputDirection::Left),
-//                         Key::ArrowRight => text_state.move_cursor(InputDirection::Right),
-//                         Key::Enter => {
-//                             commands.trigger_targets(AskyEvent(Ok(text_state.value.clone())), id);
-//                         }
-//                         Key::Escape => {
-//                             commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
-//                         }
-//                         x => info!("Unhandled key {x:?}")
-//                     }
-//                 }
-//             }
-//             _ => (),
-//         }
-//     }
-// }
-
 fn text_controller(
-    mut query: Query<(Entity, &mut AskyState, &mut StringCursor), With<TextField>>,
+    mut query: Query<(Entity, &mut AskyState, &mut StringCursor), Or<(With<TextField>, With<Password>)>>,
     mut input: EventReader<KeyboardInput>,
     mut commands: Commands,
     focus: Option<Res<Focus>>,

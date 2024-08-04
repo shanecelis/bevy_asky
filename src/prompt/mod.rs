@@ -6,9 +6,11 @@ use std::fmt;
 mod confirm;
 mod text;
 mod number;
+mod password;
 pub use confirm::*;
 pub use text::*;
 pub use number::*;
+pub use password::*;
 
 #[derive(Component, Deref, DerefMut)]
 pub struct Prompt(pub Cow<'static, str>);

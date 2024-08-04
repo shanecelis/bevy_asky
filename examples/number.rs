@@ -26,6 +26,7 @@ fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
     commands.construct::<Number<i8>>("Age? ")
+            .construct::<Placeholder>("333")
             .construct::<ascii::View>(())
             .observe(
                 move |trigger: Trigger<AskyEvent<i8>>| {
