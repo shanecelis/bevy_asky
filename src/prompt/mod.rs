@@ -9,9 +9,9 @@ pub use confirm::*;
 pub use text::*;
 pub use number::*;
 
-#[derive(Component)]
+#[derive(Component, Deref, DerefMut)]
 pub struct Prompt(pub Cow<'static, str>);
-#[derive(Component)]
+#[derive(Component, Deref, DerefMut)]
 pub struct Placeholder(pub Cow<'static, str>);
 #[derive(Component)]
 pub struct DefaultValue<T: std::fmt::Display>(pub T);

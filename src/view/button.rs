@@ -5,7 +5,7 @@ use super::{
 };
 use crate::construct::*;
 use crate::{
-    prompt::{Confirm, ConfirmState},
+    prompt::{Confirm, ConfirmState, Prompt},
     AskyEvent, AskyState,
 };
 use bevy::{color::palettes::basic::*};
@@ -96,9 +96,9 @@ fn button_interaction(
 
 pub(crate) fn confirm_view(
     mut query: Query<
-        (&AskyState, &ConfirmState, &Children),
+        (&AskyState, &ConfirmState, Option<&Prompt>, &Children),
         (
-            With<View<Confirm>>,
+            With<View>, With<Confirm>,
             Or<(Changed<AskyState>, Changed<ConfirmState>)>,
         ),
     >,
@@ -114,7 +114,7 @@ pub(crate) fn confirm_view(
     >,
     color_view: Res<ButtonView>,
 ) {
-    for (state, confirm_state, children) in query.iter_mut() {
+    for (state, confirm_state, prompt, children) in query.iter_mut() {
         match *state {
             AskyState::Frozen | AskyState::Uninit => (),
             ref asky_state => {
@@ -140,7 +140,9 @@ pub(crate) fn confirm_view(
                             },
                         );
                         text.sections[0].style = highlight;
+                        text.sections[1].value.replace_range(.., prompt.map(|x| x.as_ref()).unwrap_or(""));
                     }
+
                     // for (mut background, mut visibility) in answers.iter_many_mut(children) {
                     if let Ok((text, mut background, mut visibility, answer)) =
                         answers.get_mut(*child)
@@ -188,17 +190,17 @@ pub(crate) fn confirm_view(
 }
 
 #[derive(Component)]
-pub struct View<T>(T);
+pub struct View;
 
-impl Construct for View<Confirm> {
-    type Props = <Confirm as Construct>::Props;
+impl Construct for View {
+    type Props = ();
 
     fn construct(
         context: &mut ConstructContext,
-        props: Self::Props,
+        _props: Self::Props,
     ) -> Result<Self, ConstructError> {
         // Our requirements.
-        let confirm: Confirm = context.construct(props)?;
+        // let confirm: Confirm = context.construct(props)?;
         let color_view =
             context
                 .world
@@ -219,7 +221,7 @@ impl Construct for View<Confirm> {
                     TextBundle {
                         text: Text::from_sections([
                             "[_] ".into(),                      // 0
-                            confirm.message.to_string().into(), // 1
+                            "".into(), // confirm.message.to_string().into(), // 1
                             " ".into(),                         // 2
                         ]),
                         ..default()
@@ -270,6 +272,6 @@ impl Construct for View<Confirm> {
             });
         context.world.flush();
 
-        Ok(View(confirm))
+        Ok(View)
     }
 }

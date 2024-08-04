@@ -14,14 +14,16 @@ pub fn plugin(app: &mut App) {
 
 pub(crate) fn confirm_view(
     mut query: Query<
-        (&AskyState, &ConfirmState, &mut Text, &Confirm, Option<&Prompt>, Option<&Feedback>),
+        (&AskyState, &ConfirmState, &mut Text, Option<&Prompt>, Option<&Feedback>),
         (
             With<View>,
+            With<Confirm>,
+
             Or<(Changed<AskyState>, Changed<ConfirmState>, Changed<Feedback>, Changed<Prompt>)>,
         ),
     >,
 ) {
-    for (state, confirm_state, mut text, confirm, prompt_maybe, feedback_maybe) in query.iter_mut() {
+    for (state, confirm_state, mut text, prompt, feedback_maybe) in query.iter_mut() {
         match *state {
             AskyState::Frozen | AskyState::Uninit => (),
             ref asky_state => {
@@ -35,10 +37,7 @@ pub(crate) fn confirm_view(
                         _ => unreachable!(),
                     },
                 );
-                if let Some(prompt) = prompt_maybe {
-                    text.sections[1].value.replace_range(..,
-                                                         &prompt.0);
-                }
+                text.sections[1].value.replace_range(.., prompt.map(|x| x.as_ref()).unwrap_or(""));
                 text.sections[3].value.replace_range(
                     ..,
                     if !matches!(asky_state, AskyState::Complete) {
@@ -137,7 +136,7 @@ impl Construct for View {
 
     fn construct(
         context: &mut ConstructContext,
-        props: Self::Props,
+        _props: Self::Props,
     ) -> Result<Self, ConstructError> {
         // Our requirements.
         // let text_input: Input = context.construct(props)?;

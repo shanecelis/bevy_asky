@@ -1,7 +1,7 @@
 use super::*;
 use crate::{
     view::*,
-    prompt::{Confirm, ConfirmState}, AskyState,
+    prompt::{Confirm, ConfirmState, Prompt}, AskyState,
 };
 
 pub fn plugin(app: &mut App) {
@@ -10,10 +10,10 @@ pub fn plugin(app: &mut App) {
 
 pub(crate) fn confirm_view(
     mut query: Query<
-        (&AskyState, &ConfirmState, &Children),
+        (Entity, &AskyState, &ConfirmState, Option<&Prompt>, Option<&Children>),
         (
-            With<View<Confirm>>,
-            Or<(Changed<AskyState>, Changed<ConfirmState>)>,
+            With<View>, With<Confirm>,
+            Or<(Changed<AskyState>, Changed<ConfirmState>, Changed<Prompt>)>,
         ),
     >,
     mut question: Query<&mut Text, With<Question>>,
@@ -27,8 +27,10 @@ pub(crate) fn confirm_view(
         Without<Question>,
     >,
     color_view: Res<ColorView>,
+    mut commands: Commands,
 ) {
-    for (state, confirm_state, children) in query.iter_mut() {
+    for (id, state, confirm_state, prompt, children_maybe) in query.iter_mut() {
+        if let Some(children) = children_maybe {
         match *state {
             AskyState::Frozen | AskyState::Uninit => (),
             ref asky_state => {
@@ -54,6 +56,8 @@ pub(crate) fn confirm_view(
                             },
                         );
                         text.sections[0].style = highlight;
+
+                        text.sections[1].value.replace_range(.., prompt.map(|x| x.as_ref()).unwrap_or(""));
                     }
                     // for (mut background, mut visibility) in answers.iter_many_mut(children) {
                     if let Ok((mut text, mut background, mut visibility, answer)) =
@@ -98,41 +102,19 @@ pub(crate) fn confirm_view(
                 }
             }
         }
-    }
-}
-
-
-impl Construct for View<Confirm> {
-    type Props = <Confirm as Construct>::Props;
-
-    fn construct(
-        context: &mut ConstructContext,
-        props: Self::Props,
-    ) -> Result<Self, ConstructError> {
-        // Our requirements.
-        let confirm: Confirm = context.construct(props)?;
-        // let answer_color = context.world.get_resource::<ColorView>()?;
-        let color_view =
-            context
-                .world
-                .get_resource::<ColorView>()
-                .ok_or(ConstructError::MissingResource {
-                    message: "No ColorView".into(),
-                })?;
+        } else {
         let (bg_no, bg_yes) = (color_view.highlight, color_view.lowlight);
         let answer_color = color_view.answer;
 
-        let mut commands = context.world.commands();
         commands
-            .entity(context.id)
-            .insert(NodeBundle::default())
+            .entity(id)
             .with_children(|parent| {
                 parent.spawn((
                     Question,
                     TextBundle {
                         text: Text::from_sections([
                             "[_] ".into(),                      // 0
-                            confirm.message.to_string().into(), // 1
+                            prompt.map(|x| x.as_ref()).unwrap_or("").into(),                          // 1
                             " ".into(),                         // 2
                         ]),
                         ..default()
@@ -164,8 +146,7 @@ impl Construct for View<Confirm> {
                         .with_background_color(bg_yes.into()),
                 ));
             });
-        context.world.flush();
-
-        Ok(View(confirm))
+        }
     }
 }
+

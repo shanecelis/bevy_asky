@@ -4,7 +4,25 @@ mod confirm;
 mod text;
 
 #[derive(Component)]
-pub struct View<T>(T);
+pub struct View;
+
+impl Construct for View {
+    type Props = ();
+
+    fn construct(
+        context: &mut ConstructContext,
+        _props: Self::Props,
+    ) -> Result<Self, ConstructError> {
+
+        let mut commands = context.world.commands();
+        commands
+            .entity(context.id)
+            .insert(NodeBundle::default());
+        context.world.flush();
+
+        Ok(View)
+    }
+}
 
 #[derive(Debug, Resource, Component)]
 struct ColorView {

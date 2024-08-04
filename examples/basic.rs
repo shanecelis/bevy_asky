@@ -69,7 +69,8 @@ fn setup(mut commands: Commands) {
             .with_children(|parent| {
         parent
             .construct::<Confirm>("Do you like ascii?")
-            .construct::<ascii::View>(())
+            // .construct::<ascii::View>(())
+            .construct::<button::View>(())
             .observe(
                 move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
                     eprintln!("trigger {:?}", trigger.event());
@@ -84,9 +85,10 @@ fn setup(mut commands: Commands) {
                             TextStyle::default(),
                         ));
 
-                    parent
-                        .spawn_empty()
-                        .construct::<color::View<Confirm>>("Do you prefer color?");
+                        parent
+                            .construct::<Confirm>("Do you prefer color?")
+                            // .construct::<color::View>(());
+                            .construct::<color::View>(());
                     });
 
                 },
