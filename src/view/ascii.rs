@@ -1,14 +1,14 @@
 use std::fmt::Write;
 use crate::construct::*;
 use crate::{
-    prompt::{Confirm, ConfirmState, Prompt, Feedback, Placeholder, Password},
+    prompt::{Confirm, ConfirmState, Prompt, Feedback, Placeholder, Password, Toggle},
     StringCursor,
     AskyState,
 };
 use bevy::prelude::*;
 
 pub fn plugin(app: &mut App) {
-    app.add_systems(Update, (confirm_view, text_view, password_view));
+    app.add_systems(Update, (confirm_view, text_view, password_view, toggle_view));
 }
 
 pub(crate) fn confirm_view(
@@ -45,6 +45,45 @@ pub(crate) fn confirm_view(
                 " "
             }
         );
+
+        if let Some(ref feedback) = feedback_maybe {
+            text.sections[4].value.clear();
+            let _ = write!(&mut text.sections[4].value, " {}", &feedback);
+        }
+    }
+}
+
+pub(crate) fn toggle_view(
+    mut query: Query<
+        (&AskyState, &Toggle, &mut Text, Option<&Prompt>, Option<&Feedback>),
+        (
+            With<View>,
+            Or<(Changed<AskyState>, Changed<Toggle>, Changed<Feedback>, Changed<Prompt>)>,
+        ),
+    >,
+) {
+    for (asky_state, toggle, mut text, prompt, feedback_maybe) in query.iter_mut() {
+        eprint!(".");
+        text.sections[0].value.replace_range(
+            1..=1,
+            match asky_state {
+                AskyState::Reading => " ",
+                AskyState::Complete => "x",
+                AskyState::Error => "!",
+            },
+        );
+        text.sections[1].value.replace_range(.., prompt.map(|x| x.as_ref()).unwrap_or(""));
+
+        text.sections[3].value.clear();
+        if !matches!(asky_state, AskyState::Complete) {
+            if toggle.index == 0 {
+                let _ = write!(text.sections[3].value, " [{}] _{}_", toggle.options[0], toggle.options[1]);
+            } else {
+                let _ = write!(text.sections[3].value, " _{}_ [{}]", toggle.options[0], toggle.options[1]);
+            }
+        } else {
+            let _ = write!(text.sections[3].value, " {}", toggle.options[toggle.index]);
+        }
 
         if let Some(ref feedback) = feedback_maybe {
             text.sections[4].value.clear();

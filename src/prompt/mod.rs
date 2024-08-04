@@ -7,10 +7,12 @@ mod confirm;
 mod text;
 mod number;
 mod password;
+mod toggle;
 pub use confirm::*;
 pub use text::*;
 pub use number::*;
 pub use password::*;
+pub use toggle::*;
 
 #[derive(Component, Deref, DerefMut)]
 pub struct Prompt(pub Cow<'static, str>);
@@ -94,5 +96,7 @@ pub(crate) fn plugin(app: &mut App) {
     app.add_plugins(confirm::plugin);
     app.add_plugins(text::plugin);
     app.add_plugins(number::plugin);
+    app.add_plugins(password::plugin);
+    app.add_plugins(toggle::plugin);
 }
 
