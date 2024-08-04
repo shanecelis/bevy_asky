@@ -9,6 +9,8 @@ pub mod prompt;
 pub mod view;
 mod num_like;
 pub use num_like::*;
+mod string_cursor;
+pub use string_cursor::*;
 
 pub struct AskyPlugin;
 

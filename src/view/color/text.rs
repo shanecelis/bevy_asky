@@ -1,6 +1,6 @@
 use super::*;
 use crate::{
-    prompt::{TextField, InputState}, AskyState,
+    prompt::{TextField}, AskyState, StringCursor
 };
 
 pub fn plugin(app: &mut App) {
@@ -32,10 +32,10 @@ impl PromptPart {
 
 pub(crate) fn text_view(
     mut query: Query<
-        (&AskyState, &InputState, &Children),
+        (&AskyState, &StringCursor, &Children),
         (
             With<View<TextField>>,
-            Or<(Changed<AskyState>, Changed<InputState>)>,
+            Or<(Changed<AskyState>, Changed<StringCursor>)>,
         ),
     >,
     mut text_query: Query<(&mut Text, &mut Visibility)>,

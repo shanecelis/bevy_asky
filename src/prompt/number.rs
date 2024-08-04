@@ -9,7 +9,7 @@ use bevy::{
     prelude::*
 };
 use crate::{AskyEvent, AskyState, Error, NumLike};
-use super::{InputState, InputDirection};
+use crate::{StringCursor, InputDirection};
 use std::borrow::Cow;
 
 pub fn plugin(app: &mut App) {
@@ -64,7 +64,7 @@ pub struct Number<T: NumLike> {
     /// Message used to display in the prompt
     pub message: Cow<'static, str>,
     // Number<T> state for the prompt
-    // pub input: InputState,
+    // pub input: StringCursor,
     /// Placeholder to show when the input is empty
     pub placeholder: Option<Cow<'static, str>>,
     /// Default value to submit when the input is empty
@@ -103,7 +103,7 @@ impl<T: NumLike> Construct for Number<T> {
     ) -> Result<Self, ConstructError> {
         // Our requirements.
         let state: AskyState = context.construct(AskyState::default())?;
-        let input_state = InputState::default();
+        let input_state = StringCursor::default();
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
@@ -126,7 +126,7 @@ impl<T: NumLike> Number<T> {
         }
     }
 
-    // pub(crate) fn insert(ch: char, input: &mut InputState) {
+    // pub(crate) fn insert(ch: char, input: &mut StringCursor) {
     //     let is_valid = match ch {
     //         '-' | '+' => T::is_signed() && input.index == 0,
     //         '.' => T::is_float() && !input.value.contains('.'),
@@ -155,7 +155,7 @@ impl<T: NumLike> Number<T> {
 
 
 fn number_controller<T: NumLike + Sync + 'static + TypePath>(
-    mut query: Query<(Entity, &mut AskyState, &mut InputState), With<Number<T>>>,
+    mut query: Query<(Entity, &mut AskyState, &mut StringCursor), With<Number<T>>>,
     mut input: EventReader<KeyboardInput>,
     mut commands: Commands,
     focus: Option<Res<Focus>>,

@@ -123,7 +123,7 @@ fn setup(mut commands: Commands) {
     );
 }
 
-fn add_marker(query: Query<&Children, With<InputState>>,
+fn add_marker(query: Query<&Children, With<StringCursor>>,
               mut commands: Commands) {
     for children in query.iter() {
         for (i, child) in children.into_iter().enumerate() {

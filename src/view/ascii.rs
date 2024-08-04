@@ -1,7 +1,8 @@
 use std::fmt::Write;
 use crate::construct::*;
 use crate::{
-    prompt::{Confirm, ConfirmState, TextField, InputState, Prompt, Feedback},
+    prompt::{Confirm, ConfirmState, TextField, Prompt, Feedback},
+    StringCursor,
     AskyState,
 };
 use bevy::prelude::*;
@@ -63,10 +64,10 @@ pub(crate) fn confirm_view(
 
 pub(crate) fn text_view(
     mut query: Query<
-        (&AskyState, &InputState, &mut Text, Option<&Prompt>, Option<&Feedback>),
+        (&AskyState, &StringCursor, &mut Text, Option<&Prompt>, Option<&Feedback>),
         (
             With<View>,
-            Or<(Changed<AskyState>, Changed<InputState>, Changed<Feedback>, Changed<Prompt>)>,
+            Or<(Changed<AskyState>, Changed<StringCursor>, Changed<Feedback>, Changed<Prompt>)>,
         ),
     >,
 ) {

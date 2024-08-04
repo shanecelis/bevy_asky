@@ -1,6 +1,6 @@
 //! Number like trait
 use std::{fmt::Display, str::FromStr};
-use crate::prompt::InputState;
+use crate::StringCursor;
 
 /// A utility trait to allow only numbers in [`Number`] prompt.
 /// Also allows to custom handle they based on the type.
@@ -17,7 +17,7 @@ pub trait NumLike: Default + Display + FromStr + Send + Copy {
         false
     }
 
-    fn is_valid(ch: char, input: &InputState) -> bool {
+    fn is_valid(ch: char, input: &StringCursor) -> bool {
         match ch {
             '-' | '+' => Self::is_signed() && input.index == 0,
             '.' => Self::is_float() && !input.value.contains('.'),
