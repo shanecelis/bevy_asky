@@ -73,7 +73,7 @@ fn setup(mut commands: Commands) {
             .observe(
                 move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
                     eprintln!("trigger {:?}", trigger.event());
-                    let answer = trigger.event().as_ref().unwrap();
+                    let answer = trigger.event().as_ref().unwrap_or(&false);
                     commands.entity(column).with_children(|parent| {
                         parent.spawn(TextBundle::from_section(
                             if *answer {

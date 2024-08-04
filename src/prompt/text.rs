@@ -1,5 +1,5 @@
 use crate::construct::*;
-use super::Prompt;
+use super::{Feedback, Prompt};
 use bevy::{
     input::{
         ButtonState,
@@ -296,6 +296,8 @@ fn text_controller(
                         }
                         Key::Escape => {
                             commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
+                            commands.entity(id).insert(Feedback::error("canceled"));
+
                             *state = AskyState::Error;
                         }
                         x => info!("Unhandled key {x:?}")

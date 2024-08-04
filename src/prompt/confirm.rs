@@ -1,6 +1,6 @@
 use crate::construct::*;
 use crate::{AskyEvent, AskyState, Error};
-use super::Prompt;
+use super::{Prompt, Feedback};
 use bevy::{
     a11y::Focus,
     prelude::*
@@ -93,13 +93,19 @@ fn confirm_controller(
                     if input.just_pressed(KeyCode::KeyN) {
                         confirm_state.yes = Some(false);
                     }
-                    if input.just_pressed(KeyCode::Enter) && confirm_state.yes.is_some() {
-                        commands.trigger_targets(AskyEvent(Ok(confirm_state.yes.unwrap())), id);
-                        *state = AskyState::Complete;
+                    if input.just_pressed(KeyCode::Enter) {
+                        if let Some(yes) = confirm_state.yes {
+                            commands.trigger_targets(AskyEvent(Ok(yes)), id);
+                            commands.entity(id).insert(Feedback::info(if yes { "Yes" } else { "No" }));
+                            *state = AskyState::Complete;
+                        } else {
+                            commands.entity(id).insert(Feedback::warn("select an option"));
+                        }
                     }
                     if input.just_pressed(KeyCode::Escape) {
                         commands.trigger_targets(AskyEvent::<bool>(Err(Error::Cancel)), id);
                         *state = AskyState::Error;
+                        commands.entity(id).insert(Feedback::error("canceled"));
                     }
                 }
             }

@@ -1,6 +1,7 @@
+use std::fmt::Write;
 use crate::construct::*;
 use crate::{
-    prompt::{Confirm, ConfirmState, TextField, InputState, Prompt},
+    prompt::{Confirm, ConfirmState, TextField, InputState, Prompt, Feedback},
     AskyState,
 };
 use bevy::prelude::*;
@@ -12,14 +13,14 @@ pub fn plugin(app: &mut App) {
 
 pub(crate) fn confirm_view(
     mut query: Query<
-        (&AskyState, &ConfirmState, &mut Text, &Confirm, Option<&Prompt>),
+        (&AskyState, &ConfirmState, &mut Text, &Confirm, Option<&Prompt>, Option<&Feedback>),
         (
             With<View>,
-            Or<(Changed<AskyState>, Changed<ConfirmState>)>,
+            Or<(Changed<AskyState>, Changed<ConfirmState>, Changed<Feedback>, Changed<Prompt>)>,
         ),
     >,
 ) {
-    for (state, confirm_state, mut text, confirm, prompt_maybe) in query.iter_mut() {
+    for (state, confirm_state, mut text, confirm, prompt_maybe, feedback_maybe) in query.iter_mut() {
         match *state {
             AskyState::Frozen | AskyState::Uninit => (),
             ref asky_state => {
@@ -39,20 +40,22 @@ pub(crate) fn confirm_view(
                 }
                 text.sections[3].value.replace_range(
                     ..,
-                    if matches!(asky_state, AskyState::Complete) {
+                    if !matches!(asky_state, AskyState::Complete) {
                         match confirm_state.yes {
-                            Some(true) => "Yes",
-                            Some(false) => "No",
-                            None => unreachable!(),
+                            Some(true) => " Y/n",
+                            Some(false) => " y/N",
+                            None => " y/n",
                         }
                     } else {
-                        match confirm_state.yes {
-                            Some(true) => "Y/n",
-                            Some(false) => "y/N",
-                            None => "y/n",
-                        }
-                    },
+                        " "
+                    }
                 );
+
+                if let Some(ref feedback) = feedback_maybe {
+                    text.sections[4].value.clear();
+                    write!(&mut text.sections[4].value, " {}", &feedback);
+                }
+
             }
         }
     }
@@ -60,14 +63,14 @@ pub(crate) fn confirm_view(
 
 pub(crate) fn text_view(
     mut query: Query<
-        (&AskyState, &InputState, &mut Text, Option<&Prompt>),
+        (&AskyState, &InputState, &mut Text, Option<&Prompt>, Option<&Feedback>),
         (
             With<View>,
-            Or<(Changed<AskyState>, Changed<InputState>)>,
+            Or<(Changed<AskyState>, Changed<InputState>, Changed<Feedback>, Changed<Prompt>)>,
         ),
     >,
 ) {
-    for (state, text_state, mut text, prompt_maybe) in query.iter_mut() {
+    for (state, text_state, mut text, prompt_maybe, feedback_maybe) in query.iter_mut() {
         match *state {
             AskyState::Frozen | AskyState::Uninit => (),
             ref asky_state => {
@@ -81,6 +84,7 @@ pub(crate) fn text_view(
                         _ => unreachable!(),
                     },
                 );
+                text.sections[1].value.clear();
                 if let Some(ref prompt) = prompt_maybe {
                     text.sections[1].value.replace_range(..,
                                                          &prompt.0);
@@ -89,6 +93,11 @@ pub(crate) fn text_view(
                     ..,
                     &text_state.value
                 );
+
+                text.sections[4].value.clear();
+                if let Some(ref feedback) = feedback_maybe {
+                    write!(&mut text.sections[4].value, " {}", &feedback);
+                }
             }
         }
     }
@@ -138,6 +147,7 @@ impl Construct for View {
                 "".into(), //text_input.message.to_string().into(), // 1
                 "".into(),                          // 2
                 "".into(),                          // 3
+                "".into(),                          // 4
             ]),
             ..default()
         });

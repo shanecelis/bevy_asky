@@ -1,5 +1,5 @@
 use crate::construct::*;
-use super::Prompt;
+use super::{Feedback, Prompt};
 use bevy::{
     input::{
         ButtonState,
@@ -73,21 +73,6 @@ pub struct Number<T: NumLike> {
     // pub validator_result: Result<(), Cow<'a, str>>,
     // validator: Option<Box<InputValidator<'a>>>,
 }
-
-// impl<T: NumLike> TextModel for Number<T> {
-//     fn message<'a>(&'a self) -> &'a str { &self.message }
-//     fn placeholder<'a>(&'a self) -> Option<&'a str> { self.placeholder.as_deref() }
-//     fn default_value<'a>(&'a self) -> Option<&'a str> { self.default_value.as_deref() }
-// }
-
-// pub struct InputState {
-//     /// Number<T> state for the prompt
-//     pub input: InputState,
-//     /// State of the validation of the user input
-//     // pub validator_result: Result<(), Cow<'a, str>>,
-//     // validator: Option<Box<InputValidator<'a>>>,
-// }
-//
 
 impl<T: NumLike> From<Cow<'static, str>> for Number<T> {
     fn from(message: Cow<'static, str>) -> Self {
@@ -169,7 +154,7 @@ impl<T: NumLike> Number<T> {
 }
 
 
-fn number_controller<T: NumLike + Sync + 'static>(
+fn number_controller<T: NumLike + Sync + 'static + TypePath>(
     mut query: Query<(Entity, &mut AskyState, &mut InputState), With<Number<T>>>,
     mut input: EventReader<KeyboardInput>,
     mut commands: Commands,
@@ -189,6 +174,7 @@ fn number_controller<T: NumLike + Sync + 'static>(
                     if ev.state != ButtonState::Pressed {
                         continue;
                     }
+                    commands.entity(id).remove::<Feedback>();
                     match &ev.logical_key {
                         Key::Character(s) => {
                             for c in s.chars() {
@@ -210,12 +196,14 @@ fn number_controller<T: NumLike + Sync + 'static>(
                                 }
                                 Err(_) => {
                                     commands.trigger_targets(AskyEvent::<T>(Err(Error::InvalidNumber)), id);
-                                    *state = AskyState::Error;
+                                    commands.entity(id).insert(Feedback::warn(format!("invalid number for {}", T::short_type_path())));
+                                    // *state = AskyState::Error;
                                 }
                             }
                         }
                         Key::Escape => {
                             commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
+                            commands.entity(id).insert(Feedback::error("canceled"));
                             *state = AskyState::Error;
                         }
                         x => info!("Unhandled key {x:?}")
