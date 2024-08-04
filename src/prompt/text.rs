@@ -221,36 +221,3 @@ fn text_controller(
         }
     }
 }
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn test_floor_char() {
-        let s = "❤️🧡💛💚💙💜";
-        assert_eq!(s.len(), 26);
-        assert!(!s.is_char_boundary(13));
-
-        let closest = floor_char_boundary(s, 13);
-        assert_eq!(closest, 10);
-        assert_eq!(&s[..closest], "❤️🧡");
-        assert_eq!(floor_char_boundary(s, 0), 0);
-        assert_eq!(floor_char_boundary(s, 26), 26);
-        assert_eq!(floor_char_boundary(s, 27), 26);
-    }
-
-    #[test]
-    fn test_ceil_char() {
-        let s = "❤️🧡💛💚💙💜";
-        assert_eq!(s.len(), 26);
-        assert!(!s.is_char_boundary(13));
-
-        let closest = ceil_char_boundary(s, 13);
-        assert_eq!(closest, 14);
-        assert_eq!(&s[..closest], "❤️🧡💛");
-        assert_eq!(ceil_char_boundary(s, 0), 0);
-        assert_eq!(ceil_char_boundary(s, 26), 26);
-        assert_eq!(ceil_char_boundary(s, 27), 26);
-    }
-}

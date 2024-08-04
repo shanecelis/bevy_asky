@@ -1,7 +1,7 @@
 use std::fmt::Write;
 use crate::construct::*;
 use crate::{
-    prompt::{Confirm, ConfirmState, TextField, Prompt, Feedback},
+    prompt::{Confirm, ConfirmState, Prompt, Feedback},
     StringCursor,
     AskyState,
 };
@@ -35,7 +35,7 @@ pub(crate) fn confirm_view(
                         _ => unreachable!(),
                     },
                 );
-                if let Some(ref prompt) = prompt_maybe {
+                if let Some(prompt) = prompt_maybe {
                     text.sections[1].value.replace_range(..,
                                                          &prompt.0);
                 }
@@ -86,7 +86,7 @@ pub(crate) fn text_view(
                     },
                 );
                 text.sections[1].value.clear();
-                if let Some(ref prompt) = prompt_maybe {
+                if let Some(prompt) = prompt_maybe {
                     text.sections[1].value.replace_range(..,
                                                          &prompt.0);
                 }
