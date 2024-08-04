@@ -2,11 +2,9 @@
 
 use bevy::{ecs::system::EntityCommands, prelude::*, ui::Val::*};
 
-use super::interaction::InteractionPalette;
-
 #[derive(Debug, Clone, Resource)]
 pub struct Palette {
-    pub interaction: InteractionPalette,
+    // pub interaction: InteractionPalette,
     pub border: Color,
     pub background: Color,
     pub text: Color,
@@ -17,7 +15,7 @@ pub struct Palette {
 impl Default for Palette {
     fn default() -> Self {
         Self {
-            interaction: InteractionPalette::default(),
+            // interaction: InteractionPalette::default(),
             border: Color::BLACK,
             background: Color::WHITE.mix(&Color::BLACK, 0.8),
             text: Color::WHITE,
@@ -63,7 +61,7 @@ impl<T: Spawn> Widgets for T {
                 ..default()
             },
             AskyElement,
-            palette.interaction.clone(),
+            // palette.interaction.clone(),
         ));
         entity.with_children(|children| {
             children.spawn((
@@ -142,33 +140,33 @@ impl<T: Spawn> Widgets for T {
     // }
 }
 
-/// An extension trait for spawning UI containers.
-pub trait Containers {
-    /// Spawns a root node that covers the full screen
-    /// and centers its content horizontally and vertically.
-    fn ui_root(&mut self) -> EntityCommands;
-}
+// /// An extension trait for spawning UI containers.
+// pub trait Containers {
+//     /// Spawns a root node that covers the full screen
+//     /// and centers its content horizontally and vertically.
+//     fn ui_root(&mut self) -> EntityCommands;
+// }
 
-impl Containers for Commands<'_, '_> {
-    fn ui_root(&mut self) -> EntityCommands {
-        self.spawn((
-            Name::new("UI Root"),
-            NodeBundle {
-                style: Style {
-                    width: Percent(100.0),
-                    height: Percent(100.0),
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    flex_direction: FlexDirection::Column,
-                    row_gap: Px(10.0),
-                    position_type: PositionType::Absolute,
-                    ..default()
-                },
-                ..default()
-            },
-        ))
-    }
-}
+// impl Containers for Commands<'_, '_> {
+//     fn ui_root(&mut self) -> EntityCommands {
+//         self.spawn((
+//             Name::new("UI Root"),
+//             NodeBundle {
+//                 style: Style {
+//                     width: Percent(100.0),
+//                     height: Percent(100.0),
+//                     justify_content: JustifyContent::Center,
+//                     align_items: AlignItems::Center,
+//                     flex_direction: FlexDirection::Column,
+//                     row_gap: Px(10.0),
+//                     position_type: PositionType::Absolute,
+//                     ..default()
+//                 },
+//                 ..default()
+//             },
+//         ))
+//     }
+// }
 
 /// An internal trait for types that can spawn entities.
 /// This is here so that [`Widgets`] can be implemented on all types that

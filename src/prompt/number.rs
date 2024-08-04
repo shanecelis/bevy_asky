@@ -63,22 +63,14 @@ pub fn plugin(app: &mut App) {
 pub struct Number<T: NumLike> {
     /// Message used to display in the prompt
     pub message: Cow<'static, str>,
-    // Number<T> state for the prompt
-    // pub input: StringCursor,
-    /// Placeholder to show when the input is empty
-    pub placeholder: Option<Cow<'static, str>>,
     /// Default value to submit when the input is empty
     pub default_value: Option<T>,
-    // State of the validation of the user input
-    // pub validator_result: Result<(), Cow<'a, str>>,
-    // validator: Option<Box<InputValidator<'a>>>,
 }
 
 impl<T: NumLike> From<Cow<'static, str>> for Number<T> {
     fn from(message: Cow<'static, str>) -> Self {
         Self {
             message,
-            placeholder: None,
             default_value: None
         }
     }
@@ -88,7 +80,6 @@ impl<T: NumLike> From<&'static str> for Number<T> {
     fn from(message: &'static str) -> Self {
         Self {
             message: message.into(),
-            placeholder: None,
             default_value: None
         }
     }
@@ -121,29 +112,8 @@ impl<T: NumLike> Number<T> {
     pub fn new(message: impl Into<Cow<'static, str>>) -> Self {
         Number {
             message: message.into(),
-            placeholder: None,
             default_value: None,
         }
-    }
-
-    // pub(crate) fn insert(ch: char, input: &mut StringCursor) {
-    //     let is_valid = match ch {
-    //         '-' | '+' => T::is_signed() && input.index == 0,
-    //         '.' => T::is_float() && !input.value.contains('.'),
-    //         _ => ch.is_ascii_digit(),
-    //     };
-
-    //     if is_valid {
-    //         input.insert(ch)
-    //     }
-    // }
-
-    /// Set text to show when the input is empty.
-    ///
-    /// This not will not be submitted when the input is empty.
-    pub fn placeholder(mut self, value: impl Into<Cow<'static, str>>) -> Self {
-        self.placeholder = Some(value.into());
-        self
     }
 
     /// Set default value to submit when the input is empty.
@@ -166,9 +136,6 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
             continue;
         }
         match *state {
-            AskyState::Uninit => {
-                *state = AskyState::Reading;
-            }
             AskyState::Reading => {
                 for ev in input.read() {
                     if ev.state != ButtonState::Pressed {
@@ -197,7 +164,6 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                                 Err(_) => {
                                     commands.trigger_targets(AskyEvent::<T>(Err(Error::InvalidNumber)), id);
                                     commands.entity(id).insert(Feedback::warn(format!("invalid number for {}", T::short_type_path())));
-                                    // *state = AskyState::Error;
                                 }
                             }
                         }
@@ -217,7 +183,8 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
 
 #[cfg(test)]
 mod test {
-    use super::*;
+    
+    use crate::{ceil_char_boundary, floor_char_boundary};
 
     #[test]
     fn test_floor_char() {

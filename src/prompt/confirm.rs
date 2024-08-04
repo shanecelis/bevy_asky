@@ -77,20 +77,19 @@ fn confirm_controller(
             continue;
         }
         match *state {
-            AskyState::Uninit => {
-                *state = AskyState::Reading;
-            }
             AskyState::Reading => {
                 if input.any_just_pressed([
                     KeyCode::KeyY,
+                    KeyCode::KeyH,
+                    KeyCode::KeyL,
                     KeyCode::KeyN,
                     KeyCode::Enter,
                     KeyCode::Escape,
                 ]) {
-                    if input.just_pressed(KeyCode::KeyY) {
+                    if input.any_just_pressed([KeyCode::KeyY, KeyCode::KeyL]) {
                         confirm_state.yes = Some(true);
                     }
-                    if input.just_pressed(KeyCode::KeyN) {
+                    if input.any_just_pressed([KeyCode::KeyN, KeyCode::KeyH]) {
                         confirm_state.yes = Some(false);
                     }
                     if input.just_pressed(KeyCode::Enter) {

@@ -99,7 +99,7 @@ pub(crate) fn confirm_view(
         (&AskyState, &ConfirmState, Option<&Prompt>, &Children),
         (
             With<View>, With<Confirm>,
-            Or<(Changed<AskyState>, Changed<ConfirmState>)>,
+            Or<(Changed<AskyState>, Changed<ConfirmState>, Changed<Prompt>)>,
         ),
     >,
     mut question: Query<&mut Text, With<Question>>,
@@ -114,76 +114,70 @@ pub(crate) fn confirm_view(
     >,
     color_view: Res<ButtonView>,
 ) {
-    for (state, confirm_state, prompt, children) in query.iter_mut() {
-        match *state {
-            AskyState::Frozen | AskyState::Uninit => (),
-            ref asky_state => {
-                eprint!(".");
+    for (asky_state, confirm_state, prompt, children) in query.iter_mut() {
+        eprint!(".");
 
-                for child in children {
-                    if let Ok(mut text) = question.get_mut(*child) {
-                        let highlight = TextStyle {
-                            color: if matches!(asky_state, AskyState::Reading) {
-                                color_view.highlight.into()
-                            } else {
-                                color_view.complete.into()
-                            },
-                            ..default()
-                        };
-                        text.sections[0].value.replace_range(
-                            1..=1,
-                            match asky_state {
-                                AskyState::Reading => " ",
-                                AskyState::Complete => "x",
-                                AskyState::Error => "!",
-                                _ => unreachable!(),
-                            },
-                        );
-                        text.sections[0].style = highlight;
-                        text.sections[1].value.replace_range(.., prompt.map(|x| x.as_ref()).unwrap_or(""));
-                    }
+        for child in children {
+            if let Ok(mut text) = question.get_mut(*child) {
+                let highlight = TextStyle {
+                    color: if matches!(asky_state, AskyState::Reading) {
+                        color_view.highlight.into()
+                    } else {
+                        color_view.complete.into()
+                    },
+                    ..default()
+                };
+                text.sections[0].value.replace_range(
+                    1..=1,
+                    match asky_state {
+                        AskyState::Reading => " ",
+                        AskyState::Complete => "x",
+                        AskyState::Error => "!",
+                    },
+                );
+                text.sections[0].style = highlight;
+                text.sections[1].value.replace_range(.., prompt.map(|x| x.as_ref()).unwrap_or(""));
+            }
 
-                    // for (mut background, mut visibility) in answers.iter_many_mut(children) {
-                    if let Ok((text, mut background, mut visibility, answer)) =
-                        answers.get_mut(*child)
-                    {
-                        let vis;
-                        match answer {
-                            Answer::Final => {
-                                vis = matches!(asky_state, AskyState::Complete);
-                                text.unwrap().sections[0].value.replace_range(
-                                    ..,
-                                    if vis {
-                                        match confirm_state.yes {
-                                            Some(true) => "Yes",
-                                            Some(false) => "No",
-                                            None => "N/A",
-                                        }
-                                    } else {
-                                        ""
-                                    },
-                                )
-                            }
-                            Answer::Selection(yes) => {
-                                vis = !matches!(asky_state, AskyState::Complete);
-                                if vis {
-                                    *background =
-                                        if confirm_state.yes.map(|x| x == *yes).unwrap_or(false) {
-                                            color_view.highlight
-                                        } else {
-                                            color_view.lowlight
-                                        }
-                                        .into();
+            // for (mut background, mut visibility) in answers.iter_many_mut(children) {
+            if let Ok((text, mut background, mut visibility, answer)) =
+                answers.get_mut(*child)
+            {
+                let vis;
+                match answer {
+                    Answer::Final => {
+                        vis = matches!(asky_state, AskyState::Complete);
+                        text.unwrap().sections[0].value.replace_range(
+                            ..,
+                            if vis {
+                                match confirm_state.yes {
+                                    Some(true) => "Yes",
+                                    Some(false) => "No",
+                                    None => "N/A",
                                 }
-                            }
+                            } else {
+                                ""
+                            },
+                        )
+                    }
+                    Answer::Selection(yes) => {
+                        vis = !matches!(asky_state, AskyState::Complete);
+                        if vis {
+                            *background =
+                                if confirm_state.yes.map(|x| x == *yes).unwrap_or(false) {
+                                    color_view.highlight
+                                } else {
+                                    color_view.lowlight
+                                }
+                            .into();
                         }
-                        *visibility = if vis {
-                            Visibility::Visible
-                        } else {
-                            Visibility::Hidden
-                        };
                     }
                 }
+                *visibility = if vis {
+                    Visibility::Visible
+                } else {
+                    Visibility::Hidden
+                };
             }
         }
     }

@@ -23,41 +23,35 @@ pub(crate) fn confirm_view(
         ),
     >,
 ) {
-    for (state, confirm_state, mut text, prompt, feedback_maybe) in query.iter_mut() {
-        match *state {
-            AskyState::Frozen | AskyState::Uninit => (),
-            ref asky_state => {
-                eprint!(".");
-                text.sections[0].value.replace_range(
-                    1..=1,
-                    match asky_state {
-                        AskyState::Reading => " ",
-                        AskyState::Complete => "x",
-                        AskyState::Error => "!",
-                        _ => unreachable!(),
-                    },
-                );
-                text.sections[1].value.replace_range(.., prompt.map(|x| x.as_ref()).unwrap_or(""));
-                text.sections[3].value.replace_range(
-                    ..,
-                    if !matches!(asky_state, AskyState::Complete) {
-                        match confirm_state.yes {
-                            Some(true) => " Y/n",
-                            Some(false) => " y/N",
-                            None => " y/n",
-                        }
-                    } else {
-                        " "
-                    }
-                );
-
-                if let Some(ref feedback) = feedback_maybe {
-                    text.sections[4].value.clear();
-                    write!(&mut text.sections[4].value, " {}", &feedback);
+    for (asky_state, confirm_state, mut text, prompt, feedback_maybe) in query.iter_mut() {
+        eprint!(".");
+        text.sections[0].value.replace_range(
+            1..=1,
+            match asky_state {
+                AskyState::Reading => " ",
+                AskyState::Complete => "x",
+                AskyState::Error => "!",
+            },
+        );
+        text.sections[1].value.replace_range(.., prompt.map(|x| x.as_ref()).unwrap_or(""));
+        text.sections[3].value.replace_range(
+            ..,
+            if !matches!(asky_state, AskyState::Complete) {
+                match confirm_state.yes {
+                    Some(true) => " Y/n",
+                    Some(false) => " y/N",
+                    None => " y/n",
                 }
-
+            } else {
+                " "
             }
+        );
+
+        if let Some(ref feedback) = feedback_maybe {
+            text.sections[4].value.clear();
+            let _ = write!(&mut text.sections[4].value, " {}", &feedback);
         }
+
     }
 }
 
@@ -70,66 +64,35 @@ pub(crate) fn text_view(
         ),
     >,
 ) {
-    for (state, text_state, mut text, prompt_maybe, feedback_maybe) in query.iter_mut() {
-        match *state {
-            AskyState::Frozen | AskyState::Uninit => (),
-            ref asky_state => {
-                eprint!(".");
-                text.sections[0].value.replace_range(
-                    1..=1,
-                    match asky_state {
-                        AskyState::Reading => " ",
-                        AskyState::Complete => "x",
-                        AskyState::Error => "!",
-                        _ => unreachable!(),
-                    },
-                );
-                text.sections[1].value.clear();
-                if let Some(prompt) = prompt_maybe {
-                    text.sections[1].value.replace_range(..,
-                                                         &prompt.0);
-                }
-                text.sections[2].value.replace_range(
-                    ..,
-                    &text_state.value
-                );
+    for (asky_state, text_state, mut text, prompt_maybe, feedback_maybe) in query.iter_mut() {
+        eprint!(".");
+        text.sections[0].value.replace_range(
+            1..=1,
+            match asky_state {
+                AskyState::Reading => " ",
+                AskyState::Complete => "x",
+                AskyState::Error => "!",
+            },
+        );
+        text.sections[1].value.clear();
+        if let Some(prompt) = prompt_maybe {
+            text.sections[1].value.replace_range(..,
+                                                 &prompt.0);
+        }
+        text.sections[2].value.replace_range(
+            ..,
+            &text_state.value
+        );
 
-                text.sections[4].value.clear();
-                if let Some(ref feedback) = feedback_maybe {
-                    write!(&mut text.sections[4].value, " {}", &feedback);
-                }
-            }
+        text.sections[4].value.clear();
+        if let Some(ref feedback) = feedback_maybe {
+            let _ = write!(&mut text.sections[4].value, " {}", &feedback);
         }
     }
 }
 
 #[derive(Component)]
 pub struct View;
-
-// impl Construct for View<Confirm> {
-//     type Props = <Confirm as Construct>::Props;
-
-//     fn construct(
-//         context: &mut ConstructContext,
-//         props: Self::Props,
-//     ) -> Result<Self, ConstructError> {
-//         // Our requirements.
-//         let confirm: Confirm = context.construct(props)?;
-//         let mut commands = context.world.commands();
-//         commands.entity(context.id).insert(TextBundle {
-//             text: Text::from_sections([
-//                 "[_] ".into(),                      // 0
-//                 confirm.message.to_string().into(), // 1
-//                 " ".into(),                         // 2
-//                 "".into(),                          // 3
-//             ]),
-//             ..default()
-//         });
-//         context.world.flush();
-
-//         Ok(View(confirm))
-//     }
-// }
 
 impl Construct for View {
     type Props = ();

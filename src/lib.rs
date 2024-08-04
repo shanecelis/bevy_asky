@@ -48,10 +48,7 @@ pub struct AskyEvent<T>(pub Result<T, Error>);
 
 #[derive(Debug, Component, Default, Clone)]
 pub enum AskyState {
-    Frozen, // XXX: Drop frozen
     #[default]
-    Uninit,
-    //Construct,
     Reading,
     Complete,
     Error,

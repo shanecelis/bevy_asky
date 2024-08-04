@@ -184,9 +184,6 @@ fn text_controller(
             continue;
         }
         match *state {
-            AskyState::Uninit => {
-                *state = AskyState::Reading;
-            }
             AskyState::Reading => {
                 for ev in input.read() {
                     if ev.state != ButtonState::Pressed {
