@@ -34,7 +34,6 @@ pub(crate) fn plugin(app: &mut App) {
     app.add_systems(PreUpdate, toggle_controller);
 }
 
-
 impl Construct for Toggle {
     type Props = Toggle;
 
@@ -96,19 +95,3 @@ fn toggle_controller(
         }
     }
 }
-
-// impl Component for Toggle {
-//     const STORAGE_TYPE: StorageType = StorageType::Table;
-
-//     fn register_component_hooks(hooks: &mut ComponentHooks) {
-//         hooks.on_add(|mut world, targeted_entity, _component_id| {
-//             if world.get::<ConfirmState>(targeted_entity).is_none() {
-//                 let confirm_init = world.get::<Toggle>(targeted_entity).unwrap().init;
-//                 let mut commands = world.commands();
-//                 commands
-//                     .entity(targeted_entity)
-//                     .insert(ConfirmState { yes: confirm_init });
-//             }
-//         });
-//     }
-// }

@@ -3,6 +3,7 @@
 use bevy::{
     prelude::*,
 };
+ mod focus;
 use std::borrow::Cow;
 pub mod construct;
 pub mod prompt;
@@ -11,6 +12,7 @@ mod num_like;
 pub use num_like::*;
 mod string_cursor;
 pub use string_cursor::*;
+pub use focus::*;
 
 pub struct AskyPlugin;
 
@@ -30,6 +32,7 @@ pub enum AskySet {
 impl Plugin for AskyPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(prompt::plugin);
+        app.add_plugins(focus::plugin);
         // .configure_sets(
         //     Update,
         //     (

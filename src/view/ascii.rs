@@ -1,14 +1,19 @@
 use std::fmt::Write;
 use crate::construct::*;
 use crate::{
-    prompt::{Confirm, ConfirmState, Prompt, Feedback, Placeholder, Password, Toggle},
+    Focused,
+    Focusable,
+    prompt::{Confirm, ConfirmState, Prompt, Feedback, Placeholder, Password, Toggle, Checkbox, Radio},
     StringCursor,
     AskyState,
 };
-use bevy::prelude::*;
+use bevy::{
+    a11y::Focus,
+    prelude::*
+};
 
 pub fn plugin(app: &mut App) {
-    app.add_systems(Update, (confirm_view, text_view, password_view, toggle_view));
+    app.add_systems(Update, (confirm_view, text_view, password_view, toggle_view, checkbox_view, radio_view));
 }
 
 pub(crate) fn confirm_view(
@@ -48,6 +53,73 @@ pub(crate) fn confirm_view(
 
         if let Some(ref feedback) = feedback_maybe {
             text.sections[4].value.clear();
+            let _ = write!(&mut text.sections[4].value, " {}", &feedback);
+        }
+    }
+}
+
+pub(crate) fn checkbox_view(
+    mut query: Query<
+        (&AskyState, &Checkbox, &mut Text, Option<&Prompt>, Option<&Feedback>),
+        (
+            With<View>,
+
+            Or<(Changed<AskyState>, Changed<Checkbox>, Changed<Feedback>, Changed<Prompt>, Changed<Focusable>)>,
+        ),
+    >,
+) {
+    for (asky_state, checkbox, mut text, prompt, feedback_maybe) in query.iter_mut() {
+        eprint!(".");
+
+        text.sections[0].value.replace_range(
+            ..,
+            if checkbox.checked {
+                "[x] "
+            } else {
+                "[ ] "
+            }
+        );
+        text.sections[1].value.replace_range(.., prompt.map(|x| x.as_ref()).unwrap_or(""));
+
+        if let Some(ref feedback) = feedback_maybe {
+            text.sections[4].value.clear();
+            let _ = write!(&mut text.sections[4].value, " {}", &feedback);
+        }
+    }
+}
+
+pub(crate) fn radio_view(
+    mut query: Query<
+        (Entity, &AskyState, &Radio, &mut Text, Option<&Prompt>, Option<&Feedback>),
+        (
+            With<View>,
+            Or<(Changed<AskyState>, Changed<Radio>, Changed<Feedback>, Changed<Prompt>, Changed<Focusable>)>,
+        ),
+    >,
+    focus: Option<Res<Focus>>,
+) {
+    for (id, asky_state, radio, mut text, prompt, feedback_maybe) in query.iter_mut() {
+        eprint!(".");
+        if focus.is_focused(id) {
+            text.sections[0].value.replace_range(.., "> ");
+        } else {
+            text.sections[0].value.replace_range(.., "  ");
+        }
+        text.sections[1].value.replace_range(
+            ..,
+            if radio.checked {
+                "(o) "
+            } else {
+                "( ) "
+            }
+        );
+        text.sections[2].value.replace_range(.., prompt.map(|x| x.as_ref()).unwrap_or(""));
+        // text.sections[3].value.replace_range(
+        //     ..,
+        // );
+
+        if let Some(ref feedback) = feedback_maybe {
+            text.sections[3].value.clear();
             let _ = write!(&mut text.sections[4].value, " {}", &feedback);
         }
     }

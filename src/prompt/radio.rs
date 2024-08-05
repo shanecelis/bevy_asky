@@ -1,0 +1,131 @@
+use crate::construct::*;
+use crate::{AskyEvent, AskyState, Error, Focusable};
+use super::{Prompt, Feedback};
+use bevy::{
+    a11y::Focus,
+    prelude::*
+};
+use std::borrow::Cow;
+
+#[derive(Component)]
+pub struct Radio {
+    /// Message used to display in the prompt.
+    pub message: Cow<'static, str>,
+    /// Initial radio of the prompt.
+    pub checked: bool,
+}
+
+impl From<Cow<'static, str>> for Radio {
+    fn from(message: Cow<'static, str>) -> Self {
+        Radio {
+            message,
+            checked: false
+        }
+    }
+}
+
+pub(crate) fn plugin(app: &mut App) {
+    app.add_systems(PreUpdate, radio_controller);
+}
+
+impl Construct for Radio {
+    type Props = Cow<'static, str>;
+
+    fn construct(
+        context: &mut ConstructContext,
+        props: Self::Props,
+    ) -> Result<Self, ConstructError> {
+        // Our requirements.
+        let state: AskyState = context.construct(AskyState::default())?;
+        let mut commands = context.world.commands();
+        commands
+            .entity(context.id)
+            .insert(Focusable::default())
+            .insert(Prompt(props.clone()))
+            .insert(state);
+
+        context.world.flush();
+        Ok(Radio {
+            message: props,
+            checked: false,
+        })
+    }
+}
+
+fn radio_controller(
+    mut query: Query<(Entity, &mut AskyState, &mut Radio, Option<&Parent>)>,
+    child_query: Query<&Children>,
+    input: Res<ButtonInput<KeyCode>>,
+    mut commands: Commands,
+    focus: Option<Res<Focus>>,
+    mut toggled: Local<Vec<(Entity, Entity)>>,
+) {
+    toggled.clear();
+    let focused = focus.map(|res| res.0).unwrap_or(None);
+    for (id, mut state, mut radio, parent) in query.iter_mut() {
+        if focused.map(|x| x != id).unwrap_or(false) {
+            continue;
+        }
+        if matches!(*state, AskyState::Reading) {
+            if input.any_just_pressed([
+                KeyCode::Space,
+                KeyCode::KeyH,
+                KeyCode::KeyL,
+                KeyCode::Enter,
+                KeyCode::Escape,
+            ]) {
+                let was_checked = radio.checked;
+
+                if input.just_pressed(KeyCode::Space) {
+                    radio.checked = true;
+                }
+                if input.any_just_pressed([KeyCode::KeyL]) {
+                    radio.checked = true;
+                }
+                if input.any_just_pressed([KeyCode::KeyH]) {
+                    radio.checked = false;
+                }
+                if input.just_pressed(KeyCode::Enter) {
+                    commands.trigger_targets(AskyEvent(Ok(radio.checked)), id);
+                    *state = AskyState::Complete;
+                }
+                if input.just_pressed(KeyCode::Escape) {
+                    commands.trigger_targets(AskyEvent::<bool>(Err(Error::Cancel)), id);
+                    *state = AskyState::Error;
+                }
+                if radio.checked && !was_checked {
+                    // We've been checked and weren't checked before.
+                    if let Some(p) = parent {
+                        toggled.push((id, **p));
+                    }
+                }
+            }
+        }
+    }
+    for (toggled_child, parent) in toggled.drain(..) {
+        for child in child_query.get(parent).unwrap() {
+            if *child == toggled_child {
+                continue;
+            }
+            if let Ok((_, _, mut radio, _)) = query.get_mut(*child) {
+                radio.checked = false;
+            }
+        }
+    }
+}
+
+// impl Component for Radio {
+//     const STORAGE_TYPE: StorageType = StorageType::Table;
+
+//     fn register_component_hooks(hooks: &mut ComponentHooks) {
+//         hooks.on_add(|mut world, targeted_entity, _component_id| {
+//             if world.get::<ConfirmState>(targeted_entity).is_none() {
+//                 let confirm_init = world.get::<Radio>(targeted_entity).unwrap().init;
+//                 let mut commands = world.commands();
+//                 commands
+//                     .entity(targeted_entity)
+//                     .insert(ConfirmState { yes: confirm_init });
+//             }
+//         });
+//     }
+// }
