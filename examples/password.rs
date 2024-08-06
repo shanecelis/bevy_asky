@@ -29,12 +29,12 @@ fn setup(mut commands: Commands) {
                 ..default()
             },
             ..default()
-        }).with_children(|parent| {
+        })
+        .with_children(|parent| {
             parent
-        .construct::<Password>("Password: ")
-        .construct::<ascii::View>(())
-            .observe(
-                move |trigger: Trigger<AskyEvent<String>>| {
+                .construct::<Password>("Password: ")
+                .construct::<ascii::View>(())
+                .observe(move |trigger: Trigger<AskyEvent<String>>| {
                     eprintln!("trigger {:?}", trigger.event());
                 });
         });
@@ -77,11 +77,9 @@ fn setup(mut commands: Commands) {
     //     .observe(|trigger: Trigger<AskyEvent<bool>>| {
     //         eprintln!("trigger {:?}", trigger.event());
     //     });
-
 }
 
-fn add_marker(query: Query<&Children, With<StringCursor>>,
-              mut commands: Commands) {
+fn add_marker(query: Query<&Children, With<StringCursor>>, mut commands: Commands) {
     for children in query.iter() {
         for (i, child) in children.into_iter().enumerate() {
             if i >= 2 {

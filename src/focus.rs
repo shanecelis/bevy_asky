@@ -1,6 +1,5 @@
 use bevy::{
     ecs::component::{StorageType, ComponentHooks},
-    a11y::Focus,
     prelude::*
 };
 #[derive(Resource, Deref, DerefMut, Default, Debug)]

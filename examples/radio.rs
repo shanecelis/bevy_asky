@@ -1,10 +1,5 @@
-use bevy::{
-    prelude::*,
-    a11y::Focus,
-};
+use bevy::{a11y::Focus, prelude::*};
 use bevy_asky::{construct::*, prompt::*, view::*, *};
-// use crate::view::ascii::*;
-// use bevy_asky::view::button::*;
 fn main() {
     App::new()
         .add_plugins((DefaultPlugins, AskyPlugin))
@@ -33,10 +28,12 @@ fn setup(mut commands: Commands) {
             ..default()
         })
         .with_children(|parent| {
-            first = Some(parent
-                .construct::<Radio>("Money")
-                .construct::<ascii::View>(())
-                .id());
+            first = Some(
+                parent
+                    .construct::<Radio>("Money")
+                    .construct::<ascii::View>(())
+                    .id(),
+            );
 
             parent
                 .construct::<Radio>("Time")

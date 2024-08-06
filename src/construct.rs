@@ -1,5 +1,5 @@
 //! Playing around with [Cart's proposal](https://github.com/bevyengine/bevy/discussions/14437).
-use bevy::{prelude::*, ecs::system::EntityCommands};
+use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::borrow::Cow;
 use thiserror::Error;
 

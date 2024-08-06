@@ -33,8 +33,7 @@ fn setup(mut commands: Commands) {
     //     .construct::<Confirm>("What up?")
     //     .construct::<ascii::View>(());
 
-    commands.entity(column)
-            .with_children(|parent| {
+    commands.entity(column).with_children(|parent| {
         parent
             .construct::<Confirm>("Do you like ascii?")
             .construct::<ascii::View>(())
@@ -58,7 +57,6 @@ fn setup(mut commands: Commands) {
                             // .construct::<color::View>(());
                             .construct::<ascii::View>(());
                     });
-
                 },
             );
     });

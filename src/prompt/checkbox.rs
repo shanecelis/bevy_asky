@@ -1,11 +1,9 @@
+use super::{Feedback, Prompt};
 use crate::construct::*;
 use crate::{AskyEvent, AskyState, Error};
-use super::{Prompt, Feedback};
-use bevy::{
-    prelude::*
-};
-use std::borrow::Cow;
+use bevy::prelude::*;
 use bevy_ui_navigation::prelude::*;
+use std::borrow::Cow;
 
 #[derive(Component)]
 pub struct Checkbox {
@@ -19,7 +17,7 @@ impl From<Cow<'static, str>> for Checkbox {
     fn from(message: Cow<'static, str>) -> Self {
         Checkbox {
             message,
-            checked: false
+            checked: false,
         }
     }
 }
@@ -27,7 +25,6 @@ impl From<Cow<'static, str>> for Checkbox {
 pub(crate) fn plugin(app: &mut App) {
     app.add_systems(PreUpdate, checkbox_controller);
 }
-
 
 impl Construct for Checkbox {
     type Props = Cow<'static, str>;
@@ -60,22 +57,17 @@ fn checkbox_controller(
         if FocusState::Focused != focusable.state() {
             continue;
         }
-            if input.any_just_pressed([
-                KeyCode::Space,
-                KeyCode::KeyH,
-                KeyCode::KeyL,
-            ]) {
-
-                if input.just_pressed(KeyCode::Space) {
-                    checkbox.checked = !checkbox.checked;
-                }
-                if input.any_just_pressed([KeyCode::KeyL]) {
-                    checkbox.checked = true;
-                }
-                if input.any_just_pressed([KeyCode::KeyH]) {
-                    checkbox.checked = false;
-                }
+        if input.any_just_pressed([KeyCode::Space, KeyCode::KeyH, KeyCode::KeyL]) {
+            if input.just_pressed(KeyCode::Space) {
+                checkbox.checked = !checkbox.checked;
             }
+            if input.any_just_pressed([KeyCode::KeyL]) {
+                checkbox.checked = true;
+            }
+            if input.any_just_pressed([KeyCode::KeyH]) {
+                checkbox.checked = false;
+            }
+        }
     }
 }
 

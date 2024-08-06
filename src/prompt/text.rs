@@ -1,16 +1,16 @@
+use super::{Feedback, Password, Prompt};
 use crate::construct::*;
-use super::{Feedback, Prompt, Password};
+use crate::{AskyEvent, AskyState, Error, InputDirection, StringCursor};
 use bevy::{
-    input::{
-        ButtonState,
-        keyboard::{KeyboardInput, Key}
-    },
     a11y::Focus,
-    prelude::*
+    input::{
+        keyboard::{Key, KeyboardInput},
+        ButtonState,
+    },
+    prelude::*,
 };
-use crate::{AskyEvent, AskyState, Error, StringCursor, InputDirection};
-use std::borrow::Cow;
 use bevy_ui_navigation::prelude::*;
+use std::borrow::Cow;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(PreUpdate, text_controller);
@@ -71,7 +71,10 @@ impl Construct for TextField {
 }
 
 fn text_controller(
-    mut query: Query<(Entity, &mut AskyState, &mut StringCursor, &Focusable), Or<(With<TextField>, With<Password>)>>,
+    mut query: Query<
+        (Entity, &mut AskyState, &mut StringCursor, &Focusable),
+        Or<(With<TextField>, With<Password>)>,
+    >,
     mut input: EventReader<KeyboardInput>,
     mut commands: Commands,
 ) {
@@ -106,7 +109,7 @@ fn text_controller(
 
                             *state = AskyState::Error;
                         }
-                        x => info!("Unhandled key {x:?}")
+                        x => info!("Unhandled key {x:?}"),
                     }
                 }
             }

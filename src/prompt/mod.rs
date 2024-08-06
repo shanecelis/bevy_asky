@@ -1,22 +1,22 @@
+use crate::construct::*;
 use bevy::prelude::*;
 use std::borrow::Cow;
-use crate::construct::*;
 use std::fmt;
 
+mod checkbox;
 mod confirm;
-mod text;
 mod number;
 mod password;
-mod toggle;
-mod checkbox;
 mod radio;
+mod text;
+mod toggle;
+pub use checkbox::*;
 pub use confirm::*;
-pub use text::*;
 pub use number::*;
 pub use password::*;
-pub use toggle::*;
-pub use checkbox::*;
 pub use radio::*;
+pub use text::*;
+pub use toggle::*;
 
 #[derive(Component, Deref, DerefMut)]
 pub struct Prompt(pub Cow<'static, str>);
@@ -61,21 +61,21 @@ impl Feedback {
     pub fn info(message: impl Into<Cow<'static, str>>) -> Self {
         Feedback {
             kind: FeedbackKind::Info,
-            message: message.into()
+            message: message.into(),
         }
     }
 
     pub fn warn(message: impl Into<Cow<'static, str>>) -> Self {
         Feedback {
             kind: FeedbackKind::Warn,
-            message: message.into()
+            message: message.into(),
         }
     }
 
     pub fn error(message: impl Into<Cow<'static, str>>) -> Self {
         Feedback {
             kind: FeedbackKind::Error,
-            message: message.into()
+            message: message.into(),
         }
     }
 }
@@ -91,12 +91,16 @@ impl fmt::Display for Feedback {
 
 impl fmt::Display for FeedbackKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", match self {
-            FeedbackKind::Info => "info",
-            FeedbackKind::Warn => "warn",
-            FeedbackKind::Error => "error",
-            FeedbackKind::None => "NONE",
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                FeedbackKind::Info => "info",
+                FeedbackKind::Warn => "warn",
+                FeedbackKind::Error => "error",
+                FeedbackKind::None => "NONE",
+            }
+        )
     }
 }
 
@@ -104,7 +108,7 @@ pub enum FeedbackKind {
     None,
     Info,
     Warn,
-    Error
+    Error,
 }
 
 pub(crate) fn plugin(app: &mut App) {
@@ -116,4 +120,3 @@ pub(crate) fn plugin(app: &mut App) {
     app.add_plugins(checkbox::plugin);
     app.add_plugins(radio::plugin);
 }
-

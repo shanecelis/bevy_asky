@@ -13,11 +13,8 @@ impl Construct for View {
         context: &mut ConstructContext,
         _props: Self::Props,
     ) -> Result<Self, ConstructError> {
-
         let mut commands = context.world.commands();
-        commands
-            .entity(context.id)
-            .insert(NodeBundle::default());
+        commands.entity(context.id).insert(NodeBundle::default());
         context.world.flush();
 
         Ok(View)
@@ -48,8 +45,7 @@ impl Default for Palette {
 }
 
 pub fn plugin(app: &mut App) {
-    app
-        .add_plugins(confirm::plugin)
+    app.add_plugins(confirm::plugin)
         .add_plugins(text::plugin)
         .insert_resource(Palette::default());
 }

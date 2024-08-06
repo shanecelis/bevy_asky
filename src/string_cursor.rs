@@ -1,6 +1,4 @@
-use bevy::{
-    prelude::*
-};
+use bevy::prelude::*;
 
 #[derive(Debug)]
 pub enum InputDirection {
@@ -88,7 +86,6 @@ pub fn ceil_char_boundary(s: &str, mut i: usize) -> usize {
         i
     }
 }
-
 
 #[cfg(test)]
 mod test {

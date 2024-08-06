@@ -1,34 +1,39 @@
-use crate::construct::*;
 use super::{Feedback, Prompt};
-use bevy::{
-    input::{
-        ButtonState,
-        keyboard::{KeyboardInput, Key}
-    },
-    a11y::Focus,
-    prelude::*
-};
+use crate::construct::*;
 use crate::{AskyEvent, AskyState, Error, NumLike};
-use crate::{StringCursor, InputDirection};
+use crate::{InputDirection, StringCursor};
+use bevy::{
+    a11y::Focus,
+    input::{
+        keyboard::{Key, KeyboardInput},
+        ButtonState,
+    },
+    prelude::*,
+};
+use bevy_ui_navigation::{
+    events::{Direction as NavDirection, ScopeDirection},
+    prelude::*,
+};
 use std::borrow::Cow;
-use bevy_ui_navigation::{prelude::*, events::{ScopeDirection, Direction as NavDirection}};
 
 pub fn plugin(app: &mut App) {
-    app.add_systems(PreUpdate,
-                    (
-                        number_controller::<f32>,
-                        number_controller::<f64>,
-                        number_controller::<i8>,
-                        number_controller::<i16>,
-                        number_controller::<i32>,
-                        number_controller::<i64>,
-                        number_controller::<isize>,
-                        number_controller::<u8>,
-                        number_controller::<u16>,
-                        number_controller::<u32>,
-                        number_controller::<u64>,
-                        number_controller::<usize>,
-                    ));
+    app.add_systems(
+        PreUpdate,
+        (
+            number_controller::<f32>,
+            number_controller::<f64>,
+            number_controller::<i8>,
+            number_controller::<i16>,
+            number_controller::<i32>,
+            number_controller::<i64>,
+            number_controller::<isize>,
+            number_controller::<u8>,
+            number_controller::<u16>,
+            number_controller::<u32>,
+            number_controller::<u64>,
+            number_controller::<usize>,
+        ),
+    );
 }
 
 // pub type InputValidator<'a> = dyn Fn(&str) -> Result<(), Cow<'a, str>> + 'a + Send + Sync;
@@ -72,7 +77,7 @@ impl<T: NumLike> From<Cow<'static, str>> for Number<T> {
     fn from(message: Cow<'static, str>) -> Self {
         Self {
             message,
-            default_value: None
+            default_value: None,
         }
     }
 }
@@ -81,7 +86,7 @@ impl<T: NumLike> From<&'static str> for Number<T> {
     fn from(message: &'static str) -> Self {
         Self {
             message: message.into(),
-            default_value: None
+            default_value: None,
         }
     }
 }
@@ -165,8 +170,14 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                                     requests.send(NavRequest::Move(NavDirection::South));
                                 }
                                 Err(_) => {
-                                    commands.trigger_targets(AskyEvent::<T>(Err(Error::InvalidNumber)), id);
-                                    commands.entity(id).insert(Feedback::warn(format!("invalid number for {}", T::short_type_path())));
+                                    commands.trigger_targets(
+                                        AskyEvent::<T>(Err(Error::InvalidNumber)),
+                                        id,
+                                    );
+                                    commands.entity(id).insert(Feedback::warn(format!(
+                                        "invalid number for {}",
+                                        T::short_type_path()
+                                    )));
                                 }
                             }
                         }
@@ -175,7 +186,7 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                             commands.entity(id).insert(Feedback::error("canceled"));
                             *state = AskyState::Error;
                         }
-                        x => info!("Unhandled key {x:?}")
+                        x => info!("Unhandled key {x:?}"),
                     }
                 }
             }
@@ -186,7 +197,7 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
 
 #[cfg(test)]
 mod test {
-    
+
     use crate::{ceil_char_boundary, floor_char_boundary};
 
     #[test]

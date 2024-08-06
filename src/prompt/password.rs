@@ -1,20 +1,18 @@
-
-use crate::construct::*;
 use super::{Feedback, Prompt};
+use crate::construct::*;
+use crate::{AskyEvent, AskyState, Error, InputDirection, StringCursor};
 use bevy::{
-    input::{
-        ButtonState,
-        keyboard::{KeyboardInput, Key}
-    },
     a11y::Focus,
-    prelude::*
+    input::{
+        keyboard::{Key, KeyboardInput},
+        ButtonState,
+    },
+    prelude::*,
 };
-use crate::{AskyEvent, AskyState, Error, StringCursor, InputDirection};
-use std::borrow::Cow;
 use bevy_ui_navigation::prelude::*;
+use std::borrow::Cow;
 
-pub fn plugin(app: &mut App) {
-}
+pub fn plugin(app: &mut App) {}
 
 /// Prompt to get one-line user input.
 ///

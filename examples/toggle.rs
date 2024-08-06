@@ -28,16 +28,16 @@ fn setup(mut commands: Commands) {
             },
             ..default()
         })
-            .with_children(|parent| {
-        parent
-            .construct::<Toggle>(Toggle::new("Graphics?", ["high poly", "low poly"]))
-            .construct::<ascii::View>(())
-            .observe(
-                move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
-                    eprintln!("trigger {:?}", trigger.event());
-                },
-            );
-    });
+        .with_children(|parent| {
+            parent
+                .construct::<Toggle>(Toggle::new("Graphics?", ["high poly", "low poly"]))
+                .construct::<ascii::View>(())
+                .observe(
+                    move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
+                        eprintln!("trigger {:?}", trigger.event());
+                    },
+                );
+        });
 }
 
 fn text_color_system(time: Res<Time>, mut query: Query<&mut Text, With<ColorText>>) {
@@ -60,4 +60,3 @@ fn read_keys(input: Res<ButtonInput<KeyCode>>, mut query: Query<&mut AskyState>)
         }
     }
 }
-

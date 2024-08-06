@@ -1,12 +1,5 @@
-use bevy::{
-    prelude::*,
-};
-use bevy_asky::{
-    construct::*,
-    prompt::*,
-    view::*,
-    *
-};
+use bevy::prelude::*;
+use bevy_asky::{construct::*, prompt::*, view::*, *};
 
 fn main() {
     App::new()
@@ -34,27 +27,25 @@ fn setup(mut commands: Commands) {
             ..default()
         })
         .with_children(|parent| {
-
-            parent.construct::<Number<i8>>("Age? ")
+            parent
+                .construct::<Number<i8>>("Age? ")
                 .construct::<Placeholder>("333")
                 .construct::<ascii::View>(())
-                .observe(
-                    move |trigger: Trigger<AskyEvent<i8>>| {
-                        eprintln!("trigger {:?}", trigger.event());
-                    });
+                .observe(move |trigger: Trigger<AskyEvent<i8>>| {
+                    eprintln!("trigger {:?}", trigger.event());
+                });
 
-            parent.construct::<Number<i8>>("Phone number ? ")
+            parent
+                .construct::<Number<i8>>("Phone number ? ")
                 .construct::<Placeholder>("123-4567")
                 .construct::<ascii::View>(())
-                .observe(
-                    move |trigger: Trigger<AskyEvent<i8>>| {
-                        eprintln!("trigger {:?}", trigger.event());
-                    });
+                .observe(move |trigger: Trigger<AskyEvent<i8>>| {
+                    eprintln!("trigger {:?}", trigger.event());
+                });
         });
 }
 
-fn add_marker(query: Query<&Children, With<StringCursor>>,
-              mut commands: Commands) {
+fn add_marker(query: Query<&Children, With<StringCursor>>, mut commands: Commands) {
     for children in query.iter() {
         for (i, child) in children.into_iter().enumerate() {
             if i >= 2 {

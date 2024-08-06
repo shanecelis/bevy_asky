@@ -1,12 +1,9 @@
+use super::{Feedback, Prompt};
 use crate::construct::*;
 use crate::{AskyEvent, AskyState, Error};
-use super::{Prompt, Feedback};
-use bevy::{
-    a11y::Focus,
-    prelude::*
-};
-use std::borrow::Cow;
+use bevy::{a11y::Focus, prelude::*};
 use bevy_ui_navigation::prelude::*;
+use std::borrow::Cow;
 
 #[derive(Component, Clone)]
 pub struct Toggle {
@@ -19,7 +16,7 @@ pub struct Toggle {
 impl Toggle {
     pub fn new<T: Into<Cow<'static, str>>>(
         message: impl Into<Cow<'static, str>>,
-        options: [T; 2]
+        options: [T; 2],
     ) -> Self {
         let mut iter = options.into_iter();
         Toggle {
@@ -28,7 +25,6 @@ impl Toggle {
             index: 0,
         }
     }
-
 }
 
 pub(crate) fn plugin(app: &mut App) {

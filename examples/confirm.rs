@@ -22,7 +22,8 @@ fn setup(mut commands: Commands) {
         .observe(
             move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
                 eprintln!("trigger {:?}", trigger.event());
-            });
+            },
+        );
 }
 
 fn read_keys(input: Res<ButtonInput<KeyCode>>, mut query: Query<&mut AskyState>) {

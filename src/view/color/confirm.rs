@@ -1,7 +1,8 @@
 use super::*;
 use crate::{
+    prompt::{Confirm, Prompt},
     view::*,
-    prompt::{Confirm, ConfirmState, Prompt}, AskyState,
+    AskyState,
 };
 
 pub fn plugin(app: &mut App) {
@@ -10,10 +11,17 @@ pub fn plugin(app: &mut App) {
 
 pub(crate) fn confirm_view(
     mut query: Query<
-        (Entity, &AskyState, &ConfirmState, Option<&Prompt>, Option<&Children>),
         (
-            With<View>, With<Confirm>,
-            Or<(Changed<AskyState>, Changed<ConfirmState>, Changed<Prompt>)>,
+            Entity,
+            &AskyState,
+            &Confirm,
+            Option<&Prompt>,
+            Option<&Children>,
+        ),
+        (
+            With<View>,
+            With<Confirm>,
+            Or<(Changed<AskyState>, Changed<Confirm>, Changed<Prompt>)>,
         ),
     >,
     mut question: Query<&mut Text, With<Question>>,
@@ -29,7 +37,7 @@ pub(crate) fn confirm_view(
     color_view: Res<Palette>,
     mut commands: Commands,
 ) {
-    for (id, asky_state, confirm_state, prompt, children_maybe) in query.iter_mut() {
+    for (id, asky_state, confirm, prompt, children_maybe) in query.iter_mut() {
         if let Some(children) = children_maybe {
             eprint!(".");
 
@@ -53,7 +61,9 @@ pub(crate) fn confirm_view(
                     );
                     text.sections[0].style = highlight;
 
-                    text.sections[1].value.replace_range(.., prompt.map(|x| x.as_ref()).unwrap_or(""));
+                    text.sections[1]
+                        .value
+                        .replace_range(.., prompt.map(|x| x.as_ref()).unwrap_or(""));
                 }
                 // for (mut background, mut visibility) in answers.iter_many_mut(children) {
                 if let Ok((mut text, mut background, mut visibility, answer)) =
@@ -66,10 +76,10 @@ pub(crate) fn confirm_view(
                             text.sections[0].value.replace_range(
                                 ..,
                                 if vis {
-                                    match confirm_state.yes {
-                                        Some(true) => "Yes",
-                                        Some(false) => "No",
-                                        None => "N/A",
+                                    if confirm.yes {
+                                     "Yes"
+                                    } else {
+                                     "No"
                                     }
                                 } else {
                                     ""
@@ -80,12 +90,12 @@ pub(crate) fn confirm_view(
                             vis = !matches!(asky_state, AskyState::Complete);
                             if vis {
                                 *background =
-                                    if confirm_state.yes.map(|x| x == *yes).unwrap_or(false) {
+                                    if confirm.yes {
                                         color_view.highlight
                                     } else {
                                         color_view.lowlight
                                     }
-                                .into();
+                                    .into();
                             }
                         }
                     }
@@ -96,52 +106,48 @@ pub(crate) fn confirm_view(
                     };
                 }
             }
-
         } else {
             let (bg_no, bg_yes) = (color_view.highlight, color_view.lowlight);
             let answer_color = color_view.answer;
 
-            commands
-                .entity(id)
-                .with_children(|parent| {
-                    parent.spawn((
-                        Question,
-                        TextBundle {
-                            text: Text::from_sections([
-                                "[_] ".into(),                      // 0
-                                prompt.map(|x| x.as_ref()).unwrap_or("").into(),                          // 1
-                                " ".into(),                         // 2
-                            ]),
-                            ..default()
-                        },
-                    ));
+            commands.entity(id).with_children(|parent| {
+                parent.spawn((
+                    Question,
+                    TextBundle {
+                        text: Text::from_sections([
+                            "[_] ".into(),                                   // 0
+                            prompt.map(|x| x.as_ref()).unwrap_or("").into(), // 1
+                            " ".into(),                                      // 2
+                        ]),
+                        ..default()
+                    },
+                ));
 
-                    parent.spawn((
-                        Answer::<bool>::Final,
-                        TextBundle {
-                            text: Text::from_sections([TextSection::new(
-                                "",
-                                TextStyle {
-                                    color: answer_color.into(),
-                                    ..default()
-                                },
-                            )]),
-                            ..default()
-                        },
-                    ));
-                    parent.spawn((
-                        Answer::Selection(false),
-                        TextBundle::from_section(" No ", TextStyle::default())
-                            .with_background_color(bg_no.into()),
-                    ));
-                    parent.spawn(TextBundle::from_section(" ", TextStyle::default()));
-                    parent.spawn((
-                        Answer::Selection(true),
-                        TextBundle::from_section(" Yes ", TextStyle::default())
-                            .with_background_color(bg_yes.into()),
-                    ));
-                });
+                parent.spawn((
+                    Answer::<bool>::Final,
+                    TextBundle {
+                        text: Text::from_sections([TextSection::new(
+                            "",
+                            TextStyle {
+                                color: answer_color.into(),
+                                ..default()
+                            },
+                        )]),
+                        ..default()
+                    },
+                ));
+                parent.spawn((
+                    Answer::Selection(false),
+                    TextBundle::from_section(" No ", TextStyle::default())
+                        .with_background_color(bg_no.into()),
+                ));
+                parent.spawn(TextBundle::from_section(" ", TextStyle::default()));
+                parent.spawn((
+                    Answer::Selection(true),
+                    TextBundle::from_section(" Yes ", TextStyle::default())
+                        .with_background_color(bg_yes.into()),
+                ));
+            });
         }
     }
 }
-

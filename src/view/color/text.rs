@@ -1,6 +1,7 @@
 use super::*;
 use crate::{
-    prompt::{TextField, Prompt}, AskyState, StringCursor
+    prompt::{Prompt, TextField},
+    AskyState, StringCursor,
 };
 
 pub fn plugin(app: &mut App) {
@@ -25,19 +26,26 @@ impl PromptPart {
             2 => Some(PreCursor),
             3 => Some(Cursor),
             4 => Some(PostCursor),
-            _ => None
+            _ => None,
         }
     }
 }
 
 pub(crate) fn text_view(
     mut query: Query<
-            (Entity, &AskyState, &StringCursor, Option<&Prompt>, Option<&Children>),
         (
-            With<View>, With<TextField>,
+            Entity,
+            &AskyState,
+            &StringCursor,
+            Option<&Prompt>,
+            Option<&Children>,
+        ),
+        (
+            With<View>,
+            With<TextField>,
             Or<(Changed<AskyState>, Changed<StringCursor>, Changed<Prompt>)>,
         ),
-        >,
+    >,
     mut text_query: Query<(&mut Text, &mut Visibility)>,
     mut commands: Commands,
     color_view: Res<Palette>,
@@ -69,19 +77,16 @@ pub(crate) fn text_view(
                                 },
                             );
                             text.sections[0].style = highlight;
-                            text.sections[1].value.replace_range(.., prompt.map(|x| x.as_ref()).unwrap_or(""));
+                            text.sections[1]
+                                .value
+                                .replace_range(.., prompt.map(|x| x.as_ref()).unwrap_or(""));
                             vis = true;
                         }
                         Answer => {
                             vis = asky_state.is_done();
-                            text.sections[0].value.replace_range(
-                                ..,
-                                if vis {
-                                    &text_state.value
-                                } else {
-                                    ""
-                                },
-                            )
+                            text.sections[0]
+                                .value
+                                .replace_range(.., if vis { &text_state.value } else { "" })
                         }
                         PreCursor => {
                             // pre cursor
@@ -129,50 +134,55 @@ pub(crate) fn text_view(
                     } else {
                         Visibility::Hidden
                     };
-
                 }
             }
         } else {
             let answer_color = color_view.answer;
 
-            commands
-                .entity(id)
-                .with_children(|parent| {
-                    parent.spawn(( // 0
-                        TextBundle {
-                            text: Text::from_sections([
-                                "[_] ".into(),                      // 0
-                                "".into(),                          // 1
-                            ]),
-                            ..default()
-                        },
-                    ));
-
-                    parent.spawn(( // 1
-                        TextBundle {
-                            text: Text::from_sections([TextSection::new(
-                                "",
-                                TextStyle {
-                                    color: answer_color.into(),
-                                    ..default()
-                                },
-                            )]),
-                            ..default()
-                        },
-                    ));
-                    parent.spawn(( // 2
-                        TextBundle::from_section("Pre", TextStyle::default()),
-                    ));
-                    parent.spawn(TextBundle::from_section("", TextStyle {
-                        color: Color::BLACK,
+            commands.entity(id).with_children(|parent| {
+                parent.spawn((
+                    // 0
+                    TextBundle {
+                        text: Text::from_sections([
+                            "[_] ".into(), // 0
+                            "".into(),     // 1
+                        ]),
                         ..default()
-                    })
-                                 .with_background_color(Color::WHITE));
-                    parent.spawn(( // 4
-                        TextBundle::from_section("Post", TextStyle::default()),
-                    ));
-                });
-        }
+                    },
+                ));
 
+                parent.spawn((
+                    // 1
+                    TextBundle {
+                        text: Text::from_sections([TextSection::new(
+                            "",
+                            TextStyle {
+                                color: answer_color.into(),
+                                ..default()
+                            },
+                        )]),
+                        ..default()
+                    },
+                ));
+                parent.spawn((
+                    // 2
+                    TextBundle::from_section("Pre", TextStyle::default()),
+                ));
+                parent.spawn(
+                    TextBundle::from_section(
+                        "",
+                        TextStyle {
+                            color: Color::BLACK,
+                            ..default()
+                        },
+                    )
+                    .with_background_color(Color::WHITE),
+                );
+                parent.spawn((
+                    // 4
+                    TextBundle::from_section("Post", TextStyle::default()),
+                ));
+            });
+        }
     }
 }
