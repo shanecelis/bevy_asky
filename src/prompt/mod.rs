@@ -53,21 +53,26 @@ pub struct Feedback {
 }
 
 impl Feedback {
-    fn info(message: impl Into<Cow<'static, str>>) -> Self {
+    pub fn clear(&mut self) {
+        self.kind = FeedbackKind::None;
+        self.message = "".into();
+    }
+
+    pub fn info(message: impl Into<Cow<'static, str>>) -> Self {
         Feedback {
             kind: FeedbackKind::Info,
             message: message.into()
         }
     }
 
-    fn warn(message: impl Into<Cow<'static, str>>) -> Self {
+    pub fn warn(message: impl Into<Cow<'static, str>>) -> Self {
         Feedback {
             kind: FeedbackKind::Warn,
             message: message.into()
         }
     }
 
-    fn error(message: impl Into<Cow<'static, str>>) -> Self {
+    pub fn error(message: impl Into<Cow<'static, str>>) -> Self {
         Feedback {
             kind: FeedbackKind::Error,
             message: message.into()
@@ -76,7 +81,11 @@ impl Feedback {
 }
 impl fmt::Display for Feedback {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}: {}", self.kind, self.message)
+        if matches!(self.kind, FeedbackKind::None) {
+            Ok(())
+        } else {
+            write!(f, "{}: {}", self.kind, self.message)
+        }
     }
 }
 
@@ -86,11 +95,13 @@ impl fmt::Display for FeedbackKind {
             FeedbackKind::Info => "info",
             FeedbackKind::Warn => "warn",
             FeedbackKind::Error => "error",
+            FeedbackKind::None => "NONE",
         })
     }
 }
 
 pub enum FeedbackKind {
+    None,
     Info,
     Warn,
     Error

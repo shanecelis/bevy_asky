@@ -11,6 +11,7 @@ use bevy::{
 use crate::{AskyEvent, AskyState, Error, NumLike};
 use crate::{StringCursor, InputDirection};
 use std::borrow::Cow;
+use bevy_ui_navigation::{prelude::*, events::{ScopeDirection, Direction as NavDirection}};
 
 pub fn plugin(app: &mut App) {
     app.add_systems(PreUpdate,
@@ -100,6 +101,7 @@ impl<T: NumLike> Construct for Number<T> {
             .entity(context.id)
             .insert(Prompt(props.message.clone()))
             .insert(input_state)
+            .insert(Focusable::default())
             .insert(state);
 
         context.world.flush();
@@ -123,16 +125,14 @@ impl<T: NumLike> Number<T> {
     }
 }
 
-
 fn number_controller<T: NumLike + Sync + 'static + TypePath>(
-    mut query: Query<(Entity, &mut AskyState, &mut StringCursor), With<Number<T>>>,
+    mut query: Query<(Entity, &mut AskyState, &mut StringCursor, &mut Focusable), With<Number<T>>>,
     mut input: EventReader<KeyboardInput>,
     mut commands: Commands,
-    focus: Option<Res<Focus>>,
+    mut requests: EventWriter<NavRequest>,
 ) {
-    let focused = focus.map(|res| res.0).unwrap_or(None);
-    for (id, mut state, mut text_state) in query.iter_mut() {
-        if focused.map(|x| x != id).unwrap_or(false) {
+    for (id, mut state, mut text_state, mut focusable) in query.iter_mut() {
+        if FocusState::Focused != focusable.state() {
             continue;
         }
         match *state {
@@ -160,6 +160,9 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                                 Ok(number) => {
                                     commands.trigger_targets(AskyEvent(Ok(number)), id);
                                     *state = AskyState::Complete;
+                                    // focusable.block();
+                                    // requests.send(NavRequest::ScopeMove(ScopeDirection::Next));
+                                    requests.send(NavRequest::Move(NavDirection::South));
                                 }
                                 Err(_) => {
                                     commands.trigger_targets(AskyEvent::<T>(Err(Error::InvalidNumber)), id);

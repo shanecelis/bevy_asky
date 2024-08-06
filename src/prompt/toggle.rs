@@ -6,6 +6,7 @@ use bevy::{
     prelude::*
 };
 use std::borrow::Cow;
+use bevy_ui_navigation::prelude::*;
 
 #[derive(Component, Clone)]
 pub struct Toggle {
@@ -47,6 +48,7 @@ impl Construct for Toggle {
         commands
             .entity(context.id)
             .insert(Prompt(props.message.clone()))
+            .insert(Focusable::default())
             .insert(state);
 
         context.world.flush();
@@ -55,14 +57,12 @@ impl Construct for Toggle {
 }
 
 fn toggle_controller(
-    mut query: Query<(Entity, &mut AskyState, &mut Toggle)>,
+    mut query: Query<(Entity, &mut AskyState, &mut Toggle, &Focusable)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
-    focus: Option<Res<Focus>>,
 ) {
-    let focused = focus.map(|res| res.0).unwrap_or(None);
-    for (id, mut state, mut toggle) in query.iter_mut() {
-        if focused.map(|x| x != id).unwrap_or(false) {
+    for (id, mut state, mut toggle, focusable) in query.iter_mut() {
+        if FocusState::Focused != focusable.state() {
             continue;
         }
         match *state {

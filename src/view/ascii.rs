@@ -113,8 +113,22 @@ pub(crate) fn feedback_view(
     >,
 ) {
     for (mut text, feedback) in query.iter_mut() {
-        text.sections[ViewPart::Options as usize].value.clear();
+        text.sections[ViewPart::Feedback as usize].value.clear();
         let _ = write!(&mut text.sections[ViewPart::Feedback as usize].value, " {}", &feedback);
+    }
+}
+
+pub(crate) fn clear_feedback(
+    mut query: Query<
+        &mut Feedback,
+        (
+            With<View>,
+            Changed<StringCursor>,
+        ),
+    >,
+) {
+    for mut feedback in query.iter_mut() {
+        feedback.clear();
     }
 }
 

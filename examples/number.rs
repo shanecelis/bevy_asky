@@ -25,13 +25,32 @@ struct ColorText;
 fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
-    commands.construct::<Number<i8>>("Age? ")
-            .construct::<Placeholder>("333")
-            .construct::<ascii::View>(())
-            .observe(
-                move |trigger: Trigger<AskyEvent<i8>>| {
-                    eprintln!("trigger {:?}", trigger.event());
-                });
+    commands
+        .spawn(NodeBundle {
+            style: Style {
+                flex_direction: FlexDirection::Column,
+                ..default()
+            },
+            ..default()
+        })
+        .with_children(|parent| {
+
+            parent.construct::<Number<i8>>("Age? ")
+                .construct::<Placeholder>("333")
+                .construct::<ascii::View>(())
+                .observe(
+                    move |trigger: Trigger<AskyEvent<i8>>| {
+                        eprintln!("trigger {:?}", trigger.event());
+                    });
+
+            parent.construct::<Number<i8>>("Phone number ? ")
+                .construct::<Placeholder>("123-4567")
+                .construct::<ascii::View>(())
+                .observe(
+                    move |trigger: Trigger<AskyEvent<i8>>| {
+                        eprintln!("trigger {:?}", trigger.event());
+                    });
+        });
 }
 
 fn add_marker(query: Query<&Children, With<StringCursor>>,

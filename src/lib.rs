@@ -20,19 +20,6 @@ pub use string_cursor::*;
 // pub use focus::*;
 pub struct AskyPlugin;
 
-/// AskySet defines when the input events are emitted.
-#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
-pub enum AskySet {
-    /// Run before any input events are emitted.
-    Pre,
-    /// Process the input.
-    ProcessInput,
-    /// Render views if necessary.
-    ConstructView,
-    /// Run after all input events are emitted.
-    Post,
-}
-
 impl Plugin for AskyPlugin {
     fn build(&self, app: &mut App) {
         app
@@ -40,16 +27,6 @@ impl Plugin for AskyPlugin {
             .add_plugins(DefaultNavigationPlugins)
             .add_systems(Startup, setup);
         // app.add_plugins(focus::plugin);
-        // .configure_sets(
-        //     Update,
-        //     (
-        //         AskySet::Pre,
-        //         AskySet::ProcessInput,
-        //         AskySet::ConstructView,
-        //         AskySet::Post,
-        //     )
-        //         .chain(),
-        // );
     }
 }
 
@@ -67,6 +44,14 @@ pub enum AskyState {
     Reading,
     Complete,
     Error,
+}
+
+#[derive(Debug, Component, Default, Clone)]
+pub struct Submitter;
+
+pub trait Submit {
+    type Out;
+    fn submit(&self) -> Result<Self::Out, Error>;
 }
 
 impl AskyState {
