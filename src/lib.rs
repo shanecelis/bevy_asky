@@ -3,7 +3,12 @@
 use bevy::{
     prelude::*,
 };
- mod focus;
+use bevy_ui_navigation::{
+    prelude::*,
+    systems::InputMapping,
+
+};
+//mod focus;
 use std::borrow::Cow;
 pub mod construct;
 pub mod prompt;
@@ -12,8 +17,7 @@ mod num_like;
 pub use num_like::*;
 mod string_cursor;
 pub use string_cursor::*;
-pub use focus::*;
-
+// pub use focus::*;
 pub struct AskyPlugin;
 
 /// AskySet defines when the input events are emitted.
@@ -31,8 +35,11 @@ pub enum AskySet {
 
 impl Plugin for AskyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(prompt::plugin);
-        app.add_plugins(focus::plugin);
+        app
+            .add_plugins(prompt::plugin)
+            .add_plugins(DefaultNavigationPlugins)
+            .add_systems(Startup, setup);
+        // app.add_plugins(focus::plugin);
         // .configure_sets(
         //     Update,
         //     (
@@ -44,6 +51,11 @@ impl Plugin for AskyPlugin {
         //         .chain(),
         // );
     }
+}
+
+fn setup(mut commands: Commands, mut input_mapping: ResMut<InputMapping>) {
+    input_mapping.keyboard_navigation = true;
+    // input_mapping.focus_follows_mouse = true;
 }
 
 #[derive(Event, Deref, Debug)]

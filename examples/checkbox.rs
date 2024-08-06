@@ -28,16 +28,25 @@ fn setup(mut commands: Commands) {
             },
             ..default()
         })
-            .with_children(|parent| {
-        parent
-            .construct::<Checkbox>("Money?")
-            .construct::<ascii::View>(())
-            .observe(
-                move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
-                    eprintln!("trigger {:?}", trigger.event());
-                },
-            );
-    });
+        .with_children(|parent| {
+            parent
+                .construct::<Checkbox>("Money?")
+                .construct::<ascii::View>(())
+                .observe(
+                    move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
+                        eprintln!("trigger {:?}", trigger.event());
+                    },
+                );
+
+            parent
+                .construct::<Checkbox>("Time?")
+                .construct::<ascii::View>(())
+                .observe(
+                    move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
+                        eprintln!("trigger {:?}", trigger.event());
+                    },
+                );
+        });
 }
 
 fn text_color_system(time: Res<Time>, mut query: Query<&mut Text, With<ColorText>>) {

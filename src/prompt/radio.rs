@@ -1,10 +1,11 @@
 use crate::construct::*;
-use crate::{AskyEvent, AskyState, Error, Focusable};
+use crate::{AskyEvent, AskyState, Error};
 use super::{Prompt, Feedback};
 use bevy::{
     a11y::{*, accesskit::*},
     prelude::*
 };
+use bevy_ui_navigation::prelude::*;
 use std::borrow::Cow;
 
 #[derive(Component)]
@@ -54,7 +55,7 @@ impl Construct for Radio {
 }
 
 fn radio_controller(
-    mut query: Query<(Entity, &mut AskyState, &mut Radio, Option<&Parent>)>,
+    mut query: Query<(Entity, &mut AskyState, &mut Radio, Option<&Parent>, &Focusable)>,
     child_query: Query<&Children>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
@@ -62,9 +63,9 @@ fn radio_controller(
     mut toggled: Local<Vec<(Entity, Entity)>>,
 ) {
     toggled.clear();
-    let focused = focus.map(|res| res.0).unwrap_or(None);
-    for (id, mut state, mut radio, parent) in query.iter_mut() {
-        if focused.map(|x| x != id).unwrap_or(false) {
+    for (id, mut state, mut radio, parent, focusable) in query.iter_mut() {
+
+        if FocusState::Focused != focusable.state() {
             continue;
         }
         if matches!(*state, AskyState::Reading) {
@@ -108,7 +109,7 @@ fn radio_controller(
             if *child == toggled_child {
                 continue;
             }
-            if let Ok((_, _, mut radio, _)) = query.get_mut(*child) {
+            if let Ok((_, _, mut radio, _, _)) = query.get_mut(*child) {
                 radio.checked = false;
             }
         }

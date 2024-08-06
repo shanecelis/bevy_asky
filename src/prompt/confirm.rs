@@ -6,6 +6,7 @@ use bevy::{
     prelude::*
 };
 use std::borrow::Cow;
+use bevy_ui_navigation::prelude::*;
 
 #[derive(Component)]
 pub struct Confirm {
@@ -42,6 +43,7 @@ impl Construct for Confirm {
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
+            .insert(Focusable::default())
             .insert(Prompt(props.clone()))
             .insert(confirm_state)
             .insert(state);
@@ -66,18 +68,15 @@ impl From<&Confirm> for ConfirmState {
 }
 
 fn confirm_controller(
-    mut query: Query<(Entity, &mut AskyState, &mut ConfirmState)>,
+    mut query: Query<(Entity, &mut AskyState, &mut ConfirmState, &Focusable)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
-    focus: Option<Res<Focus>>,
 ) {
-    let focused = focus.map(|res| res.0).unwrap_or(None);
-    for (id, mut state, mut confirm_state) in query.iter_mut() {
-        if focused.map(|x| x != id).unwrap_or(false) {
+    for (id, mut state, mut confirm_state, focusable) in query.iter_mut() {
+        if FocusState::Focused != focusable.state() {
             continue;
         }
-        match *state {
-            AskyState::Reading => {
+        if matches!(*state, AskyState::Reading) {
                 if input.any_just_pressed([
                     KeyCode::KeyY,
                     KeyCode::KeyH,
@@ -108,8 +107,6 @@ fn confirm_controller(
                     }
                 }
             }
-            _ => (),
-        }
     }
 }
 

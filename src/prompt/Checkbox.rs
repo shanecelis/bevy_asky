@@ -2,10 +2,10 @@ use crate::construct::*;
 use crate::{AskyEvent, AskyState, Error};
 use super::{Prompt, Feedback};
 use bevy::{
-    a11y::Focus,
     prelude::*
 };
 use std::borrow::Cow;
+use bevy_ui_navigation::prelude::*;
 
 #[derive(Component)]
 pub struct Checkbox {
@@ -37,12 +37,11 @@ impl Construct for Checkbox {
         props: Self::Props,
     ) -> Result<Self, ConstructError> {
         // Our requirements.
-        let state: AskyState = context.construct(AskyState::default())?;
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
-            .insert(Prompt(props.clone()))
-            .insert(state);
+            .insert(Focusable::default())
+            .insert(Prompt(props.clone()));
 
         context.world.flush();
         Ok(Checkbox {
@@ -53,23 +52,18 @@ impl Construct for Checkbox {
 }
 
 fn checkbox_controller(
-    mut query: Query<(Entity, &mut AskyState, &mut Checkbox)>,
+    mut query: Query<(&mut Checkbox, &Focusable)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
-    focus: Option<Res<Focus>>,
 ) {
-    let focused = focus.map(|res| res.0).unwrap_or(None);
-    for (id, mut state, mut checkbox) in query.iter_mut() {
-        if focused.map(|x| x != id).unwrap_or(false) {
+    for (mut checkbox, focusable) in query.iter_mut() {
+        if FocusState::Focused != focusable.state() {
             continue;
         }
-        if matches!(*state, AskyState::Reading) {
             if input.any_just_pressed([
                 KeyCode::Space,
                 KeyCode::KeyH,
                 KeyCode::KeyL,
-                KeyCode::Enter,
-                KeyCode::Escape,
             ]) {
 
                 if input.just_pressed(KeyCode::Space) {
@@ -81,16 +75,7 @@ fn checkbox_controller(
                 if input.any_just_pressed([KeyCode::KeyH]) {
                     checkbox.checked = false;
                 }
-                if input.just_pressed(KeyCode::Enter) {
-                    commands.trigger_targets(AskyEvent(Ok(checkbox.checked)), id);
-                    *state = AskyState::Complete;
-                }
-                if input.just_pressed(KeyCode::Escape) {
-                    commands.trigger_targets(AskyEvent::<bool>(Err(Error::Cancel)), id);
-                    *state = AskyState::Error;
-                }
             }
-        }
     }
 }
 

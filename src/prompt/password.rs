@@ -11,6 +11,7 @@ use bevy::{
 };
 use crate::{AskyEvent, AskyState, Error, StringCursor, InputDirection};
 use std::borrow::Cow;
+use bevy_ui_navigation::prelude::*;
 
 pub fn plugin(app: &mut App) {
 }
@@ -59,6 +60,7 @@ impl Construct for Password {
             .entity(context.id)
             .insert(Prompt(props))
             .insert(input_state)
+            .insert(Focusable::default())
             .insert(state);
 
         context.world.flush();
