@@ -2,7 +2,7 @@ use crate::construct::*;
 use crate::{AskyEvent, AskyState, Error, Focusable};
 use super::{Prompt, Feedback};
 use bevy::{
-    a11y::Focus,
+    a11y::{*, accesskit::*},
     prelude::*
 };
 use std::borrow::Cow;
@@ -42,6 +42,7 @@ impl Construct for Radio {
             .entity(context.id)
             .insert(Focusable::default())
             .insert(Prompt(props.clone()))
+            .insert(AccessibilityNode(NodeBuilder::new(Role::RadioButton)))
             .insert(state);
 
         context.world.flush();

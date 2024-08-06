@@ -52,21 +52,6 @@ fn focus_controller(
     }
 }
 
-pub trait Focused {
-    fn is_focused(&self, id: Entity) -> bool;
-}
-
-impl Focused for Option<Res<'_, Focus>> {
-    fn is_focused(&self, id: Entity) -> bool {
-        self.as_ref().and_then(|res| res.0).map(|x| x == id).unwrap_or(true)
-    }
-}
-
-impl Focused for Res<'_, Focus> {
-    fn is_focused(&self, id: Entity) -> bool {
-        self.map(|x| x == id).unwrap_or(true)
-    }
-}
 
 impl Component for Focusable {
     const STORAGE_TYPE: StorageType = StorageType::Table;

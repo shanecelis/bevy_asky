@@ -46,7 +46,7 @@ fn setup(mut commands: Commands) {
                 .construct::<Radio>("Power")
                 .construct::<ascii::View>(());
         });
-    commands.insert_resource(Focus(first));
+    // commands.insert_resource(Focus(first));
 }
 
 fn text_color_system(time: Res<Time>, mut query: Query<&mut Text, With<ColorText>>) {
