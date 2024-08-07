@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_asky::{construct::*, prompt::*, view::*, *};
+use bevy_ui_navigation::prelude::*;
 
 fn main() {
     App::new()
@@ -17,13 +18,44 @@ fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 
     commands
-        .construct::<Confirm>("What up?")
+        .spawn(NodeBundle {
+            style: Style {
+                flex_direction: FlexDirection::Column,
+                ..default()
+            },
+            ..default()
+        })
+        .with_children(|parent| {
+    parent
+        .construct::<Confirm>("Do you like soda?")
         .construct::<ascii::View>(())
         .observe(
             move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
                 eprintln!("trigger {:?}", trigger.event());
+                // commands.entity(trigger.entity()).remove::<Focusable>();
             },
         );
+
+    parent
+        .construct::<Confirm>("Do you like coke?")
+        .construct::<ascii::View>(())
+        .observe(
+            move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
+                eprintln!("trigger {:?}", trigger.event());
+                // commands.entity(trigger.entity()).remove::<Focusable>();
+            },
+        );
+
+    parent
+        .construct::<Confirm>("Do you like pepsi?")
+        .construct::<ascii::View>(())
+        .observe(
+            move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
+                eprintln!("trigger {:?}", trigger.event());
+                // commands.entity(trigger.entity()).remove::<Focusable>();
+            },
+        );
+        });
 }
 
 fn read_keys(input: Res<ButtonInput<KeyCode>>, mut query: Query<&mut AskyState>) {

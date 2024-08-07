@@ -81,10 +81,10 @@ impl Feedback {
 }
 impl fmt::Display for Feedback {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if matches!(self.kind, FeedbackKind::None) {
-            Ok(())
-        } else {
-            write!(f, "{}: {}", self.kind, self.message)
+        match &self.kind {
+            FeedbackKind::None => Ok(()),
+            FeedbackKind::Info => write!(f, "{}", self.message),
+            kind => write!(f, "{}: {}", kind, self.message)
         }
     }
 }

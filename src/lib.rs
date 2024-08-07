@@ -1,6 +1,15 @@
 // #![feature(round_char_boundary)]
 #![allow(clippy::type_complexity)]
-use bevy::prelude::*;
+use bevy::{
+    prelude::*,
+    ecs::system::SystemParam,
+
+};
+use futures::{
+    channel::oneshot,
+    Future,
+};
+use bevy_defer::AsyncWorld;
 use bevy_ui_navigation::{prelude::*, systems::InputMapping};
 //mod focus;
 use std::borrow::Cow;
@@ -8,6 +17,8 @@ pub mod construct;
 mod num_like;
 pub mod prompt;
 pub mod view;
+mod r#async;
+pub use r#async::*;
 pub use num_like::*;
 mod string_cursor;
 pub use string_cursor::*;
@@ -31,6 +42,9 @@ fn setup(mut commands: Commands, mut input_mapping: ResMut<InputMapping>) {
 #[derive(Event, Deref, Debug)]
 pub struct AskyEvent<T>(pub Result<T, Error>);
 
+#[derive(Event, Deref, Debug)]
+pub struct AskyChange<T>(T);
+
 #[derive(Debug, Component, Default, Clone)]
 pub enum AskyState {
     #[default]
@@ -39,11 +53,18 @@ pub enum AskyState {
     Error,
 }
 
+// #[derive(Event, Debug)]
+// pub enum AskyEvent<T> {
+//     Change(T),
+//     Submit(T)
+// }
+
 #[derive(Event, Deref, Debug)]
 pub struct SubmitEvent<T>(pub T);
 
 #[derive(Debug, Component, Default, Clone)]
 pub enum Submit {
+    #[default]
     Repeat,
     Once,
 }

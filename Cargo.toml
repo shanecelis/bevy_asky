@@ -6,6 +6,8 @@ edition = "2021"
 [dependencies]
 bevy = { version = "0.14.0", default-features = false, features = [ "bevy_text", "bevy_ui", "default_font" ] }
 bevy-ui-navigation = "0.33.1"
+bevy_defer = "0.12.1"
+futures = "0.3.30"
 thiserror = "1.0.62"
 
 [dev-dependencies]

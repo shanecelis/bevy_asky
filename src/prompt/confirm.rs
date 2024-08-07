@@ -1,8 +1,11 @@
 use super::{Feedback, Prompt};
 use crate::construct::*;
-use crate::{AskyEvent, AskyState, Error};
+use crate::{AskyEvent, AskyState, Error, AskyChange};
 use bevy::{a11y::Focus, prelude::*};
-use bevy_ui_navigation::prelude::*;
+use bevy_ui_navigation::{
+    events::{Direction as NavDirection, ScopeDirection},
+    prelude::*,
+};
 use std::borrow::Cow;
 
 #[derive(Component)]
@@ -33,13 +36,11 @@ impl Construct for Confirm {
         props: Self::Props,
     ) -> Result<Self, ConstructError> {
         // Our requirements.
-        let state: AskyState = context.construct(AskyState::default())?;
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
             .insert(Focusable::default())
-            .insert(Prompt(props.clone()))
-            .insert(state);
+            .insert(Prompt(props.clone()));
 
         context.world.flush();
         Ok(Confirm {
@@ -50,42 +51,43 @@ impl Construct for Confirm {
 }
 
 fn confirm_controller(
-    mut query: Query<(Entity, &mut AskyState, &mut Confirm, &Focusable)>,
+    mut query: Query<(Entity, &mut Confirm, &mut Focusable)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
+    mut requests: EventWriter<NavRequest>,
 ) {
-    for (id, mut state, mut confirm, focusable) in query.iter_mut() {
+    for (id, mut confirm, mut focusable) in query.iter_mut() {
         if FocusState::Focused != focusable.state() {
             continue;
         }
-        if matches!(*state, AskyState::Reading) {
-            if input.any_just_pressed([
-                KeyCode::KeyY,
-                KeyCode::KeyH,
-                KeyCode::KeyL,
-                KeyCode::KeyN,
-                KeyCode::Enter,
-                KeyCode::Escape,
-            ]) {
-                if input.any_just_pressed([KeyCode::KeyY, KeyCode::KeyL]) {
-                    confirm.yes = true;
-                }
-                if input.any_just_pressed([KeyCode::KeyN, KeyCode::KeyH]) {
-                    confirm.yes = false;
-                }
-                if input.just_pressed(KeyCode::Enter) {
-                    let yes = confirm.yes;
-                        commands.trigger_targets(AskyEvent(Ok(yes)), id);
-                        commands
-                            .entity(id)
-                            .insert(Feedback::info(if yes { "Yes" } else { "No" }));
-                        *state = AskyState::Complete;
-                }
-                if input.just_pressed(KeyCode::Escape) {
-                    commands.trigger_targets(AskyEvent::<bool>(Err(Error::Cancel)), id);
-                    *state = AskyState::Error;
-                    commands.entity(id).insert(Feedback::error("canceled"));
-                }
+        if input.any_just_pressed([
+            KeyCode::KeyY,
+            KeyCode::KeyH,
+            KeyCode::KeyL,
+            KeyCode::KeyN,
+            KeyCode::Enter,
+            KeyCode::Escape,
+        ]) {
+            if input.any_just_pressed([KeyCode::KeyY, KeyCode::KeyL]) {
+                confirm.yes = true;
+                commands.trigger_targets(AskyChange(true), id);
+            }
+            if input.any_just_pressed([KeyCode::KeyN, KeyCode::KeyH]) {
+                confirm.yes = false;
+                commands.trigger_targets(AskyChange(false), id);
+            }
+            if input.just_pressed(KeyCode::Enter) {
+                let yes = confirm.yes;
+                // requests.send(NavRequest::Move(NavDirection::South));
+                commands.trigger(NavRequest::Move(NavDirection::South));
+                commands.trigger_targets(AskyEvent::<bool>(Ok(yes)), id);
+                // commands
+                //     .entity(id)
+                //     .insert(Feedback::info(if yes { "Yes" } else { "No" }));
+            }
+            if input.just_pressed(KeyCode::Escape) {
+                commands.trigger_targets(AskyEvent::<bool>(Err(Error::Cancel)), id);
+                commands.entity(id).insert(Feedback::error("canceled"));
             }
         }
     }

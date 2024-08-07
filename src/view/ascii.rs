@@ -31,23 +31,28 @@ pub fn plugin(app: &mut App) {
 
 pub(crate) fn confirm_view(
     mut query: Query<
-        (&AskyState, &Confirm, &mut Text),
-        (With<View>, Changed<Confirm>),
+        (&Confirm, &mut Text, &Focusable),
+        (With<View>, Or<(Changed<Focusable>, Changed<Confirm>)>),
     >,
 ) {
-    for (asky_state, confirm, mut text) in query.iter_mut() {
+    for (confirm, mut text, focusable) in query.iter_mut() {
         text.sections[ViewPart::Options as usize]
             .value
             .replace_range(
                 ..,
-                if !matches!(asky_state, AskyState::Complete) {
+
+                if let FocusState::Focused = focusable.state() {
                     if confirm.yes {
                         " Y/n"
                     } else {
                         " y/N"
                     }
                 } else {
-                    " "
+                    if confirm.yes {
+                        " Yes"
+                    } else {
+                        " No"
+                    }
                 },
             );
     }
