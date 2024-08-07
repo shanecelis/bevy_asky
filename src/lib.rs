@@ -39,10 +39,16 @@ pub enum AskyState {
     Error,
 }
 
-#[derive(Debug, Component, Default, Clone)]
-pub struct Submitter;
+#[derive(Event, Deref, Debug)]
+pub struct SubmitEvent<T>(pub T);
 
-pub trait Submit {
+#[derive(Debug, Component, Default, Clone)]
+pub enum Submit {
+    Repeat,
+    Once,
+}
+
+pub trait Submitter {
     type Out;
     fn submit(&self) -> Result<Self::Out, Error>;
 }
