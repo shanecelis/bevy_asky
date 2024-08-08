@@ -26,7 +26,7 @@ fn setup(mut commands: Commands, mut asky: Asky) {
             ..default()
         }).id();
     commands.spawn_task(move || async move {
-        let response = asky.prompt("What up?", id).await;
+        let response: Result<String, Error> = asky.prompt::<TextField>("What up?", id).await.expect("response");
         dbg!(response);
         Ok(())
     });

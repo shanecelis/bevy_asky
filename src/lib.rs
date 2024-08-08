@@ -71,7 +71,7 @@ pub enum Submit {
 
 pub trait Submitter {
     type Out;
-    fn submit(&self) -> Result<Self::Out, Error>;
+    // fn submit(&self) -> Result<Self::Out, Error>;
 }
 
 impl AskyState {
@@ -81,7 +81,7 @@ impl AskyState {
 }
 
 /// Asky errors
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, Clone)]
 pub enum Error {
     /// User cancelled.
     #[error("cancelled")]
@@ -106,15 +106,16 @@ pub enum Error {
     #[error("{0}")]
     Message(Cow<'static, str>),
     /// There was an [std::io::Error].
-    #[error("io error {0}")]
-    Io(#[from] std::io::Error),
-    #[cfg(feature = "bevy")]
-    /// Async error
+    // #[error("io error {0}")]
+    // Io(#[from] std::io::Error),
+    #[error("channel cancel {0}")]
+    Channel(#[from] oneshot::Canceled),
+    // Async error
     // #[error("async error {0}")]
     // Async(#[from] bevy_defer::AccessError),
-    /// Promise error
-    #[error("promise error {0}")]
-    Promise(#[from] promise_out::Error),
+    // Promise error
+    // #[error("promise error {0}")]
+    // Promise(#[from] promise_out::Error),
 }
 
 // #[cfg(test)]

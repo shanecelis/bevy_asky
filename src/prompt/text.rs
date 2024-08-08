@@ -1,6 +1,6 @@
 use super::{Feedback, Password, Prompt};
 use crate::construct::*;
-use crate::{AskyEvent, AskyState, Error, InputDirection, StringCursor};
+use crate::{AskyEvent, AskyState, Error, InputDirection, StringCursor, Submitter};
 use bevy::{
     a11y::Focus,
     input::{
@@ -45,6 +45,10 @@ pub fn plugin(app: &mut App) {
 /// ```
 #[derive(Debug, Clone, Component)]
 pub struct TextField;
+
+impl Submitter for TextField {
+    type Out = Result<String, Error>;
+}
 
 impl Construct for TextField {
     type Props = Cow<'static, str>;
