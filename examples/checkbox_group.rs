@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_asky::{construct::*, prompt::*, view::*, *};
+use bevy_asky::{construct::*, prompt::*, view::{*, widget::Widgets}, *, };
 
 fn main() {
     App::new()
@@ -16,28 +16,14 @@ fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
     commands
-        .spawn(NodeBundle {
-            style: Style {
-                flex_direction: FlexDirection::Column,
-                ..default()
-            },
-            ..default()
-        })
+        .column()
         .with_children(|parent| {
             parent
-                .construct::<Checkbox>("Money?")
+                .construct::<Prompt>("checkbox group 0")
                 .construct::<ascii::View>(())
+                .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
                 .observe(
-                    move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
-                        eprintln!("trigger {:?}", trigger.event());
-                    },
-                );
-
-            parent
-                .construct::<Checkbox>("Time?")
-                .construct::<ascii::View>(())
-                .observe(
-                    move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
+                    move |trigger: Trigger<AskyEvent<Vec<bool>>>, mut commands: Commands| {
                         eprintln!("trigger {:?}", trigger.event());
                     },
                 );

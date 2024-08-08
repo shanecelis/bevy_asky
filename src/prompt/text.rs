@@ -1,6 +1,6 @@
 use super::{Feedback, Password, Prompt};
 use crate::construct::*;
-use crate::{AskyEvent, AskyState, Error, InputDirection, StringCursor, Submitter};
+use crate::{AskyEvent, AskyState, Error, CursorDirection, StringCursor, Submitter};
 use bevy::{
     a11y::Focus,
     input::{
@@ -47,7 +47,10 @@ pub fn plugin(app: &mut App) {
 pub struct TextField;
 
 impl Submitter for TextField {
-    type Out = Result<String, Error>;
+    type Out = String;
+    // fn submit(&self) -> Result<Self::Out, Error> {
+    //     Ok(self.value.clone())
+    // }
 }
 
 impl Construct for TextField {
@@ -101,8 +104,8 @@ fn text_controller(
                         Key::Space => text_state.insert(' '),
                         Key::Backspace => text_state.backspace(),
                         Key::Delete => text_state.delete(),
-                        Key::ArrowLeft => text_state.move_cursor(InputDirection::Left),
-                        Key::ArrowRight => text_state.move_cursor(InputDirection::Right),
+                        Key::ArrowLeft => text_state.move_cursor(CursorDirection::Left),
+                        Key::ArrowRight => text_state.move_cursor(CursorDirection::Right),
                         Key::Enter => {
                             commands.trigger_targets(AskyEvent(Ok(text_state.value.clone())), id);
                             *state = AskyState::Complete;

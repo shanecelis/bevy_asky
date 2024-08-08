@@ -1,6 +1,6 @@
 use super::{Feedback, Prompt};
 use crate::construct::*;
-use crate::{AskyEvent, AskyState, Error, InputDirection, StringCursor};
+use crate::{AskyEvent, AskyState, Error, CursorDirection, StringCursor};
 use bevy::{
     a11y::Focus,
     input::{

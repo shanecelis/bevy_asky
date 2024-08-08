@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 #[derive(Debug)]
-pub enum InputDirection {
+pub enum CursorDirection {
     Left,
     Right,
 }
@@ -54,13 +54,13 @@ impl StringCursor {
         }
     }
 
-    pub(crate) fn move_cursor(&mut self, position: InputDirection) {
+    pub(crate) fn move_cursor(&mut self, position: CursorDirection) {
         self.index = match position {
             // TODO: When round_char_boundary is stabilized, use std's impl.
-            // InputDirection::Left => self.value.floor_char_boundary(self.index.saturating_sub(1)),
-            InputDirection::Left => self.prev_index(),
-            // InputDirection::Right => self.value.ceil_char_boundary(self.index + 1),
-            InputDirection::Right => self.next_index(),
+            // CursorDirection::Left => self.value.floor_char_boundary(self.index.saturating_sub(1)),
+            CursorDirection::Left => self.prev_index(),
+            // CursorDirection::Right => self.value.ceil_char_boundary(self.index + 1),
+            CursorDirection::Right => self.next_index(),
         }
     }
 }

@@ -26,6 +26,16 @@ pub struct Placeholder(pub Cow<'static, str>);
 // pub struct DefaultValue<T: std::fmt::Display>(pub T);
 pub struct DefaultValue<T>(pub T);
 
+impl Construct for Prompt {
+    type Props = Cow<'static, str>;
+    fn construct(
+        _context: &mut ConstructContext,
+        props: Self::Props,
+    ) -> Result<Self, ConstructError> {
+        Ok(Prompt(props.into()))
+    }
+}
+
 impl Construct for Placeholder {
     type Props = Cow<'static, str>;
     fn construct(

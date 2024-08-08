@@ -23,7 +23,7 @@ impl Asky {
     pub fn prompt<T: Construct + Component + Submitter>(
         &mut self,
         props: impl Into<T::Props>,
-        dest: Entity,
+        dest: impl Into<Option<Entity>>,
     ) -> impl Future<Output = Result<T::Out, Error>>
     where <T as Construct>::Props: Send,
     <T as Submitter>::Out: Clone + Debug + Send + Sync
@@ -31,6 +31,8 @@ impl Asky {
 
         let (sender, receiver) = oneshot::channel::<Result<T::Out, Error>>();
         let p = props.into();
+        let d = dest.into();
+
         // let async_world = AsyncWorld::new();
         // async_world.spawn_task(|| async move {
 
@@ -41,15 +43,19 @@ impl Asky {
 
             async_world.apply_command(move |world: &mut World| {
                 let mut commands = world.commands();
-                commands.entity(dest)
+                let mut entity_commands = match d {
+                    Some(id) => commands.entity(id),
+                    None => commands.spawn_empty(),
+                };
+                entity_commands
                     .construct::<T>(p)
-
                     .construct::<ascii::View>(())
-                    .observe(move |trigger: Trigger<AskyEvent<Result<T::Out, Error>>>| {
+                    .observe(move |trigger: Trigger<AskyEvent<T::Out>>, mut commands: Commands| {
                         if let Some(sender) = send_once.take() {
-                            sender.send(trigger.event().0.as_ref().expect("out").clone()).expect("send");
+                            sender.send(trigger.event().0.clone()).expect("send");
                             // sender.send("bye".into());
                         }
+                        commands.entity(trigger.entity()).despawn_recursive();
                     })
                     ;
             });

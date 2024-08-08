@@ -1,6 +1,7 @@
 use super::{Feedback, Prompt};
 use crate::construct::*;
-use crate::{AskyEvent, AskyState, Error};
+use crate::{AskyEvent, AskyState, Error, Submitter};
+use crate::view::widget::Widgets;
 use bevy::prelude::*;
 use bevy_ui_navigation::prelude::*;
 use std::borrow::Cow;
@@ -23,7 +24,7 @@ impl From<Cow<'static, str>> for Checkbox {
 }
 
 pub(crate) fn plugin(app: &mut App) {
-    app.add_systems(PreUpdate, checkbox_controller);
+    app.add_systems(PreUpdate, (checkbox_controller, checkbox_group_controller));
 }
 
 impl Construct for Checkbox {
@@ -86,3 +87,84 @@ fn checkbox_controller(
 //         });
 //     }
 // }
+
+#[derive(Component)]
+pub struct CheckboxGroup;
+
+// pub struct CheckboxGroupProps {
+//     options: Vec<Cow<'static, str>>,
+// };
+//
+impl Submitter for CheckboxGroup {
+    type Out = Vec<bool>;
+}
+
+impl Construct for CheckboxGroup {
+    type Props = Vec<Cow<'static, str>>;
+
+    fn construct(
+        context: &mut ConstructContext,
+        props: Self::Props,
+    ) -> Result<Self, ConstructError> {
+        // Our requirements.
+        let mut commands = context.world.commands();
+        commands
+            .entity(context.id)
+            .insert(Focusable::default())
+            .insert(MenuBuilder::Root)
+            .insert(MenuSetting::default())
+            .insert(NodeBundle {
+                style: Style {
+                    flex_direction: FlexDirection::Column,
+                    ..default()
+                },
+                ..default()
+            })
+            // .insert(Focusable::default())
+            .with_children(|parent| {
+                // let mut entity_commands = parent.column();
+
+                for prompt in props {
+                    parent
+                        .construct::<Checkbox>(prompt)
+                        // FIXME: Don't want to specify view here.
+                        .construct::<crate::view::ascii::View>(())
+                        .insert(MenuBuilder::EntityParent(context.id))
+
+                        ;
+                }
+            })
+            ;
+
+        context.world.flush();
+        Ok(CheckboxGroup)
+    }
+}
+
+fn checkbox_group_controller(
+    mut query: Query<(Entity, &CheckboxGroup, //&Focusable,
+                      &Children)>,
+    checkboxes: Query<&Checkbox>,
+    input: Res<ButtonInput<KeyCode>>,
+    mut commands: Commands,
+) {
+    for (id, mut checkbox, children) in query.iter_mut() {
+        // if FocusState::Focused != focusable.state() {
+        //     continue;
+        // }
+        if input.just_pressed(KeyCode::Enter) {
+            let mut result: Vec<bool> = vec![];
+            for child in children {
+                let checkbox = checkboxes.get(*child).unwrap();
+                result.push(checkbox.checked);
+            }
+            commands.trigger_targets(AskyEvent(Ok(result)), id);
+            // *state = AskyState::Complete;
+        }
+
+        if input.just_pressed(KeyCode::Escape) {
+            commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
+            commands.entity(id).insert(Feedback::error("canceled"));
+        }
+    }
+}

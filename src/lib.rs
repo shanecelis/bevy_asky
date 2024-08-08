@@ -70,6 +70,7 @@ pub enum Submit {
 }
 
 pub trait Submitter {
+    /// This is a commitment to fire a `Trigger<Result<Self::Out, Error>>`.
     type Out;
     // fn submit(&self) -> Result<Self::Out, Error>;
 }

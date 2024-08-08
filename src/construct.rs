@@ -2,6 +2,7 @@
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::borrow::Cow;
 use thiserror::Error;
+use std::marker::PhantomData;
 
 #[derive(Error, Debug)]
 pub enum ConstructError {
@@ -25,6 +26,14 @@ pub trait Construct: Sized {
         context: &mut ConstructContext,
         props: Self::Props,
     ) -> Result<Self, ConstructError>;
+
+
+    fn patch<F: FnMut(&mut Self::Props)>(func: F) -> ConstructPatch<Self, F> {
+        ConstructPatch {
+            func,
+            _marker: PhantomData
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -39,6 +48,13 @@ impl<'a> ConstructContext<'a> {
         props: impl Into<T::Props>,
     ) -> Result<T, ConstructError> {
         T::construct(self, props.into())
+    }
+
+    pub fn construct_from_patch<P: Patch>(&mut self, patch: &mut P) -> Result<P::Construct, ConstructError>
+    where <<P as Patch>::Construct as Construct>::Props : Default {
+        let mut props = <<P as Patch>::Construct as Construct>::Props::default();
+        patch.patch(&mut props);
+        self.construct(props)
     }
 }
 
@@ -121,4 +137,56 @@ impl<T: Default + Clone> Construct for T {
     ) -> Result<Self, ConstructError> {
         Ok(props)
     }
+}
+
+pub trait Patch: Send + Sync + 'static {
+    type Construct: Construct + Bundle;
+    fn patch(&mut self, props: &mut <Self::Construct as Construct>::Props);
+}
+
+pub struct ConstructPatch<C: Construct, F> {
+    func: F,
+    _marker: PhantomData<C>,
+}
+
+impl<C: Construct + Sync + Send + 'static + Bundle, F: FnMut(&mut C::Props) + Sync + Send + 'static> Patch for ConstructPatch<C,F> {
+    type Construct = C;
+    fn patch(&mut self, props: &mut <Self::Construct as Construct>::Props) {
+        (self.func)(props);
+    }
+}
+
+// pub trait PatchExt {
+//     type C: Construct;
+//     fn patch<F: FnMut(&mut <<Self as PatchExt>::C as Construct>::Props)>(func: F) -> ConstructPatch<Self::C, F> {
+//         ConstructPatch {
+//             func,
+//             _marker: PhantomData
+//         }
+//     }
+// }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[derive(Default, Clone, Component)]
+    struct Player {
+        name: String
+    }
+
+    #[test]
+    fn test_patch_name() {
+        let mut player = Player { name: "shane".into() };
+        assert_eq!(player.name, "shane");
+
+        let mut patch = Player::patch(|props| {
+            props.name = "fred".to_string();
+        });
+        patch.patch(&mut player);
+        assert_eq!(player.name, "fred");
+
+    }
+
+
 }

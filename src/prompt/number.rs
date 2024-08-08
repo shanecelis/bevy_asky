@@ -1,7 +1,7 @@
 use super::{Feedback, Prompt};
 use crate::construct::*;
 use crate::{AskyEvent, AskyState, Error, NumLike};
-use crate::{InputDirection, StringCursor};
+use crate::{CursorDirection, StringCursor};
 use bevy::{
     a11y::Focus,
     input::{
@@ -158,8 +158,8 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                         Key::Space => text_state.insert(' '),
                         Key::Backspace => text_state.backspace(),
                         Key::Delete => text_state.delete(),
-                        Key::ArrowLeft => text_state.move_cursor(InputDirection::Left),
-                        Key::ArrowRight => text_state.move_cursor(InputDirection::Right),
+                        Key::ArrowLeft => text_state.move_cursor(CursorDirection::Left),
+                        Key::ArrowRight => text_state.move_cursor(CursorDirection::Right),
                         Key::Enter => {
                             match T::from_str(&text_state.value) {
                                 Ok(number) => {
