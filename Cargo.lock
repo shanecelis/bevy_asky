@@ -325,6 +325,7 @@ dependencies = [
 [[package]]
 name = "bevy-ui-navigation"
 version = "0.33.1"
+source = "git+https://github.com/shanecelis/ui-navigation.git?branch=bevy-0.14#73d8f79f25060d8dc69fcfd992859ca3d873429c"
 dependencies = [
  "bevy",
  "bevy_mod_picking",

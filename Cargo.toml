@@ -14,4 +14,4 @@ thiserror = "1.0.62"
 bevy = { version = "0.14.0" }
 
 [patch.crates-io]
-bevy-ui-navigation = { path = "../ui-navigation" }
+bevy-ui-navigation = { git = "https://github.com/shanecelis/ui-navigation.git", branch = "bevy-0.14" }
