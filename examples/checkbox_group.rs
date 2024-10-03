@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_asky::{construct::*, prompt::*, view::{*, widget::Widgets}, *, };
+use bevy_ui_navigation::prelude::*;
 
 fn main() {
     App::new()
@@ -15,13 +16,38 @@ fn main() {
 fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
-    commands
+    let mut next_group = None;
+    let root = commands
         .column()
+        .insert(MenuBuilder::Root)
+        .insert(Focusable::default())
+        .id();
+    commands.entity(root)
         .with_children(|parent| {
+
+            next_group = Some(parent
+                              .construct::<Prompt>("checkbox group 0")
+                              .insert(Focusable::default())
+
+                              .construct::<ascii::View>(())
+                              .id());
             parent
-                .construct::<Prompt>("checkbox group 0")
                 .construct::<ascii::View>(())
                 .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
+                .insert(MenuBuilder::from(next_group))
+                .observe(
+                    move |trigger: Trigger<AskyEvent<Vec<bool>>>, mut commands: Commands| {
+                        eprintln!("trigger {:?}", trigger.event());
+                    },
+                );
+
+            parent
+                .construct::<Prompt>("checkbox group 1")
+                .construct::<ascii::View>(())
+                .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
+                // .construct::<CheckboxGroup>(vec![])
+                .insert(MenuBuilder::from(next_group))
+                // .insert(MenuBuilder::EntityParent(root))
                 .observe(
                     move |trigger: Trigger<AskyEvent<Vec<bool>>>, mut commands: Commands| {
                         eprintln!("trigger {:?}", trigger.event());

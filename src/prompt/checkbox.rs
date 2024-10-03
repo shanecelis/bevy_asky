@@ -111,8 +111,9 @@ impl Construct for CheckboxGroup {
         commands
             .entity(context.id)
             .insert(Focusable::default())
-            .insert(MenuBuilder::Root)
             .insert(MenuSetting::default())
+            // .insert(MenuBuilder::Root)
+            // .insert(TextBundle::from_section("header", TextStyle::default()))
             .insert(NodeBundle {
                 style: Style {
                     flex_direction: FlexDirection::Column,
@@ -142,16 +143,17 @@ impl Construct for CheckboxGroup {
 }
 
 fn checkbox_group_controller(
-    mut query: Query<(Entity, &CheckboxGroup, //&Focusable,
+    mut query: Query<(Entity, &CheckboxGroup, &Focusable,
                       &Children)>,
     checkboxes: Query<&Checkbox>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
 ) {
-    for (id, mut checkbox, children) in query.iter_mut() {
-        // if FocusState::Focused != focusable.state() {
-        //     continue;
-        // }
+    for (id, mut checkbox, focusable, children) in query.iter_mut() {
+        // dbg!(focusable.state());
+        if !matches!(focusable.state(), FocusState::Active | FocusState::Focused)  {
+            continue;
+        }
         if input.just_pressed(KeyCode::Enter) {
             let mut result: Vec<bool> = vec![];
             for child in children {
