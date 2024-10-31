@@ -36,6 +36,7 @@ pub fn plugin(app: &mut App) {}
 /// ```
 #[derive(Debug, Clone, Component)]
 pub struct Password;
+
 impl Construct for Password {
     type Props = Cow<'static, str>;
 

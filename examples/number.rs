@@ -36,7 +36,7 @@ fn setup(mut commands: Commands) {
                 });
 
             parent
-                .construct::<Number<i8>>("Phone number ? ")
+                .construct::<Number<i32>>("Phone number ? ")
                 .construct::<Placeholder>("123-4567")
                 .construct::<ascii::View>(())
                 .observe(move |trigger: Trigger<AskyEvent<i8>>| {

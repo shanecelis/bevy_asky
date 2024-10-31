@@ -63,32 +63,30 @@ pub fn plugin(app: &mut App) {
 /// ```
 #[derive(Debug, Clone, Component)]
 pub struct Number<T: NumLike> {
-    /// Message used to display in the prompt
-    pub message: Cow<'static, str>,
     /// Default value to submit when the input is empty
     pub default_value: Option<T>,
 }
 
-impl<T: NumLike> From<Cow<'static, str>> for Number<T> {
-    fn from(message: Cow<'static, str>) -> Self {
-        Self {
-            message,
-            default_value: None,
-        }
-    }
-}
+// impl<T: NumLike> From<Cow<'static, str>> for Number<T> {
+//     fn from(message: Cow<'static, str>) -> Self {
+//         Self {
+//             message,
+//             default_value: None,
+//         }
+//     }
+// }
 
-impl<T: NumLike> From<&'static str> for Number<T> {
-    fn from(message: &'static str) -> Self {
-        Self {
-            message: message.into(),
-            default_value: None,
-        }
-    }
-}
+// impl<T: NumLike> From<&'static str> for Number<T> {
+//     fn from(message: &'static str) -> Self {
+//         Self {
+//             message: message.into(),
+//             default_value: None,
+//         }
+//     }
+// }
 
 impl<T: NumLike> Construct for Number<T> {
-    type Props = Number<T>;
+    type Props = Cow<'static, str>;
 
     fn construct(
         context: &mut ConstructContext,
@@ -100,24 +98,17 @@ impl<T: NumLike> Construct for Number<T> {
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
-            .insert(Prompt(props.message.clone()))
+            .insert(Prompt(props))
             .insert(input_state)
             .insert(Focusable::default())
             .insert(state);
 
         context.world.flush();
-        Ok(props)
+        Ok(Number { default_value: None })
     }
 }
 
 impl<T: NumLike> Number<T> {
-    /// Create a new text prompt.
-    pub fn new(message: impl Into<Cow<'static, str>>) -> Self {
-        Number {
-            message: message.into(),
-            default_value: None,
-        }
-    }
 
     /// Set default value to submit when the input is empty.
     pub fn default(mut self, value: T) -> Self {

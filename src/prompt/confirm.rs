@@ -7,18 +7,7 @@ use std::borrow::Cow;
 
 #[derive(Component)]
 pub struct Confirm {
-    /// Message used to display in the prompt.
-    pub message: Cow<'static, str>,
     pub yes: bool,
-}
-
-impl From<Cow<'static, str>> for Confirm {
-    fn from(message: Cow<'static, str>) -> Self {
-        Confirm {
-            message,
-            yes: false,
-        }
-    }
 }
 
 pub(crate) fn plugin(app: &mut App) {
@@ -41,7 +30,6 @@ impl Construct for Confirm {
 
         context.world.flush();
         Ok(Confirm {
-            message: props,
             yes: false,
         })
     }
@@ -59,17 +47,19 @@ fn confirm_controller(
         }
         if input.any_just_pressed([
             KeyCode::KeyY,
+            KeyCode::ArrowRight,
+            KeyCode::ArrowLeft,
             KeyCode::KeyH,
             KeyCode::KeyL,
             KeyCode::KeyN,
             KeyCode::Enter,
             KeyCode::Escape,
         ]) {
-            if input.any_just_pressed([KeyCode::KeyY, KeyCode::KeyL]) {
+            if input.any_just_pressed([KeyCode::KeyY, KeyCode::KeyL, KeyCode::ArrowRight]) {
                 confirm.yes = true;
                 commands.trigger_targets(AskyChange(true), id);
             }
-            if input.any_just_pressed([KeyCode::KeyN, KeyCode::KeyH]) {
+            if input.any_just_pressed([KeyCode::KeyN, KeyCode::KeyH, KeyCode::ArrowLeft]) {
                 confirm.yes = false;
                 commands.trigger_targets(AskyChange(false), id);
             }
