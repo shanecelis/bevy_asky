@@ -40,9 +40,9 @@ pub(crate) fn confirm_view(
                 ..,
                 if let FocusState::Focused = focusable.state() {
                     if confirm.yes {
-                        " Y/n"
+                        " no/YES"
                     } else {
-                        " y/N"
+                        " NO/yes"
                     }
                 } else if confirm.yes {
                     " Yes"

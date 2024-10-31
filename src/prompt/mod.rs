@@ -56,7 +56,18 @@ impl<T: std::fmt::Display + Clone> Construct for DefaultValue<T> {
     }
 }
 
-#[derive(Component)]
+impl Construct for Feedback {
+    type Props = Feedback;
+    fn construct(
+        _context: &mut ConstructContext,
+        props: Self::Props,
+    ) -> Result<Self, ConstructError> {
+        Ok(props)
+    }
+}
+
+
+#[derive(Component, Clone)]
 pub struct Feedback {
     pub kind: FeedbackKind,
     pub message: Cow<'static, str>,
@@ -114,6 +125,7 @@ impl fmt::Display for FeedbackKind {
     }
 }
 
+#[derive(Clone)]
 pub enum FeedbackKind {
     None,
     Info,

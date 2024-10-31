@@ -55,11 +55,11 @@ fn button_interaction(
         ),
         (Changed<Interaction>, With<Button>, With<AskyElement>),
     >,
-    mut state_query: Query<(&mut Confirm, &mut AskyState)>,
+    mut state_query: Query<&mut Confirm>,
     mut last_state: Local<HashMap<Entity, Interaction>>,
 ) {
     for (id, interaction, mut color, mut border_color, parent) in &mut interaction_query {
-        let (confirm, _asky_state) = state_query.get_mut(parent.get()).unwrap();
+        let confirm = state_query.get_mut(parent.get()).unwrap();
         // let last = last_state.get(&id);
         // dbg!(id.index(), *interaction);
         match *interaction {

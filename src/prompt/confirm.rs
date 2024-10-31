@@ -1,6 +1,6 @@
 use super::{Feedback, Prompt};
 use crate::construct::*;
-use crate::{AskyChange, AskyEvent, Error};
+use crate::{AskyState, AskyChange, AskyEvent, Error};
 use bevy::prelude::*;
 use bevy_alt_ui_navigation_lite::{events::Direction as NavDirection, prelude::*};
 use std::borrow::Cow;
@@ -26,6 +26,7 @@ impl Construct for Confirm {
         commands
             .entity(context.id)
             .insert(Focusable::default())
+            // .insert(AskyState::default())
             .insert(Prompt(props.clone()));
 
         context.world.flush();
@@ -36,7 +37,7 @@ impl Construct for Confirm {
 }
 
 fn confirm_controller(
-    mut query: Query<(Entity, &mut Confirm, &mut Focusable)>,
+    mut query: Query<(Entity, &mut Confirm, &Focusable)>,// &mut AskyState)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
     mut requests: EventWriter<NavRequest>,
@@ -64,16 +65,19 @@ fn confirm_controller(
                 commands.trigger_targets(AskyChange(false), id);
             }
             if input.just_pressed(KeyCode::Enter) {
-                let yes = confirm.yes;
+                // *state = AskyState::Complete;
+                // Make this not focusable again.
+                commands.entity(id).insert(Focusable::new().blocked());
                 requests.send(NavRequest::Move(NavDirection::South));
                 // I had tried using triggers in bevy_ui_navigation to fix my issues.
                 // commands.trigger(NavRequest::Move(NavDirection::South));
-                commands.trigger_targets(AskyEvent::<bool>(Ok(yes)), id);
+                commands.trigger_targets(AskyEvent::<bool>(Ok(confirm.yes)), id);
                 // commands
                 //     .entity(id)
                 //     .insert(Feedback::info(if yes { "Yes" } else { "No" }));
             }
             if input.just_pressed(KeyCode::Escape) {
+                // *state = AskyState::Error;
                 commands.trigger_targets(AskyEvent::<bool>(Err(Error::Cancel)), id);
                 commands.entity(id).insert(Feedback::error("canceled"));
             }

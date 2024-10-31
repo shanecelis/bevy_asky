@@ -10,7 +10,16 @@ be better thought of as scaffolding for whatever your eventual UI may become.
 commands
     .construct::<Confirm>("Do you like cats?")
     .construct::<ascii::View>(())
-    .observe(|trigger: Trigger<AskyEvent<bool>>| {
-        // Got answer!
-    });
+    .observe(
+        move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
+            if let AskyEvent(Ok(yes)) = trigger.event() {
+                commands.entity(trigger.entity())
+                        .construct::<Feedback>(Feedback::info(if *yes {
+                            "\nMe too!"
+                        } else {
+                            "\nOk."
+                        }));
+            }
+        },
+    );
 ```
