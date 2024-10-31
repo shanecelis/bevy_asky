@@ -6,6 +6,8 @@ be better thought of as scaffolding for whatever your eventual UI may become.
 
 # Usage
 
+![Run of code below](https://github.com/user-attachments/assets/3570dc94-2042-494c-b926-dfa06ea30cb6)
+
 ```rust
 commands
     .construct::<Confirm>("Do you like cats?")
