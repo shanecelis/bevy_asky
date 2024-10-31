@@ -2,7 +2,6 @@ use super::{Feedback, Password, Prompt};
 use crate::construct::*;
 use crate::{AskyEvent, AskyState, Error, CursorDirection, StringCursor, Submitter};
 use bevy::{
-    a11y::Focus,
     input::{
         keyboard::{Key, KeyboardInput},
         ButtonState,
@@ -89,38 +88,35 @@ fn text_controller(
         if FocusState::Focused != focusable.state() {
             continue;
         }
-        match *state {
-            AskyState::Reading => {
-                for ev in input.read() {
-                    if ev.state != ButtonState::Pressed {
-                        continue;
+        if let AskyState::Reading = *state {
+            for ev in input.read() {
+                if ev.state != ButtonState::Pressed {
+                    continue;
+                }
+                match &ev.logical_key {
+                    Key::Character(s) => {
+                        for c in s.chars() {
+                            text_state.insert(c);
+                        }
                     }
-                    match &ev.logical_key {
-                        Key::Character(s) => {
-                            for c in s.chars() {
-                                text_state.insert(c);
-                            }
-                        }
-                        Key::Space => text_state.insert(' '),
-                        Key::Backspace => text_state.backspace(),
-                        Key::Delete => text_state.delete(),
-                        Key::ArrowLeft => text_state.move_cursor(CursorDirection::Left),
-                        Key::ArrowRight => text_state.move_cursor(CursorDirection::Right),
-                        Key::Enter => {
-                            commands.trigger_targets(AskyEvent(Ok(text_state.value.clone())), id);
-                            *state = AskyState::Complete;
-                        }
-                        Key::Escape => {
-                            commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
-                            commands.entity(id).insert(Feedback::error("canceled"));
+                    Key::Space => text_state.insert(' '),
+                    Key::Backspace => text_state.backspace(),
+                    Key::Delete => text_state.delete(),
+                    Key::ArrowLeft => text_state.move_cursor(CursorDirection::Left),
+                    Key::ArrowRight => text_state.move_cursor(CursorDirection::Right),
+                    Key::Enter => {
+                        commands.trigger_targets(AskyEvent(Ok(text_state.value.clone())), id);
+                        *state = AskyState::Complete;
+                    }
+                    Key::Escape => {
+                        commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
+                        commands.entity(id).insert(Feedback::error("canceled"));
 
-                            *state = AskyState::Error;
-                        }
-                        x => info!("Unhandled key {x:?}"),
+                        *state = AskyState::Error;
                     }
+                    x => info!("Unhandled key {x:?}"),
                 }
             }
-            _ => (),
         }
     }
 }

@@ -1,15 +1,7 @@
 // #![feature(round_char_boundary)]
 #![allow(clippy::type_complexity)]
-use bevy::{
-    prelude::*,
-    ecs::system::SystemParam,
-
-};
-use futures::{
-    channel::oneshot,
-    Future,
-};
-use bevy_defer::AsyncWorld;
+use bevy::prelude::*;
+use futures::channel::oneshot;
 use bevy_alt_ui_navigation_lite::{prelude::*, systems::InputMapping};
 //mod focus;
 use std::borrow::Cow;
@@ -35,7 +27,7 @@ impl Plugin for AskyPlugin {
     }
 }
 
-fn setup(mut commands: Commands, mut input_mapping: ResMut<InputMapping>) {
+fn setup(commands: Commands, mut input_mapping: ResMut<InputMapping>) {
     input_mapping.keyboard_navigation = true;
     // input_mapping.focus_follows_mouse = true;
 }

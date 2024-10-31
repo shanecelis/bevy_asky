@@ -1,9 +1,9 @@
 use super::{Feedback, Prompt};
 use crate::construct::*;
-use crate::{AskyEvent, AskyState, Error, AskyChange};
-use bevy::{a11y::Focus, prelude::*};
+use crate::{AskyEvent, Error, AskyChange};
+use bevy::prelude::*;
 use bevy_alt_ui_navigation_lite::{
-    events::{Direction as NavDirection, ScopeDirection},
+    events::Direction as NavDirection,
     prelude::*,
 };
 use std::borrow::Cow;
@@ -54,9 +54,9 @@ fn confirm_controller(
     mut query: Query<(Entity, &mut Confirm, &mut Focusable)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
-    mut requests: EventWriter<NavRequest>,
+    requests: EventWriter<NavRequest>,
 ) {
-    for (id, mut confirm, mut focusable) in query.iter_mut() {
+    for (id, mut confirm, focusable) in query.iter_mut() {
         if FocusState::Focused != focusable.state() {
             continue;
         }

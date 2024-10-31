@@ -9,7 +9,7 @@ fn main() {
         .add_plugins(view::color::plugin)
         .add_plugins(view::button::plugin)
         .add_systems(Startup, setup)
-        .add_systems(Update, (read_keys))
+        .add_systems(Update, read_keys)
         .run();
 }
 
@@ -36,7 +36,7 @@ fn setup(mut commands: Commands) {
                 .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
                 .insert(MenuBuilder::from(next_group))
                 .observe(
-                    move |trigger: Trigger<AskyEvent<Vec<bool>>>, mut commands: Commands| {
+                    move |trigger: Trigger<AskyEvent<Vec<bool>>>, commands: Commands| {
                         eprintln!("trigger {:?}", trigger.event());
                     },
                 );
@@ -49,7 +49,7 @@ fn setup(mut commands: Commands) {
                 .insert(MenuBuilder::from(next_group))
                 // .insert(MenuBuilder::EntityParent(root))
                 .observe(
-                    move |trigger: Trigger<AskyEvent<Vec<bool>>>, mut commands: Commands| {
+                    move |trigger: Trigger<AskyEvent<Vec<bool>>>, commands: Commands| {
                         eprintln!("trigger {:?}", trigger.event());
                     },
                 );

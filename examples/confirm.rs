@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy_asky::{construct::*, prompt::*, view::*, *};
-use bevy_alt_ui_navigation_lite::prelude::*;
 
 fn main() {
     App::new()
@@ -9,7 +8,7 @@ fn main() {
         .add_plugins(view::color::plugin)
         .add_plugins(view::button::plugin)
         .add_systems(Startup, setup)
-        .add_systems(Update, (read_keys))
+        .add_systems(Update, read_keys)
         .run();
 }
 
@@ -30,7 +29,7 @@ fn setup(mut commands: Commands) {
         .construct::<Confirm>("Do you like soda?")
         .construct::<ascii::View>(())
         .observe(
-            move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
+            move |trigger: Trigger<AskyEvent<bool>>, commands: Commands| {
                 eprintln!("trigger {:?}", trigger.event());
                 // commands.entity(trigger.entity()).remove::<Focusable>();
             },
@@ -40,7 +39,7 @@ fn setup(mut commands: Commands) {
         .construct::<Confirm>("Do you like coke?")
         .construct::<ascii::View>(())
         .observe(
-            move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
+            move |trigger: Trigger<AskyEvent<bool>>, commands: Commands| {
                 eprintln!("trigger {:?}", trigger.event());
                 // commands.entity(trigger.entity()).remove::<Focusable>();
             },
@@ -50,7 +49,7 @@ fn setup(mut commands: Commands) {
         .construct::<Confirm>("Do you like pepsi?")
         .construct::<ascii::View>(())
         .observe(
-            move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
+            move |trigger: Trigger<AskyEvent<bool>>, commands: Commands| {
                 eprintln!("trigger {:?}", trigger.event());
                 // commands.entity(trigger.entity()).remove::<Focusable>();
             },

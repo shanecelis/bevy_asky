@@ -47,12 +47,10 @@ pub(crate) fn confirm_view(
                     } else {
                         " y/N"
                     }
+                } else if confirm.yes {
+                    " Yes"
                 } else {
-                    if confirm.yes {
-                        " Yes"
-                    } else {
-                        " No"
-                    }
+                    " No"
                 },
             );
     }
@@ -126,7 +124,7 @@ pub(crate) fn prompt_view(mut query: Query<(&mut Text, &Prompt), (With<View>, Ch
     for (mut text, prompt) in query.iter_mut() {
         text.sections[ViewPart::Question as usize]
             .value
-            .replace_range(.., &prompt);
+            .replace_range(.., prompt);
     }
 }
 

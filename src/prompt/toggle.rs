@@ -1,7 +1,7 @@
 use super::{Feedback, Prompt};
 use crate::construct::*;
 use crate::{AskyEvent, AskyState, Error};
-use bevy::{a11y::Focus, prelude::*};
+use bevy::prelude::*;
 use bevy_alt_ui_navigation_lite::prelude::*;
 use std::borrow::Cow;
 
@@ -61,33 +61,30 @@ fn toggle_controller(
         if FocusState::Focused != focusable.state() {
             continue;
         }
-        match *state {
-            AskyState::Reading => {
-                if input.any_just_pressed([
-                    KeyCode::KeyH,
-                    KeyCode::KeyL,
-                    KeyCode::Enter,
-                    KeyCode::Escape,
-                ]) {
-                    if input.just_pressed(KeyCode::KeyH) {
-                        toggle.index = 0;
-                    }
-                    if input.just_pressed(KeyCode::KeyL) {
-                        toggle.index = 1;
-                    }
-                    if input.just_pressed(KeyCode::Enter) {
-                        commands.trigger_targets(AskyEvent(Ok(toggle.index)), id);
-                        *state = AskyState::Complete;
-                    }
+        if let AskyState::Reading = *state {
+            if input.any_just_pressed([
+                KeyCode::KeyH,
+                KeyCode::KeyL,
+                KeyCode::Enter,
+                KeyCode::Escape,
+            ]) {
+                if input.just_pressed(KeyCode::KeyH) {
+                    toggle.index = 0;
+                }
+                if input.just_pressed(KeyCode::KeyL) {
+                    toggle.index = 1;
+                }
+                if input.just_pressed(KeyCode::Enter) {
+                    commands.trigger_targets(AskyEvent(Ok(toggle.index)), id);
+                    *state = AskyState::Complete;
+                }
 
-                    if input.just_pressed(KeyCode::Escape) {
-                        commands.trigger_targets(AskyEvent::<bool>(Err(Error::Cancel)), id);
-                        *state = AskyState::Error;
-                        commands.entity(id).insert(Feedback::error("canceled"));
-                    }
+                if input.just_pressed(KeyCode::Escape) {
+                    commands.trigger_targets(AskyEvent::<bool>(Err(Error::Cancel)), id);
+                    *state = AskyState::Error;
+                    commands.entity(id).insert(Feedback::error("canceled"));
                 }
             }
-            _ => (),
         }
     }
 }

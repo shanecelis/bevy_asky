@@ -8,7 +8,7 @@ fn main() {
         .add_plugins(view::color::plugin)
         .add_plugins(view::button::plugin)
         .add_systems(Startup, setup)
-        .add_systems(Update, (read_keys))
+        .add_systems(Update, read_keys)
         .run();
 }
 
@@ -28,7 +28,7 @@ fn setup(mut commands: Commands) {
                 .construct::<Checkbox>("Money?")
                 .construct::<ascii::View>(())
                 .observe(
-                    move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
+                    move |trigger: Trigger<AskyEvent<bool>>, commands: Commands| {
                         eprintln!("trigger {:?}", trigger.event());
                     },
                 );
@@ -37,7 +37,7 @@ fn setup(mut commands: Commands) {
                 .construct::<Checkbox>("Time?")
                 .construct::<ascii::View>(())
                 .observe(
-                    move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
+                    move |trigger: Trigger<AskyEvent<bool>>, commands: Commands| {
                         eprintln!("trigger {:?}", trigger.event());
                     },
                 );

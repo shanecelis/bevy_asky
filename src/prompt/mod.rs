@@ -32,7 +32,7 @@ impl Construct for Prompt {
         _context: &mut ConstructContext,
         props: Self::Props,
     ) -> Result<Self, ConstructError> {
-        Ok(Prompt(props.into()))
+        Ok(Prompt(props))
     }
 }
 
@@ -42,7 +42,7 @@ impl Construct for Placeholder {
         _context: &mut ConstructContext,
         props: Self::Props,
     ) -> Result<Self, ConstructError> {
-        Ok(Placeholder(props.into()))
+        Ok(Placeholder(props))
     }
 }
 

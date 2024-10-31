@@ -1,7 +1,6 @@
 use super::{Feedback, Prompt};
 use crate::construct::*;
-use crate::{AskyEvent, AskyState, Error, Submitter};
-use crate::view::widget::Widgets;
+use crate::{AskyEvent, Error, Submitter};
 use bevy::prelude::*;
 use bevy_alt_ui_navigation_lite::prelude::*;
 use std::borrow::Cow;
@@ -52,7 +51,7 @@ impl Construct for Checkbox {
 fn checkbox_controller(
     mut query: Query<(&mut Checkbox, &Focusable)>,
     input: Res<ButtonInput<KeyCode>>,
-    mut commands: Commands,
+    commands: Commands,
 ) {
     for (mut checkbox, focusable) in query.iter_mut() {
         if FocusState::Focused != focusable.state() {
@@ -149,7 +148,7 @@ fn checkbox_group_controller(
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
 ) {
-    for (id, mut checkbox, focusable, children) in query.iter_mut() {
+    for (id, checkbox, focusable, children) in query.iter_mut() {
         // dbg!(focusable.state());
         if !matches!(focusable.state(), FocusState::Active | FocusState::Focused)  {
             continue;

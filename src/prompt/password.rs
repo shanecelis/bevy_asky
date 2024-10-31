@@ -1,14 +1,7 @@
-use super::{Feedback, Prompt};
+use super::Prompt;
 use crate::construct::*;
-use crate::{AskyEvent, AskyState, Error, CursorDirection, StringCursor};
-use bevy::{
-    a11y::Focus,
-    input::{
-        keyboard::{Key, KeyboardInput},
-        ButtonState,
-    },
-    prelude::*,
-};
+use crate::{AskyState, StringCursor};
+use bevy::prelude::*;
 use bevy_alt_ui_navigation_lite::prelude::*;
 use std::borrow::Cow;
 

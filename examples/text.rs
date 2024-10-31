@@ -8,7 +8,7 @@ fn main() {
         .add_plugins(view::color::plugin)
         .add_plugins(view::button::plugin)
         .add_systems(Startup, setup)
-        .add_systems(Update, (read_keys))
+        .add_systems(Update, read_keys)
         .run();
 }
 
