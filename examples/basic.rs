@@ -37,6 +37,7 @@ fn setup(mut commands: Commands) {
         parent
             .construct::<Confirm>("Do you like ascii?")
             .construct::<ascii::View>(())
+            // .construct::<color::View>(())
             // .construct::<button::View>(())
             .observe(
                 move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {

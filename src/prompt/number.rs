@@ -10,7 +10,7 @@ use bevy::{
     },
     prelude::*,
 };
-use bevy_ui_navigation::{
+use bevy_alt_ui_navigation_lite::{
     events::{Direction as NavDirection, ScopeDirection},
     prelude::*,
 };

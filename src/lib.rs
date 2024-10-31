@@ -10,7 +10,7 @@ use futures::{
     Future,
 };
 use bevy_defer::AsyncWorld;
-use bevy_ui_navigation::{prelude::*, systems::InputMapping};
+use bevy_alt_ui_navigation_lite::{prelude::*, systems::InputMapping};
 //mod focus;
 use std::borrow::Cow;
 pub mod construct;
@@ -27,7 +27,8 @@ pub struct AskyPlugin;
 
 impl Plugin for AskyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(prompt::plugin)
+        app
+            .add_plugins(prompt::plugin)
             .add_plugins(DefaultNavigationPlugins)
             .add_systems(Startup, setup);
         // app.add_plugins(focus::plugin);
@@ -59,8 +60,8 @@ pub enum AskyState {
 //     Submit(T)
 // }
 
-#[derive(Event, Deref, Debug)]
-pub struct SubmitEvent<T>(pub T);
+// #[derive(Event, Deref, Debug)]
+// pub struct SubmitEvent<T>(pub T);
 
 #[derive(Debug, Component, Default, Clone)]
 pub enum Submit {

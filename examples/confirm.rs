@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_asky::{construct::*, prompt::*, view::*, *};
-use bevy_ui_navigation::prelude::*;
+use bevy_alt_ui_navigation_lite::prelude::*;
 
 fn main() {
     App::new()

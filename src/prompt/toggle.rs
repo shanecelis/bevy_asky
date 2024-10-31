@@ -2,7 +2,7 @@ use super::{Feedback, Prompt};
 use crate::construct::*;
 use crate::{AskyEvent, AskyState, Error};
 use bevy::{a11y::Focus, prelude::*};
-use bevy_ui_navigation::prelude::*;
+use bevy_alt_ui_navigation_lite::prelude::*;
 use std::borrow::Cow;
 
 #[derive(Component, Clone)]

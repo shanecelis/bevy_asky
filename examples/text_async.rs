@@ -9,7 +9,7 @@ fn main() {
         .add_plugins(view::color::plugin)
         .add_plugins(view::button::plugin)
         .add_systems(Startup, setup)
-        .add_systems(Update, (read_keys))
+        .add_systems(Update, read_keys)
         .run();
 }
 
@@ -26,10 +26,10 @@ fn setup(mut commands: Commands, mut asky: Asky) {
             ..default()
         }).id();
     commands.spawn_task(move || async move {
-        let response: Result<String, Error> = asky.prompt::<TextField>("What up?", id).await;
+        let response: Result<String, Error> = asky.prompt::<TextField>("What up? ", id).await;
         dbg!(response);
 
-        let response: Result<String, Error> = asky.prompt::<TextField>("What up  fedsfsd?", None).await;
+        let response: Result<String, Error> = asky.prompt::<TextField>("Really? ", None).await;
         dbg!(response);
         Ok(())
     });

@@ -9,7 +9,7 @@ use futures::{
     Future,
 };
 use bevy_defer::AsyncWorld;
-use bevy_ui_navigation::{prelude::*, systems::InputMapping};
+use bevy_alt_ui_navigation_lite::{prelude::*, systems::InputMapping};
 use super::*;
 use crate::{prompt::*, view::*, construct::*};
 use std::fmt::Debug;

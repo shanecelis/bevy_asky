@@ -5,7 +5,7 @@ use bevy::{
     a11y::{accesskit::*, *},
     prelude::*,
 };
-use bevy_ui_navigation::prelude::*;
+use bevy_alt_ui_navigation_lite::prelude::*;
 use std::borrow::Cow;
 
 #[derive(Component)]

@@ -3,7 +3,7 @@ use crate::construct::*;
 use crate::{AskyEvent, AskyState, Error, Submitter};
 use crate::view::widget::Widgets;
 use bevy::prelude::*;
-use bevy_ui_navigation::prelude::*;
+use bevy_alt_ui_navigation_lite::prelude::*;
 use std::borrow::Cow;
 
 #[derive(Component)]
