@@ -54,7 +54,7 @@ fn confirm_controller(
     mut query: Query<(Entity, &mut Confirm, &mut Focusable)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
-    requests: EventWriter<NavRequest>,
+    mut requests: EventWriter<NavRequest>,
 ) {
     for (id, mut confirm, focusable) in query.iter_mut() {
         if FocusState::Focused != focusable.state() {
@@ -78,8 +78,9 @@ fn confirm_controller(
             }
             if input.just_pressed(KeyCode::Enter) {
                 let yes = confirm.yes;
-                // requests.send(NavRequest::Move(NavDirection::South));
-                commands.trigger(NavRequest::Move(NavDirection::South));
+                requests.send(NavRequest::Move(NavDirection::South));
+                // I had tried using triggers in bevy_ui_navigation to fix my issues.
+                // commands.trigger(NavRequest::Move(NavDirection::South));
                 commands.trigger_targets(AskyEvent::<bool>(Ok(yes)), id);
                 // commands
                 //     .entity(id)

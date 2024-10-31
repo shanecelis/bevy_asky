@@ -33,7 +33,7 @@ fn setup(mut commands: Commands) {
                 .construct::<Toggle>(Toggle::new("Graphics?", ["high poly", "low poly"]))
                 .construct::<ascii::View>(())
                 .observe(
-                    move |trigger: Trigger<AskyEvent<bool>>, commands: Commands| {
+                    move |trigger: Trigger<AskyEvent<bool>>| {
                         eprintln!("trigger {:?}", trigger.event());
                     },
                 );

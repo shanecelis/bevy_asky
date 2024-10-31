@@ -2,9 +2,11 @@ use super::{Feedback, Prompt};
 use crate::construct::*;
 use crate::{AskyEvent, Error, Submitter};
 use bevy::prelude::*;
-use bevy_alt_ui_navigation_lite::prelude::*;
 use std::borrow::Cow;
-
+use bevy_alt_ui_navigation_lite::{
+    events::{Direction as NavDirection, ScopeDirection},
+    prelude::*,
+};
 #[derive(Component)]
 pub struct Checkbox {
     /// Message used to display in the prompt.
@@ -49,15 +51,16 @@ impl Construct for Checkbox {
 }
 
 fn checkbox_controller(
-    mut query: Query<(&mut Checkbox, &Focusable)>,
+    mut query: Query<(Entity, &mut Checkbox, &Focusable)>,
     input: Res<ButtonInput<KeyCode>>,
-    commands: Commands,
+    mut requests: EventWriter<NavRequest>,
+    mut commands: Commands
 ) {
-    for (mut checkbox, focusable) in query.iter_mut() {
+    for (id, mut checkbox, focusable) in query.iter_mut() {
         if FocusState::Focused != focusable.state() {
             continue;
         }
-        if input.any_just_pressed([KeyCode::Space, KeyCode::KeyH, KeyCode::KeyL]) {
+        if input.any_just_pressed([KeyCode::Space, KeyCode::KeyH, KeyCode::KeyL, KeyCode::Enter]) {
             if input.just_pressed(KeyCode::Space) {
                 checkbox.checked = !checkbox.checked;
             }
@@ -66,6 +69,17 @@ fn checkbox_controller(
             }
             if input.any_just_pressed([KeyCode::KeyH]) {
                 checkbox.checked = false;
+            }
+
+            if input.just_pressed(KeyCode::Enter) {
+                let yes = checkbox.checked;
+                // requests.send(NavRequest::Move(NavDirection::South));
+                // I had tried using triggers in bevy_ui_navigation to fix my issues.
+                // commands.trigger(NavRequest::Move(NavDirection::South));
+                commands.trigger_targets(AskyEvent::<bool>(Ok(yes)), id);
+                // commands
+                //     .entity(id)
+                //     .insert(Feedback::info(if yes { "Yes" } else { "No" }));
             }
         }
     }
@@ -107,10 +121,12 @@ impl Construct for CheckboxGroup {
     ) -> Result<Self, ConstructError> {
         // Our requirements.
         let mut commands = context.world.commands();
+        let mut children = vec![];
+        let group = context.id;
         commands
             .entity(context.id)
-            .insert(Focusable::default())
-            .insert(MenuSetting::default())
+            // .insert(Focusable::default())
+            // .insert(MenuSetting::default())
             // .insert(MenuBuilder::Root)
             // .insert(TextBundle::from_section("header", TextStyle::default()))
             .insert(NodeBundle {
@@ -125,47 +141,53 @@ impl Construct for CheckboxGroup {
                 // let mut entity_commands = parent.column();
 
                 for prompt in props {
-                    parent
+                    let id = parent
                         .construct::<Checkbox>(prompt)
                         // FIXME: Don't want to specify view here.
                         .construct::<crate::view::ascii::View>(())
-                        .insert(MenuBuilder::EntityParent(context.id))
+                        .insert(Focusable::default())
+                        .id()
 
                         ;
+                    children.push(id);
                 }
-            })
-            ;
+            });
 
         context.world.flush();
         Ok(CheckboxGroup)
     }
 }
 
+// fn add_menu_builders(query: Query<&MenuSetting, (Without<MenuBuild
+
 fn checkbox_group_controller(
-    mut query: Query<(Entity, &CheckboxGroup, &Focusable,
-                      &Children)>,
-    checkboxes: Query<&Checkbox>,
+    mut query: Query<(Entity, &CheckboxGroup, &Children)>,
+    checkboxes: Query<(&Checkbox, &Focusable)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
+    mut requests: EventWriter<NavRequest>,
 ) {
-    for (id, checkbox, focusable, children) in query.iter_mut() {
-        // dbg!(focusable.state());
-        if !matches!(focusable.state(), FocusState::Active | FocusState::Focused)  {
-            continue;
-        }
-        if input.just_pressed(KeyCode::Enter) {
-            let mut result: Vec<bool> = vec![];
-            for child in children {
-                let checkbox = checkboxes.get(*child).unwrap();
-                result.push(checkbox.checked);
-            }
-            commands.trigger_targets(AskyEvent(Ok(result)), id);
-            // *state = AskyState::Complete;
-        }
+    if input.any_just_pressed([KeyCode::Escape, KeyCode::Enter]) {
+    for (id, group, children) in query.iter_mut() {
 
-        if input.just_pressed(KeyCode::Escape) {
-            commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
-            commands.entity(id).insert(Feedback::error("canceled"));
+            // dbg!(focusable.state());
+            // if !matches!(focusable.state(), FocusState::Active | FocusState::Focused)  {
+            //     continue;
+            // }
+            //
+            if checkboxes.iter_many(children).any(|(_, focusable)| matches!(focusable.state(), FocusState::Focused)) {
+                if input.just_pressed(KeyCode::Enter) {
+                        let result: Vec<bool> = checkboxes.iter_many(children).map(|(checkbox, _)| checkbox.checked).collect();
+                        commands.trigger_targets(AskyEvent(Ok(result)), id);
+                        requests.send(NavRequest::ScopeMove(ScopeDirection::Next));
+                    // *state = AskyState::Complete;
+                }
+
+                if input.just_pressed(KeyCode::Escape) {
+                    commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
+                    commands.entity(id).insert(Feedback::error("canceled"));
+                }
+            }
         }
     }
 }

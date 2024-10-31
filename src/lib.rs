@@ -32,7 +32,7 @@ fn setup(commands: Commands, mut input_mapping: ResMut<InputMapping>) {
     // input_mapping.focus_follows_mouse = true;
 }
 
-#[derive(Event, Deref, Debug)]
+#[derive(Event, Deref, Debug, Clone)]
 pub struct AskyEvent<T>(pub Result<T, Error>);
 
 #[derive(Event, Deref, Debug)]
