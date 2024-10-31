@@ -1,6 +1,6 @@
 use super::{Feedback, Password, Prompt};
 use crate::construct::*;
-use crate::{AskyEvent, AskyState, Error, CursorDirection, StringCursor, Submitter};
+use crate::{AskyEvent, AskyState, CursorDirection, Error, StringCursor, Submitter};
 use bevy::{
     input::{
         keyboard::{Key, KeyboardInput},

@@ -77,9 +77,9 @@ pub(crate) fn confirm_view(
                                 ..,
                                 if vis {
                                     if confirm.yes {
-                                     "Yes"
+                                        "Yes"
                                     } else {
-                                     "No"
+                                        "No"
                                     }
                                 } else {
                                     ""
@@ -89,13 +89,12 @@ pub(crate) fn confirm_view(
                         Answer::Selection(yes) => {
                             vis = !matches!(asky_state, AskyState::Complete);
                             if vis {
-                                *background =
-                                    if confirm.yes {
-                                        color_view.highlight
-                                    } else {
-                                        color_view.lowlight
-                                    }
-                                    .into();
+                                *background = if confirm.yes {
+                                    color_view.highlight
+                                } else {
+                                    color_view.lowlight
+                                }
+                                .into();
                             }
                         }
                     }

@@ -1,8 +1,6 @@
 use crate::construct::*;
 use crate::{
-    prompt::{
-        Checkbox, Confirm, Feedback, Password, Placeholder, Prompt, Radio, Toggle,
-    },
+    prompt::{Checkbox, Confirm, Feedback, Password, Placeholder, Prompt, Radio, Toggle},
     AskyState, StringCursor,
 };
 use bevy::prelude::*;
@@ -40,7 +38,6 @@ pub(crate) fn confirm_view(
             .value
             .replace_range(
                 ..,
-
                 if let FocusState::Focused = focusable.state() {
                     if confirm.yes {
                         " Y/n"

@@ -2,11 +2,11 @@ use super::{Feedback, Prompt};
 use crate::construct::*;
 use crate::{AskyEvent, Error, Submitter};
 use bevy::prelude::*;
-use std::borrow::Cow;
 use bevy_alt_ui_navigation_lite::{
     events::{Direction as NavDirection, ScopeDirection},
     prelude::*,
 };
+use std::borrow::Cow;
 #[derive(Component)]
 pub struct Checkbox {
     /// Message used to display in the prompt.
@@ -58,7 +58,7 @@ fn checkbox_controller(
     mut query: Query<(Entity, &mut Checkbox, &Focusable)>,
     input: Res<ButtonInput<KeyCode>>,
     mut requests: EventWriter<NavRequest>,
-    mut commands: Commands
+    mut commands: Commands,
 ) {
     for (id, mut checkbox, focusable) in query.iter_mut() {
         if FocusState::Focused != focusable.state() {
@@ -150,9 +150,7 @@ impl Construct for CheckboxGroup {
                         // FIXME: Don't want to specify view here.
                         .construct::<crate::view::ascii::View>(())
                         .insert(Focusable::default())
-                        .id()
-
-                        ;
+                        .id();
                     children.push(id);
                 }
             });
@@ -173,10 +171,15 @@ fn checkbox_group_controller(
 ) {
     if input.any_just_pressed([KeyCode::Escape, KeyCode::Enter]) {
         for (id, group, children) in query.iter_mut() {
-
-            if checkboxes.iter_many(children).any(|(_, focusable)| matches!(focusable.state(), FocusState::Focused)) {
+            if checkboxes
+                .iter_many(children)
+                .any(|(_, focusable)| matches!(focusable.state(), FocusState::Focused))
+            {
                 if input.just_pressed(KeyCode::Enter) {
-                    let result: Vec<bool> = checkboxes.iter_many(children).map(|(checkbox, _)| checkbox.checked).collect();
+                    let result: Vec<bool> = checkboxes
+                        .iter_many(children)
+                        .map(|(checkbox, _)| checkbox.checked)
+                        .collect();
                     commands.trigger_targets(AskyEvent(Ok(result)), id);
                     requests.send(NavRequest::ScopeMove(ScopeDirection::Next));
                     // *state = AskyState::Complete;

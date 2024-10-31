@@ -1,18 +1,15 @@
 use super::{Feedback, Prompt};
 use crate::construct::*;
-use crate::{AskyEvent, Error, AskyChange};
+use crate::{AskyChange, AskyEvent, Error};
 use bevy::prelude::*;
-use bevy_alt_ui_navigation_lite::{
-    events::Direction as NavDirection,
-    prelude::*,
-};
+use bevy_alt_ui_navigation_lite::{events::Direction as NavDirection, prelude::*};
 use std::borrow::Cow;
 
 #[derive(Component)]
 pub struct Confirm {
     /// Message used to display in the prompt.
     pub message: Cow<'static, str>,
-    pub yes: bool
+    pub yes: bool,
 }
 
 impl From<Cow<'static, str>> for Confirm {

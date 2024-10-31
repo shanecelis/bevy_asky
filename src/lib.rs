@@ -1,17 +1,17 @@
 // #![feature(round_char_boundary)]
 #![allow(clippy::type_complexity)]
 use bevy::prelude::*;
-use futures::channel::oneshot;
 use bevy_alt_ui_navigation_lite::{prelude::*, systems::InputMapping};
+use futures::channel::oneshot;
 //mod focus;
 use std::borrow::Cow;
+mod r#async;
 pub mod construct;
 mod num_like;
 pub mod prompt;
 pub mod view;
-mod r#async;
-pub use r#async::*;
 pub use num_like::*;
+pub use r#async::*;
 mod string_cursor;
 pub use string_cursor::*;
 // pub use focus::*;
@@ -19,8 +19,7 @@ pub struct AskyPlugin;
 
 impl Plugin for AskyPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_plugins(prompt::plugin)
+        app.add_plugins(prompt::plugin)
             .add_plugins(DefaultNavigationPlugins)
             .add_systems(Startup, setup);
         // app.add_plugins(focus::plugin);

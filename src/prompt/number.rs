@@ -9,10 +9,7 @@ use bevy::{
     },
     prelude::*,
 };
-use bevy_alt_ui_navigation_lite::{
-    events::Direction as NavDirection,
-    prelude::*,
-};
+use bevy_alt_ui_navigation_lite::{events::Direction as NavDirection, prelude::*};
 use std::borrow::Cow;
 
 pub fn plugin(app: &mut App) {
@@ -168,10 +165,8 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                                 requests.send(NavRequest::Move(NavDirection::South));
                             }
                             Err(_) => {
-                                commands.trigger_targets(
-                                    AskyEvent::<T>(Err(Error::InvalidNumber)),
-                                    id,
-                                );
+                                commands
+                                    .trigger_targets(AskyEvent::<T>(Err(Error::InvalidNumber)), id);
                                 commands.entity(id).insert(Feedback::warn(format!(
                                     "invalid number for {}",
                                     T::short_type_path()

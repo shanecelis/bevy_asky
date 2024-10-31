@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_asky::{prompt::*, *};
-use bevy_defer::{AsyncPlugin, AsyncCommandsExtension};
+use bevy_defer::{AsyncCommandsExtension, AsyncPlugin};
 
 fn main() {
     App::new()
@@ -24,7 +24,8 @@ fn setup(mut commands: Commands, mut asky: Asky) {
                 ..default()
             },
             ..default()
-        }).id();
+        })
+        .id();
     commands.spawn_task(move || async move {
         let response: Result<String, Error> = asky.prompt::<TextField>("What up? ", id).await;
         dbg!(response);
@@ -33,7 +34,6 @@ fn setup(mut commands: Commands, mut asky: Asky) {
         dbg!(response);
         Ok(())
     });
-
 }
 
 fn read_keys(input: Res<ButtonInput<KeyCode>>, mut query: Query<&mut AskyState>) {

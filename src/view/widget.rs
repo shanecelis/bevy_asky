@@ -85,14 +85,13 @@ impl<T: Spawn> Widgets for T {
     }
 
     fn column(&mut self) -> EntityCommands {
-        self.spawn(
-            NodeBundle {
-                style: Style {
-                    flex_direction: FlexDirection::Column,
-                    ..default()
-                },
+        self.spawn(NodeBundle {
+            style: Style {
+                flex_direction: FlexDirection::Column,
                 ..default()
-            })
+            },
+            ..default()
+        })
     }
 
     // fn header(&mut self, text: impl Into<String>, palette: &Palette) -> EntityCommands {

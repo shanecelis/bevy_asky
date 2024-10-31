@@ -46,6 +46,6 @@ impl Default for Palette {
 
 pub fn plugin(app: &mut App) {
     app.add_plugins(confirm::plugin)
-       .add_plugins(text::plugin)
-       .insert_resource(Palette::default());
+        .add_plugins(text::plugin)
+        .insert_resource(Palette::default());
 }

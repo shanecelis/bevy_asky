@@ -94,7 +94,7 @@ impl fmt::Display for Feedback {
         match &self.kind {
             FeedbackKind::None => Ok(()),
             FeedbackKind::Info => write!(f, "{}", self.message),
-            kind => write!(f, "{}: {}", kind, self.message)
+            kind => write!(f, "{}: {}", kind, self.message),
         }
     }
 }

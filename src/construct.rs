@@ -1,8 +1,8 @@
 //! Playing around with [Cart's proposal](https://github.com/bevyengine/bevy/discussions/14437).
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::borrow::Cow;
-use thiserror::Error;
 use std::marker::PhantomData;
+use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum ConstructError {
@@ -27,11 +27,10 @@ pub trait Construct: Sized {
         props: Self::Props,
     ) -> Result<Self, ConstructError>;
 
-
     fn patch<F: FnMut(&mut Self::Props)>(func: F) -> ConstructPatch<Self, F> {
         ConstructPatch {
             func,
-            _marker: PhantomData
+            _marker: PhantomData,
         }
     }
 }
@@ -50,8 +49,13 @@ impl<'a> ConstructContext<'a> {
         T::construct(self, props.into())
     }
 
-    pub fn construct_from_patch<P: Patch>(&mut self, patch: &mut P) -> Result<P::Construct, ConstructError>
-    where <<P as Patch>::Construct as Construct>::Props : Default {
+    pub fn construct_from_patch<P: Patch>(
+        &mut self,
+        patch: &mut P,
+    ) -> Result<P::Construct, ConstructError>
+    where
+        <<P as Patch>::Construct as Construct>::Props: Default,
+    {
         let mut props = <<P as Patch>::Construct as Construct>::Props::default();
         patch.patch(&mut props);
         self.construct(props)
@@ -149,7 +153,11 @@ pub struct ConstructPatch<C: Construct, F> {
     _marker: PhantomData<C>,
 }
 
-impl<C: Construct + Sync + Send + 'static + Bundle, F: FnMut(&mut C::Props) + Sync + Send + 'static> Patch for ConstructPatch<C,F> {
+impl<
+        C: Construct + Sync + Send + 'static + Bundle,
+        F: FnMut(&mut C::Props) + Sync + Send + 'static,
+    > Patch for ConstructPatch<C, F>
+{
     type Construct = C;
     fn patch(&mut self, props: &mut <Self::Construct as Construct>::Props) {
         (self.func)(props);
@@ -172,12 +180,14 @@ mod test {
 
     #[derive(Default, Clone, Component)]
     struct Player {
-        name: String
+        name: String,
     }
 
     #[test]
     fn test_patch_name() {
-        let mut player = Player { name: "shane".into() };
+        let mut player = Player {
+            name: "shane".into(),
+        };
         assert_eq!(player.name, "shane");
 
         let mut patch = Player::patch(|props| {
@@ -185,8 +195,5 @@ mod test {
         });
         patch.patch(&mut player);
         assert_eq!(player.name, "fred");
-
     }
-
-
 }
