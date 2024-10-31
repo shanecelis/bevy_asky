@@ -15,6 +15,10 @@ pub struct Checkbox {
     pub checked: bool,
 }
 
+impl Submitter for Checkbox {
+    type Out = bool;
+}
+
 impl From<Cow<'static, str>> for Checkbox {
     fn from(message: Cow<'static, str>) -> Self {
         Checkbox {
@@ -168,18 +172,13 @@ fn checkbox_group_controller(
     mut requests: EventWriter<NavRequest>,
 ) {
     if input.any_just_pressed([KeyCode::Escape, KeyCode::Enter]) {
-    for (id, group, children) in query.iter_mut() {
+        for (id, group, children) in query.iter_mut() {
 
-            // dbg!(focusable.state());
-            // if !matches!(focusable.state(), FocusState::Active | FocusState::Focused)  {
-            //     continue;
-            // }
-            //
             if checkboxes.iter_many(children).any(|(_, focusable)| matches!(focusable.state(), FocusState::Focused)) {
                 if input.just_pressed(KeyCode::Enter) {
-                        let result: Vec<bool> = checkboxes.iter_many(children).map(|(checkbox, _)| checkbox.checked).collect();
-                        commands.trigger_targets(AskyEvent(Ok(result)), id);
-                        requests.send(NavRequest::ScopeMove(ScopeDirection::Next));
+                    let result: Vec<bool> = checkboxes.iter_many(children).map(|(checkbox, _)| checkbox.checked).collect();
+                    commands.trigger_targets(AskyEvent(Ok(result)), id);
+                    requests.send(NavRequest::ScopeMove(ScopeDirection::Next));
                     // *state = AskyState::Complete;
                 }
 
