@@ -42,7 +42,7 @@ pub fn plugin(app: &mut App) {
 /// # Ok(())
 /// # }
 /// ```
-#[derive(Debug, Clone, Component)]
+#[derive(Debug, Clone, Component, Reflect)]
 pub struct TextField;
 
 impl Submitter for TextField {

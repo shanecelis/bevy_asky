@@ -7,7 +7,7 @@ use bevy::{
 use bevy_alt_ui_navigation_lite::prelude::*;
 use std::borrow::Cow;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct Radio {
     /// Initial radio of the prompt.
     pub checked: bool,
@@ -86,7 +86,7 @@ fn radio_controller(
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct RadioGroup;
 
 impl Submitter for RadioGroup {

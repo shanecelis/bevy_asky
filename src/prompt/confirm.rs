@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use bevy_alt_ui_navigation_lite::{events::Direction as NavDirection, prelude::*};
 use std::borrow::Cow;
 
-#[derive(Component)]
+#[derive(Debug, Component, Reflect)]
 pub struct Confirm {
     pub yes: bool,
 }

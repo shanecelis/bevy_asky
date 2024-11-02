@@ -32,6 +32,19 @@ pub(crate) fn add_view_to_checkbox<V>(
         }
     }
 }
+// pub(crate) fn add_view_to_checkbox<V>(
+//     group: Query<&Children, (Added<CheckboxGroup>, With<V>)>,
+//     checkboxes: Query<Entity, With<Checkbox>>,
+//     mut commands: Commands,
+// ) where
+//     V: Construct<Props = ()> + Component + Send,
+// {
+//     for children in &group {
+//         for id in checkboxes.iter_many(children) {
+//             commands.entity(id).construct::<V>(());
+//         }
+//     }
+// }
 
 pub(crate) fn add_view_to_radio<V>(
     radios: Query<(Entity, &Parent), Added<Radio>>,

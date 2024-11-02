@@ -6,7 +6,8 @@ use bevy_alt_ui_navigation_lite::{
     prelude::*,
 };
 use std::borrow::Cow;
-#[derive(Component)]
+
+#[derive(Component, Reflect)]
 pub struct Checkbox {
     /// Initial checkbox of the prompt.
     pub checked: bool,
@@ -99,7 +100,7 @@ fn checkbox_controller(
 //     }
 // }
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct CheckboxGroup;
 
 impl Submitter for CheckboxGroup {

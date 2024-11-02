@@ -61,7 +61,7 @@ pub fn plugin(app: &mut App) {
 /// # Ok(())
 /// # }
 /// ```
-#[derive(Debug, Clone, Component)]
+#[derive(Debug, Clone, Component, Reflect)]
 pub struct Number<T: NumLike> {
     /// Default value to submit when the input is empty
     pub default_value: Option<T>,

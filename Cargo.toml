@@ -13,6 +13,7 @@ thiserror = "1.0.62"
 
 [dev-dependencies]
 bevy = { version = "0.14.0" }
+bevy-inspector-egui = "0.27.0"
 
 [patch.crates-io]
 # bevy-ui-navigation = { git = "https://github.com/shanecelis/ui-navigation.git", branch = "bevy-0.14" }

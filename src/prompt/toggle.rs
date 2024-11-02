@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use bevy_alt_ui_navigation_lite::prelude::*;
 use std::borrow::Cow;
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Reflect)]
 pub struct Toggle {
     pub message: Cow<'static, str>,
     pub options: [Cow<'static, str>; 2],
@@ -64,14 +64,16 @@ fn toggle_controller(
         if let AskyState::Reading = *state {
             if input.any_just_pressed([
                 KeyCode::KeyH,
+                KeyCode::ArrowLeft,
                 KeyCode::KeyL,
+                KeyCode::ArrowRight,
                 KeyCode::Enter,
                 KeyCode::Escape,
             ]) {
-                if input.just_pressed(KeyCode::KeyH) {
+                if input.any_just_pressed([KeyCode::KeyH, KeyCode::ArrowLeft]) {
                     toggle.index = 0;
                 }
-                if input.just_pressed(KeyCode::KeyL) {
+                if input.any_just_pressed([KeyCode::KeyL, KeyCode::ArrowRight]) {
                     toggle.index = 1;
                 }
                 if input.just_pressed(KeyCode::Enter) {

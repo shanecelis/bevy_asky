@@ -26,7 +26,7 @@ fn setup(mut commands: Commands) {
             .construct::<Prompt>("radio group 0")
             .construct::<ascii::View>(());
         parent
-            .construct::<ascii::View>(())
+            .construct::<color::View>(())
             .construct::<RadioGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
             .observe(
                 move |trigger: Trigger<AskyEvent<usize>>, commands: Commands| {

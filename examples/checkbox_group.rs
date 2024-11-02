@@ -13,6 +13,7 @@ fn main() {
         .add_plugins(view::ascii::plugin)
         .add_plugins(view::color::plugin)
         .add_plugins(view::button::plugin)
+        .add_plugins(bevy_inspector_egui::quick::WorldInspectorPlugin::new())
         .add_systems(Startup, setup)
         .add_systems(Update, read_keys)
         .run();
@@ -23,12 +24,14 @@ fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
     let root = commands.column().with_children(|parent| {
         parent
-            .construct::<Prompt>("checkbox group 0")
-            .construct::<ascii::View>(());
+            .spawn(TextBundle::from("checkbox group 0"));
+            // .construct::<Prompt>("checkbox group 0")
+            // .construct::<ascii::View>(());
 
         parent
-            .construct::<ascii::View>(())
+            // .construct::<color::View>(())
             .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
+            .insert(color::View)
             .observe(
                 move |trigger: Trigger<AskyEvent<Vec<bool>>>, commands: Commands| {
                     eprintln!("trigger {:?}", trigger.event());
@@ -36,11 +39,12 @@ fn setup(mut commands: Commands) {
             );
 
         parent
-            .construct::<Prompt>("checkbox group 1")
-            .construct::<ascii::View>(());
+            .spawn(TextBundle::from("checkbox group 1"));
+            // .construct::<ascii::View>(());
         parent
-            .construct::<color::View>(())
+            // .construct::<color::View>(())
             .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
+            .insert(ascii::View)
             .observe(
                 move |trigger: Trigger<AskyEvent<Vec<bool>>>, commands: Commands| {
                     eprintln!("trigger {:?}", trigger.event());

@@ -18,11 +18,11 @@ pub use radio::*;
 pub use text::*;
 pub use toggle::*;
 
-#[derive(Component, Deref, DerefMut)]
+#[derive(Component, Deref, DerefMut, Reflect)]
 pub struct Prompt(pub Cow<'static, str>);
-#[derive(Component, Deref, DerefMut)]
+#[derive(Component, Deref, DerefMut, Reflect)]
 pub struct Placeholder(pub Cow<'static, str>);
-#[derive(Component)]
+#[derive(Component, Reflect)]
 // pub struct DefaultValue<T: std::fmt::Display>(pub T);
 pub struct DefaultValue<T>(pub T);
 
@@ -66,7 +66,7 @@ impl Construct for Feedback {
     }
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Reflect)]
 pub struct Feedback {
     pub kind: FeedbackKind,
     pub message: Cow<'static, str>,
@@ -124,7 +124,7 @@ impl fmt::Display for FeedbackKind {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Reflect)]
 pub enum FeedbackKind {
     None,
     Info,
@@ -133,11 +133,21 @@ pub enum FeedbackKind {
 }
 
 pub(crate) fn plugin(app: &mut App) {
-    app.add_plugins(confirm::plugin);
-    app.add_plugins(text::plugin);
-    app.add_plugins(number::plugin);
-    app.add_plugins(password::plugin);
-    app.add_plugins(toggle::plugin);
-    app.add_plugins(checkbox::plugin);
-    app.add_plugins(radio::plugin);
+
+    app
+        .register_type::<Confirm>()
+        .register_type::<Checkbox>()
+        .register_type::<CheckboxGroup>()
+        .register_type::<Radio>()
+        .register_type::<RadioGroup>()
+        .register_type::<TextField>()
+        .register_type::<Password>()
+        .register_type::<Toggle>()
+        .add_plugins((confirm::plugin,
+                      text::plugin,
+                      number::plugin,
+                      password::plugin,
+                      toggle::plugin,
+                      checkbox::plugin,
+                      radio::plugin));
 }

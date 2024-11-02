@@ -1,11 +1,15 @@
 use crate::construct::*;
 use crate::prelude::*;
-use bevy::prelude::*;
+use bevy::{
+    ecs::{system::SystemState, world::Command},
+    prelude::*,
+};
 use std::fmt::Write;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct View;
 
+// #[derive(Debug, Component, Reflect)]
 #[repr(u8)]
 enum ViewPart {
     Focus = 0,
@@ -24,6 +28,10 @@ impl Construct for View {
         context: &mut ConstructContext,
         _props: Self::Props,
     ) -> Result<Self, ConstructError> {
+
+        // let mut system_state: SystemState<Query<&Parent>> = SystemState::new(&mut context.world);
+        // let parents = system_state.get(&context.world);
+
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
@@ -36,7 +44,8 @@ impl Construct for View {
                 parent.spawn(TextBundle::default()); // Question
                 parent.spawn(TextBundle::default()); // Answer
                 parent
-                    .spawn(TextBundle::default()) // Options
+                    .spawn(NodeBundle::default()) // Answer
+                    // .spawn_empty() // Options
                     .with_children(|parent| {
                         parent.spawn(TextBundle::default());
                         parent.spawn(TextBundle::default());
@@ -177,7 +186,7 @@ pub(crate) fn header_view(
 }
 
 pub(crate) fn checkbox_view(
-    mut query: Query<(&Checkbox, &Children, &Focusable), (With<View>, Changed<Checkbox>)>,
+    mut query: Query<(&Checkbox, &Children, &Focusable), (With<View>, Or<(Changed<Checkbox>, Changed<Focusable>)>)>,
     mut texts: Query<&mut Text>,
     palette: Res<Palette>,
 ) {
