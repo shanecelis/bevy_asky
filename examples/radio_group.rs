@@ -21,29 +21,18 @@ fn main() {
 fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
-    // let mut prev_group = None;
-    let root = commands
-        .column()
-        // .insert((MenuBuilder::Root,
-        //          MenuSetting::new().wrapping()))
-        // .insert(Focusable::default())
-        .id();
-    commands.entity(root).with_children(|parent| {
+    let root = commands.column().with_children(|parent| {
         parent
             .construct::<Prompt>("radio group 0")
             .construct::<ascii::View>(());
-        let id = parent
+        parent
             .construct::<ascii::View>(())
             .construct::<RadioGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
-            // .insert(MenuSetting::new().wrapping().scope())
-            // .insert(MenuBuilder::from(prev_group))
             .observe(
                 move |trigger: Trigger<AskyEvent<usize>>, commands: Commands| {
                     eprintln!("trigger {:?}", trigger.event());
                 },
-            )
-            .id();
-        // prev_group = Some(id);
+            );
 
         parent
             .construct::<Prompt>("radio group 1")
@@ -51,10 +40,6 @@ fn setup(mut commands: Commands) {
         parent
             .construct::<ascii::View>(())
             .construct::<RadioGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
-            // .construct::<RadioGroup>(vec![])
-            // .insert(MenuBuilder::from(prev_group))
-            // .insert(MenuSetting::new().wrapping().scope())
-            // .insert(MenuBuilder::EntityParent(root))
             .observe(
                 move |trigger: Trigger<AskyEvent<usize>>, commands: Commands| {
                     eprintln!("trigger {:?}", trigger.event());

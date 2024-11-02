@@ -1,9 +1,11 @@
+use super::replace_or_insert_rep;
 use crate::construct::*;
 use crate::{
-    prompt::{Checkbox, CheckboxGroup, Confirm, Feedback, Password, Placeholder, Prompt, Radio, Toggle},
+    prompt::{
+        Checkbox, CheckboxGroup, Confirm, Feedback, Password, Placeholder, Prompt, Radio, Toggle,
+    },
     AskyState, StringCursor,
 };
-use super::replace_or_insert_rep;
 use bevy::prelude::*;
 use bevy_alt_ui_navigation_lite::prelude::*;
 use std::fmt::Write;
@@ -53,8 +55,11 @@ impl Construct for View {
 pub fn plugin(app: &mut App) {
     app.add_systems(
         PreUpdate,
+        (
             super::add_view_to_checkbox::<View>,
-        );
+            super::add_view_to_radio::<View>,
+        ),
+    );
     app.add_systems(
         Update,
         (
@@ -246,11 +251,7 @@ pub(crate) fn password_view(
                 &placeholder.map(|x| x.as_ref()).unwrap()
             );
         } else {
-            replace_or_insert_rep(&mut text,
-                                  a,
-                                  "*",
-                                  text_state.value.len());
+            replace_or_insert_rep(&mut text, a, "*", text_state.value.len());
         }
     }
 }
-

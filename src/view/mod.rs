@@ -1,6 +1,6 @@
-use bevy::prelude::*;
 use crate::construct::*;
 use crate::prelude::*;
+use bevy::prelude::*;
 
 pub mod ascii;
 pub mod button;
@@ -19,12 +19,28 @@ pub enum Answer<T> {
     Final, //(Option<T>)
 }
 
-pub(crate) fn add_view_to_checkbox<V>(checkboxes: Query<(Entity, &Parent), Added<Checkbox>>,
-                                      group: Query<&CheckboxGroup, With<V>>,
-                                      mut commands: Commands)
-where V: Construct<Props = ()> + Component + Send,
+pub(crate) fn add_view_to_checkbox<V>(
+    checkboxes: Query<(Entity, &Parent), Added<Checkbox>>,
+    group: Query<&CheckboxGroup, With<V>>,
+    mut commands: Commands,
+) where
+    V: Construct<Props = ()> + Component + Send,
 {
     for (id, parent) in &checkboxes {
+        if group.get(parent.get()).is_ok() {
+            commands.entity(id).construct::<V>(());
+        }
+    }
+}
+
+pub(crate) fn add_view_to_radio<V>(
+    radios: Query<(Entity, &Parent), Added<Radio>>,
+    group: Query<&RadioGroup, With<V>>,
+    mut commands: Commands,
+) where
+    V: Construct<Props = ()> + Component + Send,
+{
+    for (id, parent) in &radios {
         if group.get(parent.get()).is_ok() {
             commands.entity(id).construct::<V>(());
         }
@@ -43,7 +59,12 @@ pub(crate) fn replace_or_insert(text: &mut Text, index: usize, replacement: &str
     }
 }
 
-pub(crate) fn replace_or_insert_rep(text: &mut Text, index: usize, replacement: &str, repetition: usize) {
+pub(crate) fn replace_or_insert_rep(
+    text: &mut Text,
+    index: usize,
+    replacement: &str,
+    repetition: usize,
+) {
     let len = text.sections.len();
     if len <= index {
         for i in len.saturating_sub(1)..index {

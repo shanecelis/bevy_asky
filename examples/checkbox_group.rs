@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_alt_ui_navigation_lite::{prelude::*, mark::NavMarker};
+use bevy_alt_ui_navigation_lite::{mark::NavMarker, prelude::*};
 use bevy_asky::{
     construct::*,
     prompt::*,
@@ -21,9 +21,7 @@ fn main() {
 fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
-    let root = commands
-        .column()
-        .with_children(|parent| {
+    let root = commands.column().with_children(|parent| {
         parent
             .construct::<Prompt>("checkbox group 0")
             .construct::<ascii::View>(());

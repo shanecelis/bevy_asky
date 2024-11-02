@@ -124,8 +124,6 @@ impl Construct for RadioGroup {
                 for prompt in props {
                     let id = parent
                         .construct::<Radio>(prompt)
-                        // FIXME: Don't want to specify view here.
-                        .construct::<crate::view::ascii::View>(())
                         .insert(Focusable::default())
                         .id();
                     children.push(id);
