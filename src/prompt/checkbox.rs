@@ -1,5 +1,5 @@
 use super::{Feedback, Prompt};
-use crate::{AskyEvent, Error, Submitter, construct::*};
+use crate::{construct::*, AskyEvent, Error, Submitter};
 use bevy::prelude::*;
 use bevy_alt_ui_navigation_lite::{
     events::{Direction as NavDirection, ScopeDirection},
@@ -44,9 +44,7 @@ impl Construct for Checkbox {
             .insert(Prompt(props.clone()));
 
         context.world.flush();
-        Ok(Checkbox {
-            checked: false,
-        })
+        Ok(Checkbox { checked: false })
     }
 }
 

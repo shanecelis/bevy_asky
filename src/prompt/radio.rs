@@ -1,5 +1,5 @@
 use super::{Feedback, Prompt};
-use crate::{AskyEvent, Error, Submitter, construct::*};
+use crate::{construct::*, AskyEvent, Error, Submitter};
 use bevy::{
     a11y::{accesskit::*, *},
     prelude::*,
@@ -33,9 +33,7 @@ impl Construct for Radio {
             .insert(AccessibilityNode(NodeBuilder::new(Role::RadioButton)));
 
         context.world.flush();
-        Ok(Radio {
-            checked: false,
-        })
+        Ok(Radio { checked: false })
     }
 }
 
@@ -157,8 +155,9 @@ fn radio_group_controller(
             .any(|(_, focusable)| matches!(focusable.state(), FocusState::Focused))
         {
             if input.just_pressed(KeyCode::Enter) {
-                let selection = radios.iter_many(children)
-                                        .position(|(radio, _)| radio.checked);
+                let selection = radios
+                    .iter_many(children)
+                    .position(|(radio, _)| radio.checked);
 
                 commands.trigger_targets(AskyEvent(selection.ok_or(Error::InvalidInput)), id);
                 // requests.send(NavRequest::ScopeMove(ScopeDirection::Next));

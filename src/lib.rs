@@ -31,6 +31,12 @@ fn setup(commands: Commands, mut input_mapping: ResMut<InputMapping>) {
     // input_mapping.focus_follows_mouse = true;
 }
 
+pub mod prelude {
+    pub use super::*;
+    pub use prompt::*;
+    pub use view::*;
+}
+
 #[derive(Event, Deref, Debug, Clone)]
 pub struct AskyEvent<T>(pub Result<T, Error>);
 

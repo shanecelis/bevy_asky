@@ -1,6 +1,6 @@
 use super::{Feedback, Prompt};
 use crate::construct::*;
-use crate::{AskyState, AskyChange, AskyEvent, Error};
+use crate::{AskyChange, AskyEvent, AskyState, Error};
 use bevy::prelude::*;
 use bevy_alt_ui_navigation_lite::{events::Direction as NavDirection, prelude::*};
 use std::borrow::Cow;
@@ -30,14 +30,12 @@ impl Construct for Confirm {
             .insert(Prompt(props.clone()));
 
         context.world.flush();
-        Ok(Confirm {
-            yes: false,
-        })
+        Ok(Confirm { yes: false })
     }
 }
 
 fn confirm_controller(
-    mut query: Query<(Entity, &mut Confirm, &Focusable)>,// &mut AskyState)>,
+    mut query: Query<(Entity, &mut Confirm, &Focusable)>, // &mut AskyState)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
     mut requests: EventWriter<NavRequest>,

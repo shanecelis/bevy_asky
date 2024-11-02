@@ -66,7 +66,6 @@ impl Construct for Feedback {
     }
 }
 
-
 #[derive(Component, Clone)]
 pub struct Feedback {
     pub kind: FeedbackKind,

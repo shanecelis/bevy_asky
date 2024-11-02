@@ -104,12 +104,13 @@ impl<T: NumLike> Construct for Number<T> {
             .insert(state);
 
         context.world.flush();
-        Ok(Number { default_value: None })
+        Ok(Number {
+            default_value: None,
+        })
     }
 }
 
 impl<T: NumLike> Number<T> {
-
     /// Set default value to submit when the input is empty.
     pub fn default(mut self, value: T) -> Self {
         self.default_value = Some(value);

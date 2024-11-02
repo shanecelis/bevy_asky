@@ -31,8 +31,8 @@ fn setup(mut commands: Commands) {
         .with_children(|parent| {
             parent
                 .construct::<Toggle>(Toggle::new("Graphics?", ["high poly", "low poly"]))
-                .construct::<ascii::View>(())
-                .observe(move |trigger: Trigger<AskyEvent<bool>>| {
+                .construct::<color::View>(())
+                .observe(move |trigger: Trigger<AskyEvent<usize>>| {
                     eprintln!("trigger {:?}", trigger.event());
                 });
         });

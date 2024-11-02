@@ -28,7 +28,7 @@ fn setup(mut commands: Commands) {
             parent
                 .construct::<TextField>("Name? ")
                 .construct::<Placeholder>("John Smith")
-                .construct::<ascii::View>(())
+                .construct::<color::View>(())
                 .observe(move |trigger: Trigger<AskyEvent<String>>| {
                     eprintln!("trigger {:?}", trigger.event());
                 });
