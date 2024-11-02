@@ -3,6 +3,7 @@ use crate::{
     prompt::{Checkbox, Confirm, Feedback, Password, Placeholder, Prompt, Radio, Toggle},
     AskyState, StringCursor,
 };
+use super::replace_or_insert_rep;
 use bevy::prelude::*;
 use bevy_alt_ui_navigation_lite::prelude::*;
 use std::fmt::Write;
@@ -199,10 +200,10 @@ pub(crate) fn password_view(
                 &placeholder.map(|x| x.as_ref()).unwrap()
             );
         } else {
-            text.sections[a].value.replace_range(
-                ..,
-                &"*".repeat(text_state.value.len()), // TODO: This allocates a String. Don't do that.
-            );
+            replace_or_insert_rep(&mut text,
+                                  a,
+                                  "*",
+                                  text_state.value.len());
         }
     }
 }
