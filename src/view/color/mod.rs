@@ -2,8 +2,6 @@ use crate::construct::*;
 use crate::prelude::*;
 use bevy::prelude::*;
 use std::fmt::Write;
-// mod confirm;
-// mod text;
 
 #[derive(Component)]
 pub struct View;
@@ -15,7 +13,6 @@ enum ViewPart {
     PreQuestion = 2,
     Question = 3,
     Answer = 4,
-    // Placeholder = 2,
     Options = 5,
     Feedback = 6,
 }
@@ -77,22 +74,8 @@ impl Default for Palette {
     }
 }
 
-// struct ColorParam<'w, 's> {
-//     texts: Query<'w, 's, &'static mut Text>,
-// }
-
-// impl<'w, 's> ColorParam<'w, 's> {
-//     fn field(usize) -> &'static mut Text {
-//         texts
-
-//     }
-
-// }
-
 pub fn plugin(app: &mut App) {
     app
-        // .add_plugins(confirm::plugin)
-        // .add_plugins(text::plugin)
         .add_systems(
             Update,
             (
@@ -225,23 +208,70 @@ pub(crate) fn text_view(
             Or<(Changed<StringCursor>, Changed<Focusable>)>,
         ),
     >,
-    mut texts: Query<(&mut Text, &mut BackgroundColor)>,
+    mut texts: Query<&mut Text>,//, &mut BackgroundColor)>,
+    mut sections: Query<&Children>,
     palette: Res<Palette>,
+    mut commands: Commands,
 ) {
     for (text_state, children, placeholder, focusable) in query.iter_mut() {
-        let (mut text, mut background) = texts
-            .get_mut(children[ViewPart::Answer as usize])
-            .expect("answer");
-        let a = 0;
-        if text_state.value.is_empty() && placeholder.is_some() {
-            replace_or_insert(&mut text, 0, placeholder.unwrap());
-            text.sections[0].style.color = palette.lowlight.into();
+        let id = children[ViewPart::Answer as usize];
+        if let Ok(cursor_parts) = sections.get(id) {
+            let mut parts = texts.iter_many_mut(cursor_parts);
+            if focusable.state() == FocusState::Focused {
+                let mut pre_cursor = parts.fetch_next().expect("pre cursor");
+                replace_or_insert(&mut pre_cursor,
+                                  0,
+                                  &text_state.value[0..text_state.index]);
+                let mut cursor = parts.fetch_next().expect("cursor");
+                replace_or_insert(&mut cursor,
+                                  0,
+                                  if text_state.index >= text_state.value.len() {
+                                      " "
+                                  } else {
+                                      &text_state.value[text_state.index..text_state.next_index()]
+                                  });
+                let mut post_cursor = parts.fetch_next().expect("post cursor");
+                replace_or_insert(&mut post_cursor,
+                                  0,
+                                  &text_state.value[text_state.next_index()..]);
+            } else {
+                let mut pre_cursor = parts.fetch_next().expect("pre cursor");
+                replace_or_insert(&mut pre_cursor,
+                                  0,
+                                  &text_state.value);
+                let mut cursor = parts.fetch_next().expect("cursor");
+                replace_or_insert(&mut cursor,
+                                  0,
+                                  "");
+                let mut post_cursor = parts.fetch_next().expect("post cursor");
+                replace_or_insert(&mut post_cursor,
+                                  0,
+                                  "");
+            }
         } else {
-            replace_or_insert(&mut text, 0, &text_state.value);
-            text.sections[0].style.color = match focusable.state() {
-                FocusState::Focused => palette.text_color.into(),
-                _ => palette.answer.into(),
-            };
+            // Make the parts.
+            commands.entity(id)
+                .with_children(|parent| {
+                    // pre cursor
+                    parent.spawn(TextBundle::from_section(&text_state.value[0..text_state.index], TextStyle::default()));
+                    // cursor
+                    parent.spawn(
+                        TextBundle::from_section(
+                            if text_state.index >= text_state.value.len() {
+                                " "
+                            } else {
+                                &text_state.value[text_state.index..text_state.next_index()]
+                            },
+                            TextStyle {
+                                color: Color::BLACK,
+                                ..default()
+                            },
+                        )
+                            .with_background_color(Color::WHITE),
+                    );
+                    // post cursor
+                    parent.spawn(TextBundle::from_section(&text_state.value[text_state.next_index()..], TextStyle::default()));
+                });
         }
     }
 }
@@ -356,7 +386,6 @@ pub(crate) fn confirm_view(
         let options: &Children = sections
             .get(children[ViewPart::Options as usize])
             .expect("options");
-        // text.sections[ViewPart::Options as usize]
         if let Ok((mut text, mut color)) = texts.get_mut(options[0]) {
             if text.sections.len() == 0 {
                 text.sections.push(" No ".into());
