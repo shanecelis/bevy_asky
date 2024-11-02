@@ -75,25 +75,24 @@ impl Default for Palette {
 }
 
 pub fn plugin(app: &mut App) {
-    app
-        .add_systems(
-            Update,
-            (
-                header_view,
-                radio_view,
-                checkbox_view,
-                focus_view,
-                prompt_view,
-                confirm_view,
-                feedback_view,
-                toggle_view,
-                text_view,
-                password_view,
-                clear_feedback::<StringCursor>,
-                clear_feedback::<Toggle>,
-            ),
-        )
-        .insert_resource(Palette::default());
+    app.add_systems(
+        Update,
+        (
+            header_view,
+            radio_view,
+            checkbox_view,
+            focus_view,
+            prompt_view,
+            confirm_view,
+            feedback_view,
+            toggle_view,
+            text_view,
+            password_view,
+            clear_feedback::<StringCursor>,
+            clear_feedback::<Toggle>,
+        ),
+    )
+    .insert_resource(Palette::default());
 }
 
 pub(crate) fn prompt_view(
@@ -117,6 +116,24 @@ fn replace_or_insert(text: &mut Text, index: usize, replacement: &str) {
         text.sections.push(TextSection::from(replacement));
     } else {
         text.sections[index].value.replace_range(.., replacement);
+    }
+}
+
+fn replace_or_insert_rep(text: &mut Text, index: usize, replacement: &str, repetition: usize) {
+    let len = text.sections.len();
+    if len <= index {
+        for i in len.saturating_sub(1)..index {
+            text.sections.push(TextSection::default());
+        }
+        // This allocates a string, which is fine because TextSection needs one.
+        text.sections
+            .push(TextSection::from(replacement.repeat(repetition)));
+    } else {
+        text.sections[index].value.clear();
+        for _ in 0..repetition {
+            // This doesn't allocate a string.
+            text.sections[index].value.push_str(replacement);
+        }
     }
 }
 
@@ -208,7 +225,7 @@ pub(crate) fn text_view(
             Or<(Changed<StringCursor>, Changed<Focusable>)>,
         ),
     >,
-    mut texts: Query<&mut Text>,//, &mut BackgroundColor)>,
+    mut texts: Query<&mut Text>, //, &mut BackgroundColor)>,
     mut sections: Query<&Children>,
     palette: Res<Palette>,
     mut commands: Commands,
@@ -219,59 +236,60 @@ pub(crate) fn text_view(
             let mut parts = texts.iter_many_mut(cursor_parts);
             if focusable.state() == FocusState::Focused {
                 let mut pre_cursor = parts.fetch_next().expect("pre cursor");
-                replace_or_insert(&mut pre_cursor,
-                                  0,
-                                  &text_state.value[0..text_state.index]);
+                replace_or_insert(&mut pre_cursor, 0, &text_state.value[0..text_state.index]);
                 let mut cursor = parts.fetch_next().expect("cursor");
-                replace_or_insert(&mut cursor,
-                                  0,
-                                  if text_state.index >= text_state.value.len() {
-                                      " "
-                                  } else {
-                                      &text_state.value[text_state.index..text_state.next_index()]
-                                  });
+                replace_or_insert(
+                    &mut cursor,
+                    0,
+                    if text_state.index >= text_state.value.len() {
+                        " "
+                    } else {
+                        &text_state.value[text_state.index..text_state.next_index()]
+                    },
+                );
                 let mut post_cursor = parts.fetch_next().expect("post cursor");
-                replace_or_insert(&mut post_cursor,
-                                  0,
-                                  &text_state.value[text_state.next_index()..]);
+                replace_or_insert(
+                    &mut post_cursor,
+                    0,
+                    &text_state.value[text_state.next_index()..],
+                );
             } else {
                 let mut pre_cursor = parts.fetch_next().expect("pre cursor");
-                replace_or_insert(&mut pre_cursor,
-                                  0,
-                                  &text_state.value);
+                replace_or_insert(&mut pre_cursor, 0, &text_state.value);
                 let mut cursor = parts.fetch_next().expect("cursor");
-                replace_or_insert(&mut cursor,
-                                  0,
-                                  "");
+                replace_or_insert(&mut cursor, 0, "");
                 let mut post_cursor = parts.fetch_next().expect("post cursor");
-                replace_or_insert(&mut post_cursor,
-                                  0,
-                                  "");
+                replace_or_insert(&mut post_cursor, 0, "");
             }
         } else {
             // Make the parts.
-            commands.entity(id)
-                .with_children(|parent| {
-                    // pre cursor
-                    parent.spawn(TextBundle::from_section(&text_state.value[0..text_state.index], TextStyle::default()));
-                    // cursor
-                    parent.spawn(
-                        TextBundle::from_section(
-                            if text_state.index >= text_state.value.len() {
-                                " "
-                            } else {
-                                &text_state.value[text_state.index..text_state.next_index()]
-                            },
-                            TextStyle {
-                                color: Color::BLACK,
-                                ..default()
-                            },
-                        )
-                            .with_background_color(Color::WHITE),
-                    );
-                    // post cursor
-                    parent.spawn(TextBundle::from_section(&text_state.value[text_state.next_index()..], TextStyle::default()));
-                });
+            commands.entity(id).with_children(|parent| {
+                // pre cursor
+                parent.spawn(TextBundle::from_section(
+                    &text_state.value[0..text_state.index],
+                    TextStyle::default(),
+                ));
+                // cursor
+                parent.spawn(
+                    TextBundle::from_section(
+                        if text_state.index >= text_state.value.len() {
+                            " "
+                        } else {
+                            &text_state.value[text_state.index..text_state.next_index()]
+                        },
+                        TextStyle {
+                            color: Color::BLACK,
+                            ..default()
+                        },
+                    )
+                    .with_background_color(Color::WHITE),
+                );
+                // post cursor
+                parent.spawn(TextBundle::from_section(
+                    &text_state.value[text_state.next_index()..],
+                    TextStyle::default(),
+                ));
+            });
         }
     }
 }
@@ -285,23 +303,74 @@ pub(crate) fn password_view(
             Or<(Changed<StringCursor>, Changed<Focusable>)>,
         ),
     >,
-    mut texts: Query<(&mut Text, &mut BackgroundColor)>,
+    mut texts: Query<&mut Text>, //, &mut BackgroundColor)>,
+    mut sections: Query<&Children>,
     palette: Res<Palette>,
+    mut commands: Commands,
 ) {
     for (text_state, children, placeholder, focusable) in query.iter_mut() {
-        let (mut text, mut background) = texts
-            .get_mut(children[ViewPart::Answer as usize])
-            .expect("answer");
-        let a = 0;
-        if text_state.value.is_empty() && placeholder.is_some() {
-            replace_or_insert(&mut text, 0, placeholder.unwrap());
-            text.sections[0].style.color = palette.lowlight.into();
+        let glyph = "*";
+        let id = children[ViewPart::Answer as usize];
+        if let Ok(cursor_parts) = sections.get(id) {
+            let mut parts = texts.iter_many_mut(cursor_parts);
+            if focusable.state() == FocusState::Focused {
+                let mut pre_cursor = parts.fetch_next().expect("pre cursor");
+                replace_or_insert_rep(&mut pre_cursor, 0, glyph, text_state.index);
+                let mut cursor = parts.fetch_next().expect("cursor");
+                replace_or_insert_rep(
+                    &mut cursor,
+                    0,
+                    if text_state.index >= text_state.value.len() {
+                        " "
+                    } else {
+                        glyph
+                    },
+                    1,
+                );
+                let mut post_cursor = parts.fetch_next().expect("post cursor");
+                replace_or_insert_rep(
+                    &mut post_cursor,
+                    0,
+                    glyph,
+                    text_state.value.len().saturating_sub(text_state.index + 1),
+                );
+            } else {
+                let mut pre_cursor = parts.fetch_next().expect("pre cursor");
+                replace_or_insert(&mut pre_cursor, 0, &text_state.value);
+                let mut cursor = parts.fetch_next().expect("cursor");
+                replace_or_insert(&mut cursor, 0, "");
+                let mut post_cursor = parts.fetch_next().expect("post cursor");
+                replace_or_insert(&mut post_cursor, 0, "");
+            }
         } else {
-            replace_or_insert(&mut text, 0, &"*".repeat(text_state.value.len())); // TODO: This allocates a String. Don't do that.
-            text.sections[0].style.color = match focusable.state() {
-                FocusState::Focused => palette.text_color.into(),
-                _ => palette.answer.into(),
-            };
+            // Make the parts.
+            commands.entity(id).with_children(|parent| {
+                // pre cursor
+                parent.spawn(TextBundle::from_section(
+                    glyph.repeat(text_state.index),
+                    TextStyle::default(),
+                ));
+                // cursor
+                parent.spawn(
+                    TextBundle::from_section(
+                        if text_state.index >= text_state.value.len() {
+                            " "
+                        } else {
+                            glyph
+                        },
+                        TextStyle {
+                            color: Color::BLACK,
+                            ..default()
+                        },
+                    )
+                    .with_background_color(Color::WHITE),
+                );
+                // post cursor
+                parent.spawn(TextBundle::from_section(
+                    glyph.repeat(text_state.value.len().saturating_sub(text_state.index)),
+                    TextStyle::default(),
+                ));
+            });
         }
     }
 }
