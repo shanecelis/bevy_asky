@@ -41,6 +41,7 @@ impl Construct for View {
                         parent.spawn(TextBundle::default());
                         parent.spawn(TextBundle::default());
                         parent.spawn(TextBundle::default());
+                        parent.spawn(TextBundle::default());
                     });
                 parent.spawn(TextBundle::default()); // Feedback
             });
@@ -75,6 +76,10 @@ impl Default for Palette {
 }
 
 pub fn plugin(app: &mut App) {
+    app.add_systems(
+        PreUpdate,
+            super::add_view_to_checkbox::<View>,
+        );
     app.add_systems(
         Update,
         (
@@ -358,8 +363,14 @@ pub(crate) fn toggle_view(
         let options: &Children = sections
             .get(children[ViewPart::Options as usize])
             .expect("options");
-        // text.sections[ViewPart::Options as usize]
+
         if let Ok((mut text, mut color)) = texts.get_mut(options[0]) {
+            if text.sections.len() == 0 {
+                text.sections.push(" ".into());
+            }
+        }
+        // text.sections[ViewPart::Options as usize]
+        if let Ok((mut text, mut color)) = texts.get_mut(options[1]) {
             if text.sections.len() == 0 {
                 text.sections
                     .push(format!(" {} ", toggle.options[0]).into());
@@ -371,13 +382,13 @@ pub(crate) fn toggle_view(
             }
         }
 
-        if let Ok((mut text, mut color)) = texts.get_mut(options[1]) {
+        if let Ok((mut text, mut color)) = texts.get_mut(options[2]) {
             if text.sections.len() == 0 {
                 text.sections.push(" ".into());
             }
         }
 
-        if let Ok((mut text, mut color)) = texts.get_mut(options[2]) {
+        if let Ok((mut text, mut color)) = texts.get_mut(options[3]) {
             if text.sections.len() == 0 {
                 text.sections
                     .push(format!(" {} ", toggle.options[1]).into());

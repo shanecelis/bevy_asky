@@ -138,7 +138,7 @@ impl Construct for CheckboxGroup {
                     let id = parent
                         .construct::<Checkbox>(prompt)
                         // FIXME: Don't want to specify view here.
-                        .construct::<crate::view::ascii::View>(())
+                        // .construct::<crate::view::ascii::View>(())
                         .insert(Focusable::default())
                         .id();
                     children.push(id);

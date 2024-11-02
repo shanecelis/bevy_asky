@@ -1,6 +1,6 @@
 use crate::construct::*;
 use crate::{
-    prompt::{Checkbox, Confirm, Feedback, Password, Placeholder, Prompt, Radio, Toggle},
+    prompt::{Checkbox, CheckboxGroup, Confirm, Feedback, Password, Placeholder, Prompt, Radio, Toggle},
     AskyState, StringCursor,
 };
 use super::replace_or_insert_rep;
@@ -8,7 +8,53 @@ use bevy::prelude::*;
 use bevy_alt_ui_navigation_lite::prelude::*;
 use std::fmt::Write;
 
+#[repr(u8)]
+enum ViewPart {
+    Focus = 0,
+    Header = 1,
+    PreQuestion = 2,
+    Question = 3,
+    Answer = 4,
+    // Placeholder = 2,
+    Options = 5,
+    Feedback = 6,
+}
+
+#[derive(Component, Default)]
+pub struct View;
+
+impl Construct for View {
+    type Props = ();
+
+    fn construct(
+        context: &mut ConstructContext,
+        _props: Self::Props,
+    ) -> Result<Self, ConstructError> {
+        // Our requirements.
+        // let text_input: Input = context.construct(props)?;
+        let mut commands = context.world.commands();
+        commands.entity(context.id).insert(TextBundle {
+            text: Text::from_sections([
+                "".into(), // 0
+                "".into(), // 1
+                "".into(), // 2
+                "".into(), // 3
+                "".into(), // 4
+                "".into(), // 5
+                "".into(), // 6
+            ]),
+            ..default()
+        });
+        context.world.flush();
+
+        Ok(View)
+    }
+}
 pub fn plugin(app: &mut App) {
+    app.add_systems(
+        PreUpdate,
+            super::add_view_to_checkbox::<View>,
+        );
     app.add_systems(
         Update,
         (
@@ -208,45 +254,3 @@ pub(crate) fn password_view(
     }
 }
 
-#[repr(u8)]
-enum ViewPart {
-    Focus = 0,
-    Header = 1,
-    PreQuestion = 2,
-    Question = 3,
-    Answer = 4,
-    // Placeholder = 2,
-    Options = 5,
-    Feedback = 6,
-}
-
-#[derive(Component)]
-pub struct View;
-
-impl Construct for View {
-    type Props = ();
-
-    fn construct(
-        context: &mut ConstructContext,
-        _props: Self::Props,
-    ) -> Result<Self, ConstructError> {
-        // Our requirements.
-        // let text_input: Input = context.construct(props)?;
-        let mut commands = context.world.commands();
-        commands.entity(context.id).insert(TextBundle {
-            text: Text::from_sections([
-                "".into(), // 0
-                "".into(), // 1
-                "".into(), // 2
-                "".into(), // 3
-                "".into(), // 4
-                "".into(), // 5
-                "".into(), // 6
-            ]),
-            ..default()
-        });
-        context.world.flush();
-
-        Ok(View)
-    }
-}

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_alt_ui_navigation_lite::prelude::*;
+use bevy_alt_ui_navigation_lite::{prelude::*, mark::NavMarker};
 use bevy_asky::{
     construct::*,
     prompt::*,
@@ -21,40 +21,28 @@ fn main() {
 fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
-    // let mut prev_group = None;
     let root = commands
         .column()
-        // .insert((MenuBuilder::Root,
-        //          MenuSetting::new().wrapping()))
-        // .insert(Focusable::default())
-        .id();
-    commands.entity(root).with_children(|parent| {
+        .with_children(|parent| {
         parent
             .construct::<Prompt>("checkbox group 0")
             .construct::<ascii::View>(());
-        let id = parent
+
+        parent
             .construct::<ascii::View>(())
             .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
-            // .insert(MenuSetting::new().wrapping().scope())
-            // .insert(MenuBuilder::from(prev_group))
             .observe(
                 move |trigger: Trigger<AskyEvent<Vec<bool>>>, commands: Commands| {
                     eprintln!("trigger {:?}", trigger.event());
                 },
-            )
-            .id();
-        // prev_group = Some(id);
+            );
 
         parent
             .construct::<Prompt>("checkbox group 1")
             .construct::<ascii::View>(());
         parent
-            .construct::<ascii::View>(())
+            .construct::<color::View>(())
             .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
-            // .construct::<CheckboxGroup>(vec![])
-            // .insert(MenuBuilder::from(prev_group))
-            // .insert(MenuSetting::new().wrapping().scope())
-            // .insert(MenuBuilder::EntityParent(root))
             .observe(
                 move |trigger: Trigger<AskyEvent<Vec<bool>>>, commands: Commands| {
                     eprintln!("trigger {:?}", trigger.event());

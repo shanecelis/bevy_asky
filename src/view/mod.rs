@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+use crate::construct::*;
+use crate::prelude::*;
 
 pub mod ascii;
 pub mod button;
@@ -15,6 +17,18 @@ pub struct Question;
 pub enum Answer<T> {
     Selection(T),
     Final, //(Option<T>)
+}
+
+pub(crate) fn add_view_to_checkbox<V>(checkboxes: Query<(Entity, &Parent), Added<Checkbox>>,
+                                      group: Query<&CheckboxGroup, With<V>>,
+                                      mut commands: Commands)
+where V: Construct<Props = ()> + Component + Send,
+{
+    for (id, parent) in &checkboxes {
+        if group.get(parent.get()).is_ok() {
+            commands.entity(id).construct::<V>(());
+        }
+    }
 }
 
 pub(crate) fn replace_or_insert(text: &mut Text, index: usize, replacement: &str) {
