@@ -25,3 +25,12 @@ commands
         },
     );
 ```
+
+## TODO
+
+- [ ] Rename `AskyState` to ...?
+- [ ] Design a setting for what to do when input is submitted, possible options:
+  - nothing
+  - block focus (take no more input)
+  - despawn
+- [ ] Add a `button::View` that uses mouse-clickable elements.

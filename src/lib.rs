@@ -5,12 +5,15 @@ use bevy_alt_ui_navigation_lite::{prelude::*, systems::InputMapping};
 use futures::channel::oneshot;
 //mod focus;
 use std::borrow::Cow;
+#[cfg(feature = "async")]
 mod r#async;
 pub mod construct;
 mod num_like;
 pub mod prompt;
 pub mod view;
+
 pub use num_like::*;
+#[cfg(feature = "async")]
 pub use r#async::*;
 mod string_cursor;
 pub use string_cursor::*;
