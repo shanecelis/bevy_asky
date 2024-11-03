@@ -24,10 +24,6 @@ impl Asky {
         let p = props.into();
         let d = dest.into();
 
-        // let async_world = AsyncWorld::new();
-        // async_world.spawn_task(|| async move {
-
-        // });
         let mut send_once = Some(sender);
         async move {
             let async_world = AsyncWorld::new();
@@ -40,24 +36,19 @@ impl Asky {
                 };
                 entity_commands
                     .construct::<T>(p)
+                    // TODO: View should be passed in.
                     .construct::<ascii::View>(())
                     .observe(
                         move |trigger: Trigger<AskyEvent<T::Out>>, mut commands: Commands| {
                             if let Some(sender) = send_once.take() {
                                 sender.send(trigger.event().0.clone()).expect("send");
-                                // sender.send("bye".into());
                             }
+                            // TODO: This should be the result of some policy not de facto.
                             commands.entity(trigger.entity()).despawn_recursive();
                         },
                     );
             });
-            // Ok("hi".into())
             receiver.await?
-            // match receiver.await {
-            //     Ok(x) => x,
-            //     Err(e) => warn!("One shot channel canceled: {e}")
-            // }
         }
-        // receiver
     }
 }
