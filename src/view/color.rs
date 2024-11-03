@@ -38,6 +38,8 @@ impl Construct for View {
             .insert(NodeBundle::default())
             .insert(Focusable::default())
             .with_children(|parent| {
+                // Q: Why have these broken into different bundles?
+                // A: So I can control the background color independently.
                 parent.spawn(TextBundle::default()); // Focus
                 parent.spawn(TextBundle::default()); // Header
                 parent.spawn(TextBundle::default()); // PreQuestion
