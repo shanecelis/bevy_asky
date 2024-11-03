@@ -25,11 +25,8 @@ fn setup(mut commands: Commands) {
     let root = commands.column().with_children(|parent| {
         parent
             .spawn(TextBundle::from("checkbox group 0"));
-            // .construct::<Prompt>("checkbox group 0")
-            // .construct::<ascii::View>(());
 
         parent
-            // .construct::<color::View>(())
             .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
             .insert(color::View)
             .observe(
@@ -40,9 +37,7 @@ fn setup(mut commands: Commands) {
 
         parent
             .spawn(TextBundle::from("checkbox group 1"));
-            // .construct::<ascii::View>(());
         parent
-            // .construct::<color::View>(())
             .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
             .insert(ascii::View)
             .observe(

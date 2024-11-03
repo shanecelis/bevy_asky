@@ -23,8 +23,8 @@ pub struct Prompt(pub Cow<'static, str>);
 #[derive(Component, Deref, DerefMut, Reflect)]
 pub struct Placeholder(pub Cow<'static, str>);
 #[derive(Component, Reflect)]
-// pub struct DefaultValue<T: std::fmt::Display>(pub T);
 pub struct DefaultValue<T>(pub T);
+// pub struct DefaultValue<T: std::fmt::Display>(pub T);
 
 impl Construct for Prompt {
     type Props = Cow<'static, str>;
@@ -99,6 +99,7 @@ impl Feedback {
         }
     }
 }
+
 impl fmt::Display for Feedback {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &self.kind {
@@ -136,6 +137,9 @@ pub(crate) fn plugin(app: &mut App) {
 
     app
         .register_type::<Confirm>()
+        .register_type::<Prompt>()
+        .register_type::<Feedback>()
+        .register_type::<FeedbackKind>()
         .register_type::<Checkbox>()
         .register_type::<CheckboxGroup>()
         .register_type::<Radio>()
