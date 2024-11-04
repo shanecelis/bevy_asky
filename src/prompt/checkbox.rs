@@ -13,7 +13,7 @@ pub struct Checkbox {
     pub checked: bool,
 }
 
-impl Submitter for Checkbox {
+unsafe impl Submitter for Checkbox {
     type Out = bool;
 }
 
@@ -103,7 +103,7 @@ fn checkbox_controller(
 #[derive(Component, Reflect)]
 pub struct CheckboxGroup;
 
-impl Submitter for CheckboxGroup {
+unsafe impl Submitter for CheckboxGroup {
     type Out = Vec<bool>;
 }
 

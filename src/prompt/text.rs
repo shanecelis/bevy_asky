@@ -45,11 +45,8 @@ pub fn plugin(app: &mut App) {
 #[derive(Debug, Clone, Component, Reflect)]
 pub struct TextField;
 
-impl Submitter for TextField {
+unsafe impl Submitter for TextField {
     type Out = String;
-    // fn submit(&self) -> Result<Self::Out, Error> {
-    //     Ok(self.value.clone())
-    // }
 }
 
 impl Construct for TextField {

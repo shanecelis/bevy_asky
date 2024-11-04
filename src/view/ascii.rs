@@ -17,7 +17,6 @@ enum ViewPart {
     PreQuestion = 2,
     Question = 3,
     Answer = 4,
-    // Placeholder = 2,
     Options = 5,
     Feedback = 6,
 }
@@ -32,26 +31,25 @@ impl Construct for View {
         context: &mut ConstructContext,
         _props: Self::Props,
     ) -> Result<Self, ConstructError> {
-        // Our requirements.
-        // let text_input: Input = context.construct(props)?;
         let mut commands = context.world.commands();
-        commands.entity(context.id).insert(TextBundle {
-            text: Text::from_sections([
-                "".into(), // 0
-                "".into(), // 1
-                "".into(), // 2
-                "".into(), // 3
-                "".into(), // 4
-                "".into(), // 5
-                "".into(), // 6
-            ]),
-            ..default()
-        });
+        commands.entity(context.id)
+                .insert(TextBundle {
+                    text: Text::from_sections([
+                        "".into(), // 0
+                        "".into(), // 1
+                        "".into(), // 2
+                        "".into(), // 3
+                        "".into(), // 4
+                        "".into(), // 5
+                        "".into(), // 6
+                    ]),
+                    ..default()
+                });
         context.world.flush();
-
         Ok(View)
     }
 }
+
 pub fn plugin(app: &mut App) {
     app.add_systems(
         PreUpdate,
@@ -63,18 +61,18 @@ pub fn plugin(app: &mut App) {
     app.add_systems(
         Update,
         (
+            focus_view,
+            header_view,
+            checkbox_view,
+            radio_view,
+            prompt_view,
             confirm_view,
             text_view,
             password_view,
             toggle_view,
-            checkbox_view,
-            radio_view,
-            focus_view,
             feedback_view,
             clear_feedback::<StringCursor>,
             clear_feedback::<Toggle>,
-            prompt_view,
-            header_view,
         ),
     );
 }

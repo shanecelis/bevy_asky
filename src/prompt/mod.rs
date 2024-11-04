@@ -134,9 +134,7 @@ pub enum FeedbackKind {
 }
 
 pub(crate) fn plugin(app: &mut App) {
-
-    app
-        .register_type::<Confirm>()
+    app.register_type::<Confirm>()
         .register_type::<Prompt>()
         .register_type::<Feedback>()
         .register_type::<FeedbackKind>()
@@ -147,11 +145,13 @@ pub(crate) fn plugin(app: &mut App) {
         .register_type::<TextField>()
         .register_type::<Password>()
         .register_type::<Toggle>()
-        .add_plugins((confirm::plugin,
-                      text::plugin,
-                      number::plugin,
-                      password::plugin,
-                      toggle::plugin,
-                      checkbox::plugin,
-                      radio::plugin));
+        .add_plugins((
+            confirm::plugin,
+            text::plugin,
+            number::plugin,
+            password::plugin,
+            toggle::plugin,
+            checkbox::plugin,
+            radio::plugin,
+        ));
 }

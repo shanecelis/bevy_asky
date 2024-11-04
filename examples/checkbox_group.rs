@@ -23,8 +23,7 @@ fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
     let root = commands.column().with_children(|parent| {
-        parent
-            .spawn(TextBundle::from("checkbox group 0"));
+        parent.spawn(TextBundle::from("checkbox group 0"));
 
         parent
             .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
@@ -35,8 +34,7 @@ fn setup(mut commands: Commands) {
                 },
             );
 
-        parent
-            .spawn(TextBundle::from("checkbox group 1"));
+        parent.spawn(TextBundle::from("checkbox group 1"));
         parent
             .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
             .insert(ascii::View)

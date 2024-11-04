@@ -89,7 +89,7 @@ fn radio_controller(
 #[derive(Component, Reflect)]
 pub struct RadioGroup;
 
-impl Submitter for RadioGroup {
+unsafe impl Submitter for RadioGroup {
     type Out = usize;
 }
 

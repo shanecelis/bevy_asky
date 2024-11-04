@@ -36,8 +36,7 @@ impl Default for ButtonView {
 
 pub fn plugin(app: &mut App) {
     click::plugin(app);
-    app
-        .insert_resource(ButtonView::default())
+    app.insert_resource(ButtonView::default())
         .add_systems(Update, (button_interaction, confirm_view));
 }
 

@@ -5,34 +5,19 @@ use bevy_alt_ui_navigation_lite::{prelude::*, systems::InputMapping};
 use futures::channel::oneshot;
 //mod focus;
 use std::borrow::Cow;
+
 #[cfg(feature = "async")]
 mod r#async;
 pub mod construct;
 mod num_like;
 pub mod prompt;
+mod string_cursor;
 pub mod view;
 
 pub use num_like::*;
 #[cfg(feature = "async")]
 pub use r#async::*;
-mod string_cursor;
 pub use string_cursor::*;
-// pub use focus::*;
-pub struct AskyPlugin;
-
-impl Plugin for AskyPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_plugins(prompt::plugin)
-            .add_plugins(DefaultNavigationPlugins)
-            .add_systems(Startup, setup);
-        // app.add_plugins(focus::plugin);
-    }
-}
-
-fn setup(commands: Commands, mut input_mapping: ResMut<InputMapping>) {
-    input_mapping.keyboard_navigation = true;
-    // input_mapping.focus_follows_mouse = true;
-}
 
 pub mod prelude {
     pub use super::*;
@@ -40,7 +25,21 @@ pub mod prelude {
     pub use view::*;
 }
 
-#[derive(Event, Deref, Debug, Clone)]
+pub struct AskyPlugin;
+
+impl Plugin for AskyPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(prompt::plugin)
+            .add_plugins(DefaultNavigationPlugins)
+            .add_systems(Startup, setup);
+    }
+}
+
+fn setup(commands: Commands, mut input_mapping: ResMut<InputMapping>) {
+    input_mapping.keyboard_navigation = true;
+}
+
+#[derive(Event, Deref, DerefMut, Debug, Clone)]
 pub struct AskyEvent<T>(pub Result<T, Error>);
 
 #[derive(Event, Deref, Debug)]
@@ -70,8 +69,9 @@ pub enum Submit {
     Once,
 }
 
-pub trait Submitter {
-    /// This is a commitment to fire a `Trigger<Result<Self::Out, Error>>`.
+/// This is a commitment to fire a `Trigger<Result<Self::Out, Error>>`.
+pub unsafe trait Submitter {
+    /// Output of submitter.
     type Out;
     // fn submit(&self) -> Result<Self::Out, Error>;
 }
