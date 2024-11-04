@@ -1,7 +1,8 @@
 use super::Prompt;
 use crate::construct::*;
-use crate::{AskyState, StringCursor};
+use crate::{AskyState, StringCursor, Focusable};
 use bevy::prelude::*;
+#[cfg(feature = "focus")]
 use bevy_alt_ui_navigation_lite::prelude::*;
 use std::borrow::Cow;
 

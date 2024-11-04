@@ -4,9 +4,11 @@ use crate::{
     prompt::{
         Checkbox, CheckboxGroup, Confirm, Feedback, Password, Placeholder, Prompt, Radio, Toggle,
     },
+    Focus,
     AskyState, StringCursor,
 };
 use bevy::prelude::*;
+#[cfg(feature = "focus")]
 use bevy_alt_ui_navigation_lite::prelude::*;
 use std::fmt::Write;
 
@@ -32,19 +34,20 @@ impl Construct for View {
         _props: Self::Props,
     ) -> Result<Self, ConstructError> {
         let mut commands = context.world.commands();
-        commands.entity(context.id)
-                .insert(TextBundle {
-                    text: Text::from_sections([
-                        "".into(), // 0
-                        "".into(), // 1
-                        "".into(), // 2
-                        "".into(), // 3
-                        "".into(), // 4
-                        "".into(), // 5
-                        "".into(), // 6
-                    ]),
-                    ..default()
-                });
+        commands
+            .entity(context.id)
+            .insert(TextBundle {
+                text: Text::from_sections([
+                    "".into(), // 0
+                    "".into(), // 1
+                    "".into(), // 2
+                    "".into(), // 3
+                    "".into(), // 4
+                    "".into(), // 5
+                    "".into(), // 6
+                ]),
+                ..default()
+            });
         context.world.flush();
         Ok(View)
     }
@@ -79,16 +82,18 @@ pub fn plugin(app: &mut App) {
 
 pub(crate) fn confirm_view(
     mut query: Query<
-        (&Confirm, &mut Text, &Focusable),
-        (With<View>, Or<(Changed<Focusable>, Changed<Confirm>)>),
+        (Entity, &Confirm, &mut Text),
+        (With<View>, Or<(//Changed<Focusable>,
+                         Changed<Confirm>,)>),
     >,
+    focus: Focus,
 ) {
-    for (confirm, mut text, focusable) in query.iter_mut() {
+    for (id, confirm, mut text) in query.iter_mut() {
         text.sections[ViewPart::Options as usize]
             .value
             .replace_range(
                 ..,
-                if let FocusState::Focused = focusable.state() {
+                if focus.is_focused(id) {
                     if confirm.yes {
                         " no/YES"
                     } else {
@@ -131,10 +136,12 @@ pub(crate) fn header_view(
 }
 
 pub(crate) fn focus_view(
-    mut query: Query<(&mut Text, &Focusable), (With<View>, Changed<Focusable>)>,
+    mut query: Query<(Entity, &mut Text), (With<View>, //Changed<Focusable>
+    )>,
+    focus: Focus,
 ) {
-    for (mut text, focusable) in query.iter_mut() {
-        if let FocusState::Focused = focusable.state() {
+    for (id, mut text) in query.iter_mut() {
+        if focus.is_focused(id) {
             text.sections[ViewPart::Focus as usize]
                 .value
                 .replace_range(.., "> ");

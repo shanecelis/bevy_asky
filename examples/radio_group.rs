@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_alt_ui_navigation_lite::prelude::*;
 use bevy_asky::{
     construct::*,
     prompt::*,

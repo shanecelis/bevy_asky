@@ -1,70 +1,77 @@
+#[cfg(feature = "focus")]
+use bevy_alt_ui_navigation_lite::{prelude::*, systems::InputMapping};
+
+#[cfg(feature = "focus")]
+mod ui_navigation {
 use bevy::{
-    ecs::component::{StorageType, ComponentHooks},
-    prelude::*
-};
-#[derive(Resource, Deref, DerefMut, Default, Debug)]
-pub struct Foci(Vec<Entity>);
-
-#[derive(Clone, Default)]
-pub struct Focusable { version: usize }
-
-pub fn plugin(app: &mut App) {
-    app
-        .init_resource::<Foci>()
-        .add_systems(Update, focus_controller);
-}
-
-fn focus_controller(
-    // mut query: Query<(&Visibility, &mut Radio, Option<&Parent>)>,
-    input: Res<ButtonInput<KeyCode>>,
-    mut focus_maybe: Option<ResMut<Focus>>,
-    mut query: Query<&mut Focusable>,
-    foci: Res<Foci>,
-    mut commands: Commands,
-) {
-    if input.just_pressed(KeyCode::Tab) {
-        if let Some(mut focus) = focus_maybe {
-            // There is a focus resource.
-            if let Some(focus_id) = focus.0 {
-                if let Ok(mut focusable) = query.get_mut(focus_id) {
-                    focusable.version += 1;
-                }
-                dbg!(focus_id);
-                if let Some(index) = foci.iter().position(|&x| x == focus_id) {
-                    focus.0 = foci.get(index + 1).or(foci.first()).cloned();
-                }
-            } else {
-                focus.0 = foci.first().cloned();
-            }
-            if let Some(focus_id) = focus.0 {
-                if let Ok(mut focusable) = query.get_mut(focus_id) {
-                    focusable.version += 1;
-                }
-            }
-        } else {
-            commands.insert_resource(Focus(foci.first().cloned()));
+    ecs::{
+        system::{
+            SystemParam,
         }
-        // dbg!(foci);
+    },
+    prelude::*,
+};
+    #[derive(SystemParam)]
+    pub struct Focus<'w, 's> {
+        focus: Query<'w, 's, &'static mut Focusable>,
+        requests: EventWriter<NavRequest>,
+        input_mapping: ResMut<InputMapping>,
+    }
 
+    impl<'w, 's> Focus<'w, 's> {
+        pub fn is_focused(&self, id: Entity) -> bool {
+            self.focus.get(id).map(|focusable| FocusState::Focused == focusable.state()).unwrap_or(true)
+        }
 
+        pub fn move_focus(&mut self, _id: Entity)  {
+            self.requests.send(NavRequest::Move(NavDirection::South));
+        }
 
+        pub fn set_keyboard_nav(&mut self, on: bool) {
+            self.input_mapping.keyboard_navigation = !any_focused_text;
+        }
+
+        pub fn block(&mut self, id: Entity) {
+            self.focus.get_mut(id).map(|focusable| *focusable = Focusable::new().blocked());
+            self.move_focus(id);
+        }
     }
 }
 
-
-impl Component for Focusable {
-    const STORAGE_TYPE: StorageType = StorageType::Table;
-
-    fn register_component_hooks(hooks: &mut ComponentHooks) {
-        hooks.on_add(|mut world, targeted_entity, _component_id| {
-            let mut foci = world.get_resource_mut::<Foci>().expect("Foci resource");
-            foci.push(targeted_entity);
-        });
-        hooks.on_remove(|mut world, targeted_entity, _component_id| {
-            let mut foci = world.get_resource_mut::<Foci>().expect("Foci resource");
-            if let Some(index) = foci.iter().position(|&x| x == targeted_entity) {
-                foci.remove(index);
+#[cfg(not(feature = "focus"))]
+mod ui_navigation {
+    use bevy::{
+        ecs::{
+            system::{
+                SystemParam,
             }
-        });
+        },
+        prelude::*,
+    };
+    use crate::AskyState;
+    pub type Focusable = AskyState;
+
+    #[derive(SystemParam)]
+    pub struct Focus<'w, 's> {
+        focus: Query<'w, 's, &'static mut AskyState>,
+    }
+
+    impl<'w, 's> Focus<'w, 's> {
+        pub fn is_focused(&self, id: Entity) -> bool {
+            self.focus.get(id).map(|asky_state| matches!(asky_state, AskyState::Reading)).unwrap_or(true)
+        }
+
+        pub fn move_focus(&mut self, id: Entity)  {
+            self.focus.get_mut(id).map(|mut asky_state| *asky_state = AskyState::Complete);
+            // self.requests.send(NavRequest::Move(NavDirection::South));
+        }
+
+        pub fn set_keyboard_nav(&mut self, _on: bool) {
+        }
+
+        pub fn block(&mut self, id: Entity) {
+            todo!();
+        }
     }
 }
+pub use ui_navigation::*;

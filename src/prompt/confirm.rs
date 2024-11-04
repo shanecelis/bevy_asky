@@ -1,7 +1,8 @@
 use super::{Feedback, Prompt};
 use crate::construct::*;
-use crate::{AskyChange, AskyEvent, AskyState, Error};
+use crate::{AskyChange, AskyEvent, AskyState, Error, Focus, Focusable};
 use bevy::prelude::*;
+#[cfg(feature = "focus")]
 use bevy_alt_ui_navigation_lite::{events::Direction as NavDirection, prelude::*};
 use std::borrow::Cow;
 
@@ -35,13 +36,13 @@ impl Construct for Confirm {
 }
 
 fn confirm_controller(
-    mut query: Query<(Entity, &mut Confirm, &Focusable)>, // &mut AskyState)>,
+    mut query: Query<(Entity, &mut Confirm)>, // &mut AskyState)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
-    mut requests: EventWriter<NavRequest>,
+    mut focus: Focus,
 ) {
-    for (id, mut confirm, focusable) in query.iter_mut() {
-        if FocusState::Focused != focusable.state() {
+    for (id, mut confirm) in query.iter_mut() {
+        if !focus.is_focused(id) {
             continue;
         }
         if input.any_just_pressed([
@@ -65,8 +66,7 @@ fn confirm_controller(
             if input.just_pressed(KeyCode::Enter) {
                 // *state = AskyState::Complete;
                 // Make this not focusable again.
-                commands.entity(id).insert(Focusable::new().blocked());
-                requests.send(NavRequest::Move(NavDirection::South));
+                focus.block(id);
                 // I had tried using triggers in bevy_ui_navigation to fix my issues.
                 // commands.trigger(NavRequest::Move(NavDirection::South));
                 commands.trigger_targets(AskyEvent::<bool>(Ok(confirm.yes)), id);

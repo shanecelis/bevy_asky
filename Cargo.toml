@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 bevy = { version = "0.14.0", default-features = false, features = [ "bevy_text", "bevy_ui", "default_font" ] }
-bevy-alt-ui-navigation-lite = "0.2.1"
+bevy-alt-ui-navigation-lite = { version = "0.2.1", optional = true }
 # bevy-ui-navigation = "0.33.1"
 bevy_defer = { version = "0.12.1", optional = true }
 futures = "0.3.30"
@@ -13,6 +13,7 @@ thiserror = "1.0.62"
 
 [features]
 async = [ "dep:bevy_defer" ]
+focus = [ "dep:bevy-alt-ui-navigation-lite" ]
 
 [dev-dependencies]
 bevy = { version = "0.14.0" }

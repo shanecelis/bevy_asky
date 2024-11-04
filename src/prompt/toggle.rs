@@ -1,7 +1,8 @@
 use super::{Feedback, Prompt};
 use crate::construct::*;
-use crate::{AskyEvent, AskyState, Error};
+use crate::{AskyEvent, AskyState, Error, Focus, Focusable};
 use bevy::prelude::*;
+#[cfg(feature = "focus")]
 use bevy_alt_ui_navigation_lite::prelude::*;
 use std::borrow::Cow;
 
@@ -53,12 +54,13 @@ impl Construct for Toggle {
 }
 
 fn toggle_controller(
-    mut query: Query<(Entity, &mut AskyState, &mut Toggle, &Focusable)>,
+    mut query: Query<(Entity, &mut AskyState, &mut Toggle)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
+    focus: Focus,
 ) {
-    for (id, mut state, mut toggle, focusable) in query.iter_mut() {
-        if FocusState::Focused != focusable.state() {
+    for (id, mut state, mut toggle) in query.iter_mut() {
+        if !focus.is_focused(id) {
             continue;
         }
         if let AskyState::Reading = *state {

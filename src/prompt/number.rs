@@ -1,7 +1,6 @@
 use super::{Feedback, Prompt};
 use crate::construct::*;
-use crate::{AskyEvent, AskyState, Error, NumLike};
-use crate::{CursorDirection, StringCursor};
+use crate::{AskyEvent, AskyState, Error, NumLike, CursorDirection, StringCursor, Focus, Focusable};
 use bevy::{
     input::{
         keyboard::{Key, KeyboardInput},
@@ -9,6 +8,7 @@ use bevy::{
     },
     prelude::*,
 };
+#[cfg(feature = "focus")]
 use bevy_alt_ui_navigation_lite::{events::Direction as NavDirection, prelude::*};
 use std::borrow::Cow;
 
@@ -66,25 +66,6 @@ pub struct Number<T: NumLike> {
     /// Default value to submit when the input is empty
     pub default_value: Option<T>,
 }
-
-// impl<T: NumLike> From<Cow<'static, str>> for Number<T> {
-//     fn from(message: Cow<'static, str>) -> Self {
-//         Self {
-//             message,
-//             default_value: None,
-//         }
-//     }
-// }
-
-// impl<T: NumLike> From<&'static str> for Number<T> {
-//     fn from(message: &'static str) -> Self {
-//         Self {
-//             message: message.into(),
-//             default_value: None,
-//         }
-//     }
-// }
-
 impl<T: NumLike> Construct for Number<T> {
     type Props = Cow<'static, str>;
 
@@ -119,13 +100,13 @@ impl<T: NumLike> Number<T> {
 }
 
 fn number_controller<T: NumLike + Sync + 'static + TypePath>(
-    mut query: Query<(Entity, &mut AskyState, &mut StringCursor, &mut Focusable), With<Number<T>>>,
+    mut query: Query<(Entity, &mut AskyState, &mut StringCursor), With<Number<T>>>,
     mut input: EventReader<KeyboardInput>,
     mut commands: Commands,
-    mut requests: EventWriter<NavRequest>,
+    mut focus: Focus,
 ) {
-    for (id, mut state, mut text_state, focusable) in query.iter_mut() {
-        if FocusState::Focused != focusable.state() {
+    for (id, mut state, mut text_state) in query.iter_mut() {
+        if !focus.is_focused(id) {
             continue;
         }
         if let AskyState::Reading = *state {
@@ -151,10 +132,7 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                         match T::from_str(&text_state.value) {
                             Ok(number) => {
                                 commands.trigger_targets(AskyEvent(Ok(number)), id);
-                                *state = AskyState::Complete;
-                                // focusable.block();
-                                // requests.send(NavRequest::ScopeMove(ScopeDirection::Next));
-                                requests.send(NavRequest::Move(NavDirection::South));
+                                focus.move_focus(id);
                             }
                             Err(_) => {
                                 commands

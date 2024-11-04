@@ -9,7 +9,7 @@ fn main() {
         .add_plugins(view::color::plugin)
         .add_plugins(view::button::plugin)
         .add_systems(Startup, setup)
-        .add_systems(Update, read_keys)
+        // .add_systems(Update, read_keys)
         .run();
 }
 
@@ -27,19 +27,21 @@ fn setup(mut commands: Commands, mut asky: Asky) {
         })
         .id();
     commands.spawn_task(move || async move {
-        let response: Result<String, Error> = asky.prompt::<TextField>("What up? ", id).await;
+        let response: Result<String, Error>
+            = asky.prompt::<TextField, view::ascii::View>("What up? ", Dest::Append(id)).await;
         dbg!(response);
 
-        let response: Result<String, Error> = asky.prompt::<TextField>("Really? ", None).await;
+        let response: Result<String, Error>
+            = asky.prompt::<TextField, view::color::View>("Really? ", Dest::Append(id)).await;
         dbg!(response);
         Ok(())
     });
 }
 
-fn read_keys(input: Res<ButtonInput<KeyCode>>, mut query: Query<&mut AskyState>) {
-    if input.just_pressed(KeyCode::KeyR) {
-        for mut state in query.iter_mut() {
-            *state = AskyState::Reading;
-        }
-    }
-}
+// fn read_keys(input: Res<ButtonInput<KeyCode>>, mut query: Query<&mut AskyState>) {
+//     if input.just_pressed(KeyCode::KeyR) {
+//         for mut state in query.iter_mut() {
+//             *state = AskyState::Reading;
+//         }
+//     }
+// }

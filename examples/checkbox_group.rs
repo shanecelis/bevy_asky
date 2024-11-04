@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_alt_ui_navigation_lite::{mark::NavMarker, prelude::*};
 use bevy_asky::{
     construct::*,
     prompt::*,
@@ -26,8 +25,8 @@ fn setup(mut commands: Commands) {
         parent.spawn(TextBundle::from("checkbox group 0"));
 
         parent
+            .construct::<color::View>(())
             .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
-            .insert(color::View)
             .observe(
                 move |trigger: Trigger<AskyEvent<Vec<bool>>>, commands: Commands| {
                     eprintln!("trigger {:?}", trigger.event());
@@ -36,8 +35,8 @@ fn setup(mut commands: Commands) {
 
         parent.spawn(TextBundle::from("checkbox group 1"));
         parent
+            .construct::<ascii::View>(())
             .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
-            .insert(ascii::View)
             .observe(
                 move |trigger: Trigger<AskyEvent<Vec<bool>>>, commands: Commands| {
                     eprintln!("trigger {:?}", trigger.event());

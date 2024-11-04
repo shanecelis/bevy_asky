@@ -32,6 +32,7 @@ pub(crate) fn add_view_to_checkbox<V>(
         }
     }
 }
+
 // pub(crate) fn add_view_to_checkbox<V>(
 //     group: Query<&Children, (Added<CheckboxGroup>, With<V>)>,
 //     checkboxes: Query<Entity, With<Checkbox>>,

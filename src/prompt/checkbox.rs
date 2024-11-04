@@ -1,6 +1,15 @@
 use super::{Feedback, Prompt};
-use crate::{construct::*, AskyEvent, Error, Submitter};
-use bevy::prelude::*;
+use crate::{construct::*, AskyEvent, Error, Submitter, AskyState, focus::Focus, Focusable};
+use bevy::{
+    ecs::{
+        system::{
+            SystemParam,
+        }
+    },
+    prelude::*,
+};
+
+#[cfg(feature = "focus")]
 use bevy_alt_ui_navigation_lite::{
     events::{Direction as NavDirection, ScopeDirection},
     prelude::*,
@@ -41,6 +50,7 @@ impl Construct for Checkbox {
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
+            .insert(NodeBundle::default())
             .insert(Focusable::default())
             .insert(Prompt(props.clone()));
 
@@ -49,14 +59,16 @@ impl Construct for Checkbox {
     }
 }
 
+
 fn checkbox_controller(
-    mut query: Query<(Entity, &mut Checkbox, &Focusable)>,
+    focus: Focus,
+    mut query: Query<(Entity, &mut Checkbox)>,
     input: Res<ButtonInput<KeyCode>>,
-    mut requests: EventWriter<NavRequest>,
+    // mut requests: EventWriter<NavRequest>,
     mut commands: Commands,
 ) {
-    for (id, mut checkbox, focusable) in query.iter_mut() {
-        if FocusState::Focused != focusable.state() {
+    for (id, mut checkbox) in query.iter_mut() {
+        if !focus.is_focused(id) {
             continue;
         }
         if input.any_just_pressed([KeyCode::Space, KeyCode::KeyH, KeyCode::KeyL, KeyCode::Enter]) {
@@ -138,9 +150,6 @@ impl Construct for CheckboxGroup {
                 for prompt in props {
                     let id = parent
                         .construct::<Checkbox>(prompt)
-                        // FIXME: Don't want to specify view here.
-                        // .construct::<crate::view::ascii::View>(())
-                        .insert(Focusable::default())
                         .id();
                     children.push(id);
                 }
@@ -155,24 +164,24 @@ impl Construct for CheckboxGroup {
 
 fn checkbox_group_controller(
     mut query: Query<(Entity, &CheckboxGroup, &Children)>,
-    checkboxes: Query<(&Checkbox, &Focusable)>,
+    checkboxes: Query<(Entity, &Checkbox)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
-    mut requests: EventWriter<NavRequest>,
+    mut focus: Focus,
 ) {
     if input.any_just_pressed([KeyCode::Escape, KeyCode::Enter]) {
         for (id, group, children) in query.iter_mut() {
             if checkboxes
                 .iter_many(children)
-                .any(|(_, focusable)| matches!(focusable.state(), FocusState::Focused))
+                .any(|(id, _)| focus.is_focused(id))
             {
                 if input.just_pressed(KeyCode::Enter) {
                     let result: Vec<bool> = checkboxes
                         .iter_many(children)
-                        .map(|(checkbox, _)| checkbox.checked)
+                        .map(|(_, checkbox)| checkbox.checked)
                         .collect();
                     commands.trigger_targets(AskyEvent(Ok(result)), id);
-                    requests.send(NavRequest::ScopeMove(ScopeDirection::Next));
+                    focus.move_focus(id);
                     // *state = AskyState::Complete;
                 }
 

@@ -13,7 +13,7 @@ use bevy::{
 };
 use std::fmt::Write;
 
-#[derive(Component, Reflect)]
+#[derive(Component, Reflect, Default)]
 pub struct View;
 
 // #[derive(Debug, Component, Reflect)]
@@ -38,31 +38,31 @@ impl Construct for View {
         // let mut system_state: SystemState<Query<&Parent>> = SystemState::new(&mut context.world);
         // let parents = system_state.get(&context.world);
 
-        let mut commands = context.world.commands();
-        commands
-            .entity(context.id)
-            .insert(NodeBundle::default());
-            // .with_children(|parent| {
-            //     // Q: Why have these broken into different bundles?
-            //     // A: So I can control the background color independently.
-            //     parent.spawn(TextBundle::default()); // Focus
-            //     parent.spawn(TextBundle::default()); // Header
-            //     parent.spawn(TextBundle::default()); // PreQuestion
-            //     parent.spawn(TextBundle::default()); // Question
-            //     parent.spawn(TextBundle::default()); // Answer
-            //     parent
-            //         .spawn(NodeBundle::default()) // Answer
-            //         // .spawn_empty() // Options
-            //         .with_children(|parent| {
-            //             parent.spawn(TextBundle::default());
-            //             parent.spawn(TextBundle::default());
-            //             parent.spawn(TextBundle::default());
-            //             parent.spawn(TextBundle::default());
-            //         });
-            //     parent.spawn(TextBundle::default()); // Feedback
-            // });
+        // let mut commands = context.world.commands();
+        // commands
+        //     .entity(context.id)
+        //     .insert(NodeBundle::default());
+        //     // .with_children(|parent| {
+        //     //     // Q: Why have these broken into different bundles?
+        //     //     // A: So I can control the background color independently.
+        //     //     parent.spawn(TextBundle::default()); // Focus
+        //     //     parent.spawn(TextBundle::default()); // Header
+        //     //     parent.spawn(TextBundle::default()); // PreQuestion
+        //     //     parent.spawn(TextBundle::default()); // Question
+        //     //     parent.spawn(TextBundle::default()); // Answer
+        //     //     parent
+        //     //         .spawn(NodeBundle::default()) // Answer
+        //     //         // .spawn_empty() // Options
+        //     //         .with_children(|parent| {
+        //     //             parent.spawn(TextBundle::default());
+        //     //             parent.spawn(TextBundle::default());
+        //     //             parent.spawn(TextBundle::default());
+        //     //             parent.spawn(TextBundle::default());
+        //     //         });
+        //     //     parent.spawn(TextBundle::default()); // Feedback
+        //     // });
 
-        context.world.flush();
+        // context.world.flush();
 
         Ok(View)
     }
@@ -263,11 +263,14 @@ pub(crate) fn clear_feedback<T: Component>(
 }
 
 pub(crate) fn focus_view(
-    mut query: Query<(Entity, &Focusable), (With<View>, Changed<Focusable>)>,
+    focus: Focus,
+    mut query: Query<Entity, (With<View>,
+                                            //Changed<Focusable>
+    )>,
     mut writer: Inserter<Text>,
     palette: Res<Palette>,
 ) {
-    for (id, focusable) in query.iter_mut() {
+    for id in query.iter_mut() {
         writer
             .insert_or_get_mut(id,
                                ViewPart::Focus as usize,
@@ -275,9 +278,10 @@ pub(crate) fn focus_view(
                                     replace_or_insert(
                                         &mut text,
                                         0,
-                                        match focusable.state() {
-                                            FocusState::Focused => "> ",
-                                            _ => "  ",
+                                        if focus.is_focused(id) {
+                                            "> "
+                                        } else {
+                                            "  "
                                         },
                                     );
                                     text.sections[0].style.color = palette.highlight.into();
@@ -311,19 +315,22 @@ pub(crate) fn header_view(
 
 pub(crate) fn text_view(
     mut query: Query<
-        (Entity, &StringCursor, &Children, Option<&Placeholder>, &Focusable),
+        (Entity, &StringCursor, &Children, Option<&Placeholder>),
         (
             With<View>,
             Without<Password>,
-            Or<(Changed<StringCursor>, Changed<Focusable>)>,
+            Or<(Changed<StringCursor>,
+                //Changed<Focusable>
+            )>,
         ),
     >,
     mut texts: Query<&mut Text>, //, &mut BackgroundColor)>,
     mut sections: Query<&Children>,
     palette: Res<Palette>,
     mut commands: Commands,
+    focus: Focus,
 ) {
-    for (root, text_state, children, placeholder, focusable) in query.iter_mut() {
+    for (root, text_state, children, placeholder) in query.iter_mut() {
         let index = ViewPart::Answer as usize;
         let id = if index < children.len() {
             children[index]
@@ -339,7 +346,7 @@ pub(crate) fn text_view(
         };
         if let Ok(cursor_parts) = sections.get(id) {
             let mut parts = texts.iter_many_mut(cursor_parts);
-            if focusable.state() == FocusState::Focused {
+            if focus.is_focused(root) {
                 let mut pre_cursor = parts.fetch_next().expect("pre cursor");
                 replace_or_insert(&mut pre_cursor, 0, &text_state.value[0..text_state.index]);
                 let mut cursor = parts.fetch_next().expect("cursor");
@@ -401,19 +408,22 @@ pub(crate) fn text_view(
 
 pub(crate) fn password_view(
     mut query: Query<
-        (Entity, &StringCursor, &Children, Option<&Placeholder>, &Focusable),
+        (Entity, &StringCursor, &Children, Option<&Placeholder>),
         (
             With<View>,
             With<Password>,
-            Or<(Changed<StringCursor>, Changed<Focusable>)>,
+            Or<(Changed<StringCursor>,
+           //     Changed<Focusable>
+            )>,
         ),
     >,
     mut texts: Query<&mut Text>, //, &mut BackgroundColor)>,
     mut sections: Query<&Children>,
     palette: Res<Palette>,
     mut commands: Commands,
+    focus: Focus,
 ) {
-    for (root, text_state, children, placeholder, focusable) in query.iter_mut() {
+    for (root, text_state, children, placeholder) in query.iter_mut() {
         let glyph = "*";
         let index = ViewPart::Answer as usize;
         let id = if index < children.len() {
@@ -430,7 +440,7 @@ pub(crate) fn password_view(
         };
         if let Ok(cursor_parts) = sections.get(id) {
             let mut parts = texts.iter_many_mut(cursor_parts);
-            if focusable.state() == FocusState::Focused {
+            if focus.is_focused(root) {
                 let mut pre_cursor = parts.fetch_next().expect("pre cursor");
                 replace_or_insert_rep(&mut pre_cursor, 0, glyph, text_state.index);
                 let mut cursor = parts.fetch_next().expect("cursor");
@@ -610,19 +620,23 @@ pub(crate) fn confirm_view(
 
 pub(crate) fn checkbox_view(
     mut query: Query<
-        (Entity, &Checkbox, &Focusable),
-        (With<View>, Or<(Changed<Checkbox>, Changed<Focusable>)>),
+        (Entity, &Checkbox),
+        (With<View>, Or<(Changed<Checkbox>,
+                         //Changed<Focusable>
+        )>),
     >,
     palette: Res<Palette>,
     mut writer: Inserter<Text>,
+    focus: Focus,
 ) {
-    for (id, checkbox, focusable) in query.iter_mut() {
+    for (id, checkbox) in query.iter_mut() {
         writer
             .insert_or_get_mut(id,
                                ViewPart::PreQuestion as usize,
                                |mut text| {
                                    replace_or_insert(&mut text, 0, if checkbox.checked { "[x] " } else { "[ ] " });
-                                   text.sections[0].style.color = if focusable.state() == FocusState::Focused {
+                                   // text.sections[0].style.color = if focusable.state() == FocusState::Focused {
+                                   text.sections[0].style.color = if focus.is_focused(id) {
                                        palette.highlight.into()
                                    } else {
                                        palette.text_color.into()
@@ -634,19 +648,22 @@ pub(crate) fn checkbox_view(
 
 pub(crate) fn radio_view(
     mut query: Query<
-        (Entity, &Radio, &Focusable),
-        (With<View>, Or<(Changed<Radio>, Changed<Focusable>)>),
+        (Entity, &Radio),
+        (With<View>, Or<(Changed<Radio>,
+                         //Changed<Focusable>
+        )>),
     >,
     palette: Res<Palette>,
     mut writer: Inserter<Text>,
+    focus: Focus,
 ) {
-    for (id, radio, focusable) in query.iter_mut() {
+    for (id, radio) in query.iter_mut() {
         writer
             .insert_or_get_mut(id,
                                ViewPart::PreQuestion as usize,
                                |mut text| {
                                    replace_or_insert(&mut text, 0, if radio.checked { "(x) " } else { "( ) " });
-                                   text.sections[0].style.color = if focusable.state() == FocusState::Focused {
+                                   text.sections[0].style.color = if focus.is_focused(id) {
                                        palette.highlight.into()
                                    } else {
                                        palette.text_color.into()

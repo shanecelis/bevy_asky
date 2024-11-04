@@ -1,6 +1,6 @@
 use super::{Feedback, Password, Prompt};
 use crate::construct::*;
-use crate::{AskyEvent, AskyState, CursorDirection, Error, StringCursor, Submitter};
+use crate::{AskyEvent, AskyState, CursorDirection, Error, StringCursor, Submitter, Focus, Focusable};
 use bevy::{
     input::{
         keyboard::{Key, KeyboardInput},
@@ -8,7 +8,12 @@ use bevy::{
     },
     prelude::*,
 };
-use bevy_alt_ui_navigation_lite::prelude::*;
+#[cfg(feature = "focus")]
+use bevy_alt_ui_navigation_lite::{
+    prelude::*,
+    systems::InputMapping,
+    events::Direction as NavDirection
+};
 use std::borrow::Cow;
 
 pub fn plugin(app: &mut App) {
@@ -63,6 +68,7 @@ impl Construct for TextField {
         commands
             .entity(context.id)
             .insert(Prompt(props))
+            .insert(NodeBundle::default())
             .insert(input_state)
             .insert(Focusable::default())
             .insert(state);
@@ -74,17 +80,20 @@ impl Construct for TextField {
 }
 
 fn text_controller(
+    mut focus: Focus,
     mut query: Query<
-        (Entity, &mut AskyState, &mut StringCursor, &Focusable),
+        (Entity, &mut AskyState, &mut StringCursor),
         Or<(With<TextField>, With<Password>)>,
     >,
     mut input: EventReader<KeyboardInput>,
     mut commands: Commands,
 ) {
-    for (id, mut state, mut text_state, focusable) in query.iter_mut() {
-        if FocusState::Focused != focusable.state() {
+    let mut any_focused_text = false;
+    for (id, mut state, mut text_state) in query.iter_mut() {
+        if !focus.is_focused(id) {
             continue;
         }
+        any_focused_text |= true;
         if let AskyState::Reading = *state {
             for ev in input.read() {
                 if ev.state != ButtonState::Pressed {
@@ -103,6 +112,7 @@ fn text_controller(
                     Key::ArrowRight => text_state.move_cursor(CursorDirection::Right),
                     Key::Enter => {
                         commands.trigger_targets(AskyEvent(Ok(text_state.value.clone())), id);
+                        focus.move_focus(id);
                         *state = AskyState::Complete;
                     }
                     Key::Escape => {
@@ -116,4 +126,5 @@ fn text_controller(
             }
         }
     }
+    focus.set_keyboard_nav(!any_focused_text);
 }

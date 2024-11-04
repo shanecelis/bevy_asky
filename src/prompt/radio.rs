@@ -1,9 +1,10 @@
 use super::{Feedback, Prompt};
-use crate::{construct::*, AskyEvent, Error, Submitter};
+use crate::{construct::*, AskyEvent, Error, Submitter, Focusable, Focus};
 use bevy::{
     a11y::{accesskit::*, *},
     prelude::*,
 };
+#[cfg(feature = "focus")]
 use bevy_alt_ui_navigation_lite::prelude::*;
 use std::borrow::Cow;
 
@@ -38,14 +39,15 @@ impl Construct for Radio {
 }
 
 fn radio_controller(
-    mut query: Query<(Entity, &mut Radio, Option<&Parent>, &Focusable)>,
+    focus: Focus,
+    mut query: Query<(Entity, &mut Radio, Option<&Parent>)>,
     child_query: Query<&Children>,
     input: Res<ButtonInput<KeyCode>>,
     mut toggled: Local<Vec<(Entity, Entity)>>,
 ) {
     toggled.clear();
-    for (id, mut radio, parent, focusable) in query.iter_mut() {
-        if FocusState::Focused != focusable.state() {
+    for (id, mut radio, parent) in query.iter_mut() {
+        if !focus.is_focused(id) {
             continue;
         }
         if input.any_just_pressed([
@@ -79,7 +81,7 @@ fn radio_controller(
             if *child == toggled_child {
                 continue;
             }
-            if let Ok((_, mut radio, _, _)) = query.get_mut(*child) {
+            if let Ok((_, mut radio, _)) = query.get_mut(*child) {
                 radio.checked = false;
             }
         }
@@ -139,10 +141,10 @@ impl Construct for RadioGroup {
 
 fn radio_group_controller(
     mut query: Query<(Entity, &RadioGroup, &Children)>,
-    radios: Query<(&Radio, &Focusable)>,
+    radios: Query<(Entity, &Radio)>,
+    focus: Focus,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
-    mut requests: EventWriter<NavRequest>,
 ) {
     if !input.any_just_pressed([KeyCode::Escape, KeyCode::Enter]) {
         return;
@@ -150,12 +152,12 @@ fn radio_group_controller(
     for (id, group, children) in query.iter_mut() {
         if radios
             .iter_many(children)
-            .any(|(_, focusable)| matches!(focusable.state(), FocusState::Focused))
+            .any(|(id, _)| focus.is_focused(id))
         {
             if input.just_pressed(KeyCode::Enter) {
                 let selection = radios
                     .iter_many(children)
-                    .position(|(radio, _)| radio.checked);
+                    .position(|(_, radio)| radio.checked);
 
                 commands.trigger_targets(AskyEvent(selection.ok_or(Error::InvalidInput)), id);
                 // requests.send(NavRequest::ScopeMove(ScopeDirection::Next));

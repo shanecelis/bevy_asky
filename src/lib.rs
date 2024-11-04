@@ -1,9 +1,9 @@
 // #![feature(round_char_boundary)]
 #![allow(clippy::type_complexity)]
 use bevy::prelude::*;
-use bevy_alt_ui_navigation_lite::{prelude::*, systems::InputMapping};
+
 use futures::channel::oneshot;
-//mod focus;
+mod focus;
 use std::borrow::Cow;
 
 #[cfg(feature = "async")]
@@ -14,6 +14,7 @@ pub mod prompt;
 mod string_cursor;
 pub mod view;
 
+pub use focus::*;
 pub use num_like::*;
 #[cfg(feature = "async")]
 pub use r#async::*;
@@ -29,13 +30,18 @@ pub struct AskyPlugin;
 
 impl Plugin for AskyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(prompt::plugin)
-            .add_plugins(DefaultNavigationPlugins)
-            .add_systems(Startup, setup);
+        app
+            .add_plugins(prompt::plugin);
+
+        #[cfg(feature = "focus")]
+        app
+            .add_systems(Startup, setup)
+            .add_plugins(DefaultNavigationPlugins);
     }
 }
 
-fn setup(commands: Commands, mut input_mapping: ResMut<InputMapping>) {
+#[cfg(feature = "focus")]
+fn setup(mut input_mapping: ResMut<InputMapping>) {
     input_mapping.keyboard_navigation = true;
 }
 
