@@ -28,7 +28,7 @@ use bevy::{
         }
 
         pub fn set_keyboard_nav(&mut self, on: bool) {
-            self.input_mapping.keyboard_navigation = !any_focused_text;
+            self.input_mapping.keyboard_navigation = on;
         }
 
         pub fn block(&mut self, id: Entity) {
@@ -53,16 +53,25 @@ mod ui_navigation {
 
     #[derive(SystemParam)]
     pub struct Focus<'w, 's> {
-        focus: Query<'w, 's, &'static mut AskyState>,
+        query: Query<'w, 's, &'static mut AskyState>,
+        focus_maybe: Option<ResMut<'w, bevy::a11y::Focus>>,
     }
 
     impl<'w, 's> Focus<'w, 's> {
         pub fn is_focused(&self, id: Entity) -> bool {
-            self.focus.get(id).map(|asky_state| matches!(asky_state, AskyState::Reading)).unwrap_or(true)
+            self.query.get(id).map(|asky_state| matches!(asky_state, AskyState::Reading)).unwrap_or(true)
+        }
+
+        pub fn unfocus(&mut self, id: Entity, is_complete: bool)  {
+            self.query.get_mut(id).map(|mut asky_state| *asky_state = if is_complete {
+                AskyState::Complete
+            } else {
+                AskyState::Error
+            });
         }
 
         pub fn move_focus(&mut self, id: Entity)  {
-            self.focus.get_mut(id).map(|mut asky_state| *asky_state = AskyState::Complete);
+            self.query.get_mut(id).map(|mut asky_state| *asky_state = AskyState::Complete);
             // self.requests.send(NavRequest::Move(NavDirection::South));
         }
 
@@ -74,4 +83,5 @@ mod ui_navigation {
         }
     }
 }
+
 pub use ui_navigation::*;

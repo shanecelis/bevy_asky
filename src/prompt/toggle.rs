@@ -54,16 +54,15 @@ impl Construct for Toggle {
 }
 
 fn toggle_controller(
-    mut query: Query<(Entity, &mut AskyState, &mut Toggle)>,
+    mut query: Query<(Entity, &mut Toggle)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
-    focus: Focus,
+    mut focus: Focus,
 ) {
-    for (id, mut state, mut toggle) in query.iter_mut() {
+    for (id, mut toggle) in query.iter_mut() {
         if !focus.is_focused(id) {
             continue;
         }
-        if let AskyState::Reading = *state {
             if input.any_just_pressed([
                 KeyCode::KeyH,
                 KeyCode::ArrowLeft,
@@ -80,15 +79,14 @@ fn toggle_controller(
                 }
                 if input.just_pressed(KeyCode::Enter) {
                     commands.trigger_targets(AskyEvent(Ok(toggle.index)), id);
-                    *state = AskyState::Complete;
+                    focus.unfocus(id, true);
                 }
 
                 if input.just_pressed(KeyCode::Escape) {
                     commands.trigger_targets(AskyEvent::<bool>(Err(Error::Cancel)), id);
-                    *state = AskyState::Error;
+                    focus.unfocus(id, false);
                     commands.entity(id).insert(Feedback::error("canceled"));
                 }
             }
-        }
     }
 }

@@ -82,19 +82,18 @@ impl Construct for TextField {
 fn text_controller(
     mut focus: Focus,
     mut query: Query<
-        (Entity, &mut AskyState, &mut StringCursor),
+        (Entity, &mut StringCursor),
         Or<(With<TextField>, With<Password>)>,
     >,
     mut input: EventReader<KeyboardInput>,
     mut commands: Commands,
 ) {
     let mut any_focused_text = false;
-    for (id, mut state, mut text_state) in query.iter_mut() {
+    for (id, mut text_state) in query.iter_mut() {
         if !focus.is_focused(id) {
             continue;
         }
         any_focused_text |= true;
-        if let AskyState::Reading = *state {
             for ev in input.read() {
                 if ev.state != ButtonState::Pressed {
                     continue;
@@ -112,18 +111,15 @@ fn text_controller(
                     Key::ArrowRight => text_state.move_cursor(CursorDirection::Right),
                     Key::Enter => {
                         commands.trigger_targets(AskyEvent(Ok(text_state.value.clone())), id);
-                        focus.move_focus(id);
-                        *state = AskyState::Complete;
+                        focus.unfocus(id, true);
                     }
                     Key::Escape => {
                         commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
                         commands.entity(id).insert(Feedback::error("canceled"));
-
-                        *state = AskyState::Error;
+                        focus.unfocus(id, false);
                     }
                     x => info!("Unhandled key {x:?}"),
                 }
-            }
         }
     }
     focus.set_keyboard_nav(!any_focused_text);

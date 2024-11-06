@@ -100,57 +100,56 @@ impl<T: NumLike> Number<T> {
 }
 
 fn number_controller<T: NumLike + Sync + 'static + TypePath>(
-    mut query: Query<(Entity, &mut AskyState, &mut StringCursor), With<Number<T>>>,
+    mut query: Query<(Entity, &mut StringCursor), With<Number<T>>>,
     mut input: EventReader<KeyboardInput>,
     mut commands: Commands,
     mut focus: Focus,
 ) {
-    for (id, mut state, mut text_state) in query.iter_mut() {
+    for (id, mut text_state) in query.iter_mut() {
         if !focus.is_focused(id) {
             continue;
         }
-        if let AskyState::Reading = *state {
-            for ev in input.read() {
-                if ev.state != ButtonState::Pressed {
-                    continue;
-                }
-                commands.entity(id).remove::<Feedback>();
-                match &ev.logical_key {
-                    Key::Character(s) => {
-                        for c in s.chars() {
-                            if T::is_valid(c, &text_state) {
-                                text_state.insert(c);
-                            }
+        for ev in input.read() {
+            if ev.state != ButtonState::Pressed {
+                continue;
+            }
+            commands.entity(id).remove::<Feedback>();
+            match &ev.logical_key {
+                Key::Character(s) => {
+                    for c in s.chars() {
+                        if T::is_valid(c, &text_state) {
+                            text_state.insert(c);
                         }
                     }
-                    Key::Space => text_state.insert(' '),
-                    Key::Backspace => text_state.backspace(),
-                    Key::Delete => text_state.delete(),
-                    Key::ArrowLeft => text_state.move_cursor(CursorDirection::Left),
-                    Key::ArrowRight => text_state.move_cursor(CursorDirection::Right),
-                    Key::Enter => {
-                        match T::from_str(&text_state.value) {
-                            Ok(number) => {
-                                commands.trigger_targets(AskyEvent(Ok(number)), id);
-                                focus.move_focus(id);
-                            }
-                            Err(_) => {
-                                commands
-                                    .trigger_targets(AskyEvent::<T>(Err(Error::InvalidNumber)), id);
-                                commands.entity(id).insert(Feedback::warn(format!(
-                                    "invalid number for {}",
-                                    T::short_type_path()
-                                )));
-                            }
+                }
+                Key::Space => text_state.insert(' '),
+                Key::Backspace => text_state.backspace(),
+                Key::Delete => text_state.delete(),
+                Key::ArrowLeft => text_state.move_cursor(CursorDirection::Left),
+                Key::ArrowRight => text_state.move_cursor(CursorDirection::Right),
+                Key::Enter => {
+                    match T::from_str(&text_state.value) {
+                        Ok(number) => {
+                            commands.trigger_targets(AskyEvent(Ok(number)), id);
+                            focus.unfocus(id, true);
+                            focus.move_focus(id);
+                        }
+                        Err(_) => {
+                            commands
+                                .trigger_targets(AskyEvent::<T>(Err(Error::InvalidNumber)), id);
+                            commands.entity(id).insert(Feedback::warn(format!(
+                                "invalid number for {}",
+                                T::short_type_path()
+                            )));
                         }
                     }
-                    Key::Escape => {
-                        commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
-                        commands.entity(id).insert(Feedback::error("canceled"));
-                        *state = AskyState::Error;
-                    }
-                    x => info!("Unhandled key {x:?}"),
                 }
+                Key::Escape => {
+                    commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
+                    commands.entity(id).insert(Feedback::error("canceled"));
+                    focus.unfocus(id, false);
+                }
+                x => info!("Unhandled key {x:?}"),
             }
         }
     }
