@@ -263,7 +263,7 @@ pub(crate) fn clear_feedback<T: Component>(
 }
 
 pub(crate) fn focus_view(
-    focus: Res<Focus>,
+    focus: Focus,
     mut query: Query<Entity, (With<View>, Changed<Focusable>)>,
     mut writer: Inserter<Text>,
     palette: Res<Palette>,
@@ -318,15 +318,14 @@ pub(crate) fn text_view(
             With<View>,
             Without<Password>,
             Or<(Changed<StringCursor>,
-                Changed<Focusable>
-            )>,
+                Changed<Focusable>)>,
         ),
     >,
     mut texts: Query<&mut Text>, //, &mut BackgroundColor)>,
     mut sections: Query<&Children>,
     palette: Res<Palette>,
     mut commands: Commands,
-    focus: Res<Focus>,
+    focus: Focus,
 ) {
     for (root, text_state, children, placeholder) in query.iter() {
         let index = ViewPart::Answer as usize;
@@ -419,7 +418,7 @@ pub(crate) fn password_view(
     mut sections: Query<&Children>,
     palette: Res<Palette>,
     mut commands: Commands,
-    focus: Res<Focus>,
+    focus: Focus,
 ) {
     for (root, text_state, children, placeholder) in query.iter_mut() {
         let glyph = "*";
@@ -624,7 +623,7 @@ pub(crate) fn checkbox_view(
     >,
     palette: Res<Palette>,
     mut writer: Inserter<Text>,
-    focus: Res<Focus>,
+    focus: Focus,
 ) {
     for (id, checkbox) in query.iter_mut() {
         writer
@@ -651,7 +650,7 @@ pub(crate) fn radio_view(
     >,
     palette: Res<Palette>,
     mut writer: Inserter<Text>,
-    focus: Res<Focus>,
+    focus: Focus,
 ) {
     for (id, radio) in query.iter_mut() {
         writer

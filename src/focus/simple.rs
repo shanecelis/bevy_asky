@@ -6,6 +6,9 @@ use bevy::{
     prelude::*
 };
 
+mod private {
+    use bevy::prelude::*;
+
 #[derive(Resource, Deref, DerefMut, Default, Debug)]
 pub struct Focus(pub Option<Entity>);
 
@@ -14,6 +17,19 @@ impl Focus {
         self.map(|f| f == id).unwrap_or(false)
     }
 }
+}
+
+#[derive(SystemParam)]
+pub struct Focus<'w> {
+    focus: Res<'w, private::Focus>,
+}
+
+impl<'w> Focus<'w> {
+    pub fn is_focused(&self, id: Entity) -> bool {
+        self.focus.is_focused(id)
+    }
+}
+
 
 #[derive(Resource, Deref, DerefMut, Default, Debug)]
 pub struct Foci(Vec<Entity>);
@@ -39,7 +55,7 @@ impl Focusable {
 pub fn plugin(app: &mut App) {
     app
         .init_resource::<Foci>()
-        .insert_resource(Focus(None))
+        .insert_resource(private::Focus(None))
         .insert_resource(KeyboardNav(true))
         .add_systems(Update, (focus_on_tab,
                               reset_focus));
@@ -50,7 +66,7 @@ pub fn plugin(app: &mut App) {
 #[derive(SystemParam)]
 pub struct FocusParam<'w, 's> {
     query: Query<'w, 's, (Entity, &'static mut Focusable)>,
-    focus: ResMut<'w, Focus>,
+    focus: ResMut<'w, private::Focus>,
     keyboard_nav: ResMut<'w, KeyboardNav>,
     foci: ResMut<'w, Foci>,
     commands: Commands<'w, 's>,

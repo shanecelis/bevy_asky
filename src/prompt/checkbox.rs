@@ -56,7 +56,7 @@ impl Construct for Checkbox {
 
 
 fn checkbox_controller(
-    focus: Res<Focus>,
+    focus: Focus,
     mut query: Query<(Entity, &mut Checkbox)>,
     input: Res<ButtonInput<KeyCode>>,
     // mut requests: EventWriter<NavRequest>,

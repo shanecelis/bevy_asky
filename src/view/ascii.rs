@@ -88,7 +88,7 @@ pub(crate) fn confirm_view(
         (With<View>, Or<(Changed<Focusable>,
                          Changed<Confirm>,)>),
     >,
-    focus: Res<Focus>,
+    focus: Focus,
 ) {
     for (id, confirm, mut text) in query.iter_mut() {
         text.sections[ViewPart::Options as usize]
@@ -139,7 +139,7 @@ pub(crate) fn header_view(
 
 pub(crate) fn focus_view(
     mut query: Query<(Entity, &mut Text), (With<View>, Changed<Focusable>)>,
-    focus: Res<Focus>,
+    focus: Focus,
 ) {
     for (id, mut text) in query.iter_mut() {
         if focus.is_focused(id) {

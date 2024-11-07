@@ -1,4 +1,8 @@
-use bevy_alt_ui_navigation_lite::{prelude::*, systems::InputMapping};
+use bevy_alt_ui_navigation_lite::{
+    prelude::*,
+    systems::InputMapping,
+    events::Direction as NavDirection
+};
 use bevy::{
     ecs::{
         system::{
@@ -18,19 +22,32 @@ fn setup(mut input_mapping: ResMut<InputMapping>) {
     input_mapping.keyboard_navigation = true;
 }
 
+pub use bevy_alt_ui_navigation_lite::prelude::Focusable;
+
 #[derive(SystemParam)]
 pub struct Focus<'w, 's> {
-    focus: Query<'w, 's, &'static mut Focusable>,
-    requests: EventWriter<NavRequest>,
-    input_mapping: ResMut<InputMapping>,
+    query: Query<'w, 's, &'static Focused>,
 }
 
 impl<'w, 's> Focus<'w, 's> {
     pub fn is_focused(&self, id: Entity) -> bool {
+        self.query.get(id).is_ok()
+    }
+}
+
+#[derive(SystemParam)]
+pub struct FocusParam<'w, 's> {
+    focus: Query<'w, 's, &'static mut Focusable>,
+    requests: EventWriter<'w, NavRequest>,
+    input_mapping: ResMut<'w, InputMapping>,
+}
+
+impl<'w, 's> FocusParam<'w, 's> {
+    pub fn is_focused(&self, id: Entity) -> bool {
         self.focus.get(id).map(|focusable| FocusState::Focused == focusable.state()).unwrap_or(true)
     }
 
-    pub fn move_focus(&mut self, _id: Entity)  {
+    pub fn move_focus(&mut self, _id_maybe: impl Into<Option<Entity>>)  {
         self.requests.send(NavRequest::Move(NavDirection::South));
     }
 
@@ -38,55 +55,22 @@ impl<'w, 's> Focus<'w, 's> {
         self.input_mapping.keyboard_navigation = on;
     }
 
-    pub fn block(&mut self, id: Entity) {
-        self.focus.get_mut(id).map(|focusable| *focusable = Focusable::new().blocked());
+    pub fn block(&mut self, id_maybe: impl Into<Option<Entity>>) {
+        if let Some(id) = id_maybe.into() {
+            self.move_focus(id);
+            self.focus.get_mut(id).map(|mut focusable| {
+                if !focusable.block() {
+                    warn!("Unable to block focusable. Is it the only one?");
+                }
+            }).unwrap();
+        } else {
+            todo!();
+        }
+    }
+
+    pub fn block_and_move(&mut self, id_maybe: impl Into<Option<Entity>>) {
+        let id = id_maybe.into();
+        self.block(id.clone());
         self.move_focus(id);
     }
 }
-
-
-// #[cfg(not(feature = "focus"))]
-// mod ui_navigation {
-//     use bevy::{
-//         ecs::{
-//             system::{
-//                 SystemParam,
-//             }
-//         },
-//         prelude::*,
-//     };
-//     use crate::AskyState;
-//     pub type Focusable = AskyState;
-
-//     #[derive(SystemParam)]
-//     pub struct Focus<'w, 's> {
-//         query: Query<'w, 's, &'static mut AskyState>,
-//         focus_maybe: Option<ResMut<'w, bevy::a11y::Focus>>,
-//     }
-
-//     impl<'w, 's> Focus<'w, 's> {
-//         pub fn is_focused(&self, id: Entity) -> bool {
-//             self.query.get(id).map(|asky_state| matches!(asky_state, AskyState::Reading)).unwrap_or(true)
-//         }
-
-//         pub fn unfocus(&mut self, id: Entity, is_complete: bool)  {
-//             self.query.get_mut(id).map(|mut asky_state| *asky_state = if is_complete {
-//                 AskyState::Complete
-//             } else {
-//                 AskyState::Error
-//             });
-//         }
-
-//         pub fn move_focus(&mut self, id: Entity)  {
-//             self.query.get_mut(id).map(|mut asky_state| *asky_state = AskyState::Complete);
-//             // self.requests.send(NavRequest::Move(NavDirection::South));
-//         }
-
-//         pub fn set_keyboard_nav(&mut self, _on: bool) {
-//         }
-
-//         pub fn block(&mut self, id: Entity) {
-//             todo!();
-//         }
-//     }
-// }
