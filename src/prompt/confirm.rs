@@ -1,6 +1,6 @@
 use super::{Feedback, Prompt};
 use crate::construct::*;
-use crate::{AskyChange, AskyEvent, AskyState, Error, Focus, Focusable};
+use crate::{AskyChange, AskyEvent, AskyState, Error, FocusParam, Focusable};
 use bevy::prelude::*;
 #[cfg(feature = "focus")]
 use bevy_alt_ui_navigation_lite::{events::Direction as NavDirection, prelude::*};
@@ -39,7 +39,7 @@ fn confirm_controller(
     mut query: Query<(Entity, &mut Confirm)>, // &mut AskyState)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
-    mut focus: Focus,
+    mut focus: FocusParam,
 ) {
     for (id, mut confirm) in query.iter_mut() {
         if !focus.is_focused(id) {

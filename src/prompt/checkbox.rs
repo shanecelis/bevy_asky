@@ -1,5 +1,5 @@
 use super::{Feedback, Prompt};
-use crate::{construct::*, AskyEvent, Error, Submitter, AskyState, focus::Focus, Focusable};
+use crate::{construct::*, AskyEvent, Error, Submitter, AskyState, Focus, Focusable, FocusParam};
 use bevy::{
     ecs::{
         system::{
@@ -9,11 +9,6 @@ use bevy::{
     prelude::*,
 };
 
-#[cfg(feature = "focus")]
-use bevy_alt_ui_navigation_lite::{
-    events::{Direction as NavDirection, ScopeDirection},
-    prelude::*,
-};
 use std::borrow::Cow;
 
 #[derive(Component, Reflect)]
@@ -61,7 +56,7 @@ impl Construct for Checkbox {
 
 
 fn checkbox_controller(
-    focus: Focus,
+    focus: Res<Focus>,
     mut query: Query<(Entity, &mut Checkbox)>,
     input: Res<ButtonInput<KeyCode>>,
     // mut requests: EventWriter<NavRequest>,
@@ -167,7 +162,7 @@ fn checkbox_group_controller(
     checkboxes: Query<(Entity, &Checkbox)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
-    mut focus: Focus,
+    mut focus: FocusParam,
 ) {
     if input.any_just_pressed([KeyCode::Escape, KeyCode::Enter]) {
         for (id, group, children) in query.iter_mut() {

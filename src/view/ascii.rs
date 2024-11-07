@@ -4,7 +4,9 @@ use crate::{
     prompt::{
         Checkbox, CheckboxGroup, Confirm, Feedback, Password, Placeholder, Prompt, Radio, Toggle,
     },
+    Focusable,
     Focus,
+    FocusParam,
     AskyState, StringCursor,
 };
 use bevy::prelude::*;
@@ -83,10 +85,10 @@ pub fn plugin(app: &mut App) {
 pub(crate) fn confirm_view(
     mut query: Query<
         (Entity, &Confirm, &mut Text),
-        (With<View>, Or<(//Changed<Focusable>,
+        (With<View>, Or<(Changed<Focusable>,
                          Changed<Confirm>,)>),
     >,
-    focus: Focus,
+    focus: Res<Focus>,
 ) {
     for (id, confirm, mut text) in query.iter_mut() {
         text.sections[ViewPart::Options as usize]
@@ -136,9 +138,8 @@ pub(crate) fn header_view(
 }
 
 pub(crate) fn focus_view(
-    mut query: Query<(Entity, &mut Text), (With<View>, //Changed<Focusable>
-    )>,
-    focus: Focus,
+    mut query: Query<(Entity, &mut Text), (With<View>, Changed<Focusable>)>,
+    focus: Res<Focus>,
 ) {
     for (id, mut text) in query.iter_mut() {
         if focus.is_focused(id) {

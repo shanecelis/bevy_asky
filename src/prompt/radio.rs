@@ -39,7 +39,7 @@ impl Construct for Radio {
 }
 
 fn radio_controller(
-    focus: Focus,
+    focus: Res<Focus>,
     mut query: Query<(Entity, &mut Radio, Option<&Parent>)>,
     child_query: Query<&Children>,
     input: Res<ButtonInput<KeyCode>>,
@@ -142,7 +142,7 @@ impl Construct for RadioGroup {
 fn radio_group_controller(
     mut query: Query<(Entity, &RadioGroup, &Children)>,
     radios: Query<(Entity, &Radio)>,
-    focus: Focus,
+    focus: Res<Focus>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
 ) {

@@ -1,6 +1,6 @@
 use super::{Feedback, Prompt};
 use crate::construct::*;
-use crate::{AskyEvent, AskyState, Error, Focus, Focusable};
+use crate::{AskyEvent, AskyState, Error, Focus, Focusable, FocusParam};
 use bevy::prelude::*;
 #[cfg(feature = "focus")]
 use bevy_alt_ui_navigation_lite::prelude::*;
@@ -57,7 +57,7 @@ fn toggle_controller(
     mut query: Query<(Entity, &mut Toggle)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
-    mut focus: Focus,
+    mut focus: FocusParam,
 ) {
     for (id, mut toggle) in query.iter_mut() {
         if !focus.is_focused(id) {
@@ -84,7 +84,7 @@ fn toggle_controller(
 
                 if input.just_pressed(KeyCode::Escape) {
                     commands.trigger_targets(AskyEvent::<bool>(Err(Error::Cancel)), id);
-                    focus.move_focus();
+                    focus.move_focus(id);
                     // focus.unfocus(id, false);
                     commands.entity(id).insert(Feedback::error("canceled"));
                 }

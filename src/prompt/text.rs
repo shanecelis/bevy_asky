@@ -1,6 +1,6 @@
 use super::{Feedback, Password, Prompt};
 use crate::construct::*;
-use crate::{AskyEvent, AskyState, CursorDirection, Error, StringCursor, Submitter, Focus, Focusable};
+use crate::{AskyEvent, AskyState, CursorDirection, Error, StringCursor, Submitter, Focus, Focusable, FocusParam};
 use bevy::{
     input::{
         keyboard::{Key, KeyboardInput},
@@ -80,7 +80,7 @@ impl Construct for TextField {
 }
 
 fn text_controller(
-    mut focus: Focus,
+    mut focus: FocusParam,
     mut query: Query<
         (Entity, &mut StringCursor),
         Or<(With<TextField>, With<Password>)>,

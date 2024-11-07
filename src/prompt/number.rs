@@ -1,6 +1,6 @@
 use super::{Feedback, Prompt};
 use crate::construct::*;
-use crate::{AskyEvent, AskyState, Error, NumLike, CursorDirection, StringCursor, Focus, Focusable};
+use crate::{AskyEvent, AskyState, Error, NumLike, CursorDirection, StringCursor, Focus, Focusable, FocusParam};
 use bevy::{
     input::{
         keyboard::{Key, KeyboardInput},
@@ -103,7 +103,7 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
     mut query: Query<(Entity, &mut StringCursor), With<Number<T>>>,
     mut input: EventReader<KeyboardInput>,
     mut commands: Commands,
-    mut focus: Focus,
+    mut focus: FocusParam,
 ) {
     for (id, mut text_state) in query.iter_mut() {
         if !focus.is_focused(id) {

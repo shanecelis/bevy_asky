@@ -263,10 +263,8 @@ pub(crate) fn clear_feedback<T: Component>(
 }
 
 pub(crate) fn focus_view(
-    focus: Focus,
-    mut query: Query<Entity, (With<View>,
-                                            //Changed<Focusable>
-    )>,
+    focus: Res<Focus>,
+    mut query: Query<Entity, (With<View>, Changed<Focusable>)>,
     mut writer: Inserter<Text>,
     palette: Res<Palette>,
 ) {
@@ -314,13 +312,13 @@ pub(crate) fn header_view(
 }
 
 pub(crate) fn text_view(
-    mut query: Query<
+    query: Query<
         (Entity, &StringCursor, &Children, Option<&Placeholder>),
         (
             With<View>,
             Without<Password>,
             Or<(Changed<StringCursor>,
-                //Changed<Focusable>
+                Changed<Focusable>
             )>,
         ),
     >,
@@ -328,9 +326,9 @@ pub(crate) fn text_view(
     mut sections: Query<&Children>,
     palette: Res<Palette>,
     mut commands: Commands,
-    focus: Focus,
+    focus: Res<Focus>,
 ) {
-    for (root, text_state, children, placeholder) in query.iter_mut() {
+    for (root, text_state, children, placeholder) in query.iter() {
         let index = ViewPart::Answer as usize;
         let id = if index < children.len() {
             children[index]
@@ -413,7 +411,7 @@ pub(crate) fn password_view(
             With<View>,
             With<Password>,
             Or<(Changed<StringCursor>,
-           //     Changed<Focusable>
+               Changed<Focusable>
             )>,
         ),
     >,
@@ -421,7 +419,7 @@ pub(crate) fn password_view(
     mut sections: Query<&Children>,
     palette: Res<Palette>,
     mut commands: Commands,
-    focus: Focus,
+    focus: Res<Focus>,
 ) {
     for (root, text_state, children, placeholder) in query.iter_mut() {
         let glyph = "*";
@@ -622,12 +620,11 @@ pub(crate) fn checkbox_view(
     mut query: Query<
         (Entity, &Checkbox),
         (With<View>, Or<(Changed<Checkbox>,
-                         //Changed<Focusable>
-        )>),
+                         Changed<Focusable>)>),
     >,
     palette: Res<Palette>,
     mut writer: Inserter<Text>,
-    focus: Focus,
+    focus: Res<Focus>,
 ) {
     for (id, checkbox) in query.iter_mut() {
         writer
@@ -650,12 +647,11 @@ pub(crate) fn radio_view(
     mut query: Query<
         (Entity, &Radio),
         (With<View>, Or<(Changed<Radio>,
-                         //Changed<Focusable>
-        )>),
+                         Changed<Focusable>)>),
     >,
     palette: Res<Palette>,
     mut writer: Inserter<Text>,
-    focus: Focus,
+    focus: Res<Focus>,
 ) {
     for (id, radio) in query.iter_mut() {
         writer
