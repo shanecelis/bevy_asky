@@ -31,19 +31,11 @@ pub struct AskyPlugin;
 impl Plugin for AskyPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_plugins(prompt::plugin);
-
-        #[cfg(feature = "focus")]
-        app
-            .add_systems(Startup, setup)
-            .add_plugins(DefaultNavigationPlugins);
+            .add_plugins(prompt::plugin)
+            .add_plugins(focus::plugin);
     }
 }
 
-#[cfg(feature = "focus")]
-fn setup(mut input_mapping: ResMut<InputMapping>) {
-    input_mapping.keyboard_navigation = true;
-}
 
 #[derive(Event, Deref, DerefMut, Debug, Clone)]
 pub struct AskyEvent<T>(pub Result<T, Error>);

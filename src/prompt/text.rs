@@ -111,12 +111,12 @@ fn text_controller(
                     Key::ArrowRight => text_state.move_cursor(CursorDirection::Right),
                     Key::Enter => {
                         commands.trigger_targets(AskyEvent(Ok(text_state.value.clone())), id);
-                        focus.unfocus(id, true);
+                        focus.block_and_move(id);
                     }
                     Key::Escape => {
                         commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
                         commands.entity(id).insert(Feedback::error("canceled"));
-                        focus.unfocus(id, false);
+                        focus.block(id);
                     }
                     x => info!("Unhandled key {x:?}"),
                 }
