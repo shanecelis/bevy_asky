@@ -3,27 +3,22 @@
 use bevy::prelude::*;
 
 use futures::channel::oneshot;
-mod focus;
+pub(crate) mod focus;
 use std::borrow::Cow;
 
-#[cfg(feature = "async")]
-mod r#async;
 pub mod construct;
 mod num_like;
 pub mod prompt;
-mod string_cursor;
+pub(crate) mod string_cursor;
 pub mod view;
+#[cfg(feature = "async")]
+mod r#async;
 
-pub use focus::*;
-pub use num_like::*;
 #[cfg(feature = "async")]
 pub use r#async::*;
-pub use string_cursor::*;
 
 pub mod prelude {
-    pub use super::*;
-    pub use prompt::*;
-    pub use view::*;
+    pub use super::{AskyPlugin, AskyEvent, AskyChange, Submitter, Error, construct::*, prompt::*, view::*, focus::*, num_like::NumLike};
 }
 
 pub struct AskyPlugin;

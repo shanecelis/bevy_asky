@@ -1,16 +1,6 @@
+use crate::{prelude::*, string_cursor::*,};
 use super::replace_or_insert_rep;
-use crate::construct::*;
-use crate::{
-    prompt::{
-        Checkbox, Confirm, Feedback, Password, Placeholder, Prompt, Radio, Toggle,
-    },
-    Focusable,
-    Focus,
-    StringCursor,
-};
 use bevy::prelude::*;
-#[cfg(feature = "focus")]
-use bevy_alt_ui_navigation_lite::prelude::*;
 use std::fmt::Write;
 
 #[repr(u8)]

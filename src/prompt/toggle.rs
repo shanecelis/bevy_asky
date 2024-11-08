@@ -1,9 +1,5 @@
-use super::{Feedback, Prompt};
-use crate::construct::*;
-use crate::{AskyEvent, Error, Focusable, FocusParam};
+use crate::{construct::*, prelude::*};
 use bevy::prelude::*;
-#[cfg(feature = "focus")]
-use bevy_alt_ui_navigation_lite::prelude::*;
 use std::borrow::Cow;
 
 #[derive(Component, Clone, Reflect)]

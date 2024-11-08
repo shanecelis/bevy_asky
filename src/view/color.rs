@@ -1,5 +1,4 @@
-use crate::construct::*;
-use crate::prelude::*;
+use crate::{construct::*, prelude::*, string_cursor::*};
 use bevy::{
     ecs::{
         system::SystemParam,

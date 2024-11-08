@@ -1,9 +1,9 @@
-use super::Prompt;
-use crate::construct::*;
-use crate::{StringCursor, Focusable};
+use crate::{
+    string_cursor::*,
+    construct::*,
+    prelude::*,
+};
 use bevy::prelude::*;
-#[cfg(feature = "focus")]
-use bevy_alt_ui_navigation_lite::prelude::*;
 use std::borrow::Cow;
 
 pub fn plugin(app: &mut App) {}

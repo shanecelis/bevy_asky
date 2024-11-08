@@ -1,6 +1,7 @@
-use super::{Feedback, Prompt};
-use crate::construct::*;
-use crate::{AskyEvent, Error, NumLike, CursorDirection, StringCursor, Focusable, FocusParam};
+use crate::{prelude::*,
+            string_cursor::*,
+            construct::*,
+};
 use bevy::{
     input::{
         keyboard::{Key, KeyboardInput},
@@ -8,8 +9,6 @@ use bevy::{
     },
     prelude::*,
 };
-#[cfg(feature = "focus")]
-use bevy_alt_ui_navigation_lite::{events::Direction as NavDirection, prelude::*};
 use std::borrow::Cow;
 
 pub fn plugin(app: &mut App) {

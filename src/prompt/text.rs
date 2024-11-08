@@ -1,18 +1,13 @@
-use super::{Feedback, Password, Prompt};
-use crate::construct::*;
-use crate::{AskyEvent, CursorDirection, Error, StringCursor, Submitter, Focusable, FocusParam};
+use crate::{
+    string_cursor::*,
+    prelude::*,
+};
 use bevy::{
     input::{
         keyboard::{Key, KeyboardInput},
         ButtonState,
     },
     prelude::*,
-};
-#[cfg(feature = "focus")]
-use bevy_alt_ui_navigation_lite::{
-    prelude::*,
-    systems::InputMapping,
-    events::Direction as NavDirection
 };
 use std::borrow::Cow;
 

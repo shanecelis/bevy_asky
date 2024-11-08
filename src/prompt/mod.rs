@@ -134,7 +134,8 @@ pub enum FeedbackKind {
 }
 
 pub(crate) fn plugin(app: &mut App) {
-    app.register_type::<Confirm>()
+    app
+        .register_type::<Confirm>()
         .register_type::<Prompt>()
         .register_type::<Feedback>()
         .register_type::<FeedbackKind>()

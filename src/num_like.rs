@@ -1,5 +1,5 @@
 //! Number like trait
-use crate::StringCursor;
+use crate::string_cursor::StringCursor;
 use std::{fmt::Display, str::FromStr};
 
 /// A utility trait to allow only numbers in [`Number`] prompt.
