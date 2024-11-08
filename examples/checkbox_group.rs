@@ -27,14 +27,14 @@ fn main() {
 fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
-    let root = commands.column().with_children(|parent| {
+    commands.column().with_children(|parent| {
         parent.spawn(TextBundle::from("checkbox group 0"));
 
         parent
             .construct::<color::View>(())
             .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
             .observe(
-                move |trigger: Trigger<AskyEvent<Vec<bool>>>, commands: Commands| {
+                move |trigger: Trigger<AskyEvent<Vec<bool>>>| {
                     eprintln!("trigger {:?}", trigger.event());
                 },
             );
@@ -44,7 +44,7 @@ fn setup(mut commands: Commands) {
             .construct::<ascii::View>(())
             .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
             .observe(
-                move |trigger: Trigger<AskyEvent<Vec<bool>>>, commands: Commands| {
+                move |trigger: Trigger<AskyEvent<Vec<bool>>>| {
                     eprintln!("trigger {:?}", trigger.event());
                 },
             );

@@ -64,7 +64,7 @@ pub(crate) fn add_view_to_radio<V>(
 pub(crate) fn replace_or_insert(text: &mut Text, index: usize, replacement: &str) {
     let len = text.sections.len();
     if len <= index {
-        for i in len.saturating_sub(1)..index {
+        for _ in len.saturating_sub(1)..index {
             text.sections.push(TextSection::default());
         }
         text.sections.push(TextSection::from(replacement));
@@ -81,7 +81,7 @@ pub(crate) fn replace_or_insert_rep(
 ) {
     let len = text.sections.len();
     if len <= index {
-        for i in len.saturating_sub(1)..index {
+        for _ in len.saturating_sub(1)..index {
             text.sections.push(TextSection::default());
         }
         // This allocates a string, which is fine because TextSection needs one.

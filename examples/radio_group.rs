@@ -27,7 +27,7 @@ fn main() {
 fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
-    let root = commands.column().with_children(|parent| {
+    commands.column().with_children(|parent| {
         parent
             .construct::<Prompt>("radio group 0")
             .construct::<ascii::View>(());
@@ -35,7 +35,7 @@ fn setup(mut commands: Commands) {
             .construct::<color::View>(())
             .construct::<RadioGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
             .observe(
-                move |trigger: Trigger<AskyEvent<usize>>, commands: Commands| {
+                move |trigger: Trigger<AskyEvent<usize>>| {
                     eprintln!("trigger {:?}", trigger.event());
                 },
             );
@@ -47,7 +47,7 @@ fn setup(mut commands: Commands) {
             .construct::<ascii::View>(())
             .construct::<RadioGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
             .observe(
-                move |trigger: Trigger<AskyEvent<usize>>, commands: Commands| {
+                move |trigger: Trigger<AskyEvent<usize>>| {
                     eprintln!("trigger {:?}", trigger.event());
                 },
             );

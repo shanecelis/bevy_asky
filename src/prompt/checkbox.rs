@@ -116,7 +116,6 @@ impl Construct for CheckboxGroup {
         // Our requirements.
         let mut commands = context.world.commands();
         let mut children = vec![];
-        let group = context.id;
         commands
             .entity(context.id)
             // .insert(Focusable::default())
@@ -150,14 +149,14 @@ impl Construct for CheckboxGroup {
 // fn add_menu_builders(query: Query<&MenuSetting, (Without<MenuBuild
 
 fn checkbox_group_controller(
-    mut query: Query<(Entity, &CheckboxGroup, &Children)>,
+    mut query: Query<(Entity, &Children), With<CheckboxGroup>>,
     checkboxes: Query<(Entity, &Checkbox)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
     mut focus: FocusParam,
 ) {
     if input.any_just_pressed([KeyCode::Escape, KeyCode::Enter]) {
-        for (id, group, children) in query.iter_mut() {
+        for (id, children) in query.iter_mut() {
             if checkboxes
                 .iter_many(children)
                 .any(|(id, _)| focus.is_focused(id))

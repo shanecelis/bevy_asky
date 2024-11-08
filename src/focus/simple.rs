@@ -61,7 +61,6 @@ pub struct FocusParam<'w, 's> {
     query: Query<'w, 's, (Entity, &'static mut Focusable)>,
     focus: ResMut<'w, private::Focus>,
     keyboard_nav: ResMut<'w, KeyboardNav>,
-    commands: Commands<'w, 's>,
 }
 
 impl<'w, 's> FocusParam<'w, 's> {

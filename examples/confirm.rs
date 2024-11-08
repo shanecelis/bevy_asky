@@ -36,7 +36,7 @@ fn setup(mut commands: Commands) {
                 .construct::<Confirm>("Do you like soda?")
                 .construct::<ascii::View>(())
                 .observe(
-                    move |trigger: Trigger<AskyEvent<bool>>, commands: Commands| {
+                    move |trigger: Trigger<AskyEvent<bool>>| {
                         eprintln!("trigger {:?}", trigger.event());
                         // commands.entity(trigger.entity()).remove::<Focusable>();
                     },
@@ -46,7 +46,7 @@ fn setup(mut commands: Commands) {
                 .construct::<Confirm>("Do you like coke?")
                 .construct::<ascii::View>(())
                 .observe(
-                    move |trigger: Trigger<AskyEvent<bool>>, commands: Commands| {
+                    move |trigger: Trigger<AskyEvent<bool>>| {
                         eprintln!("trigger {:?}", trigger.event());
                         // commands.entity(trigger.entity()).remove::<Focusable>();
                     },
@@ -56,7 +56,7 @@ fn setup(mut commands: Commands) {
                 .construct::<Confirm>("Do you like pepsi?")
                 .construct::<ascii::View>(())
                 .observe(
-                    move |trigger: Trigger<AskyEvent<bool>>, commands: Commands| {
+                    move |trigger: Trigger<AskyEvent<bool>>| {
                         eprintln!("trigger {:?}", trigger.event());
                         // commands.entity(trigger.entity()).remove::<Focusable>();
                     },

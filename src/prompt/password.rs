@@ -6,7 +6,7 @@ use crate::{
 use bevy::prelude::*;
 use std::borrow::Cow;
 
-pub fn plugin(app: &mut App) {}
+pub fn plugin(_app: &mut App) {}
 
 /// Prompt to get one-line user input.
 ///

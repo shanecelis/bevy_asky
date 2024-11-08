@@ -14,6 +14,7 @@ thiserror = "1.0.62"
 [features]
 async = [ "dep:bevy_defer" ]
 focus = [ "dep:bevy-alt-ui-navigation-lite" ]
+button = []
 
 [dev-dependencies]
 bevy = { version = "0.14.0" }

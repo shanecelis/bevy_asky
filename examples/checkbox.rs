@@ -35,7 +35,7 @@ fn setup(mut commands: Commands) {
                 .construct::<Checkbox>("Money?")
                 .construct::<ascii::View>(())
                 .observe(
-                    move |trigger: Trigger<AskyEvent<bool>>, commands: Commands| {
+                    move |trigger: Trigger<AskyEvent<bool>>| {
                         eprintln!("trigger {:?}", trigger.event());
                     },
                 );
@@ -44,7 +44,7 @@ fn setup(mut commands: Commands) {
                 .construct::<Checkbox>("Time?")
                 .construct::<ascii::View>(())
                 .observe(
-                    move |trigger: Trigger<AskyEvent<bool>>, commands: Commands| {
+                    move |trigger: Trigger<AskyEvent<bool>>| {
                         eprintln!("trigger {:?}", trigger.event());
                     },
                 );

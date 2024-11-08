@@ -102,7 +102,6 @@ impl Construct for RadioGroup {
         // Our requirements.
         let mut commands = context.world.commands();
         let mut children = vec![];
-        let group = context.id;
         commands
             .entity(context.id)
             // .insert(Focusable::default())
@@ -137,7 +136,7 @@ impl Construct for RadioGroup {
 // fn add_menu_builders(query: Query<&MenuSetting, (Without<MenuBuild
 
 fn radio_group_controller(
-    mut query: Query<(Entity, &RadioGroup, &Children)>,
+    mut query: Query<(Entity, &Children), With<RadioGroup>>,
     radios: Query<(Entity, &Radio)>,
     focus: Focus,
     input: Res<ButtonInput<KeyCode>>,
@@ -146,7 +145,7 @@ fn radio_group_controller(
     if !input.any_just_pressed([KeyCode::Escape, KeyCode::Enter]) {
         return;
     }
-    for (id, group, children) in query.iter_mut() {
+    for (id, children) in query.iter_mut() {
         if radios
             .iter_many(children)
             .any(|(id, _)| focus.is_focused(id))

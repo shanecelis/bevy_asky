@@ -22,6 +22,7 @@ pub use toggle::*;
 pub struct Prompt(pub Cow<'static, str>);
 #[derive(Component, Deref, DerefMut, Reflect)]
 pub struct Placeholder(pub Cow<'static, str>);
+
 #[derive(Component, Reflect)]
 pub struct DefaultValue<T>(pub T);
 // pub struct DefaultValue<T: std::fmt::Display>(pub T);
