@@ -501,17 +501,17 @@ pub(crate) fn password_view(
 
 pub(crate) fn toggle_view(
     mut query: Query<
-        (Entity, &AskyState, &Toggle),
-        (With<View>, Or<(Changed<AskyState>, Changed<Toggle>)>),
+        (Entity, &Toggle),
+        (With<View>, Or<(Changed<Focusable>, Changed<Toggle>)>),
     >,
     palette: Res<Palette>,
     mut commands: Commands,
     mut writer: Inserter<BackgroundColor>,
 ) {
-    for (root, asky_state, toggle) in query.iter_mut() {
+    // TODO: Shouldn't this just show the answer when it is not in focus?
+    for (root, toggle) in query.iter_mut() {
         let id = match writer.insert_or_get_child(root, ViewPart::Options as usize) {
             Ok(options) => {
-
                 writer.insert_or_get_mut(options,
                                 1,
                                 |mut color| {

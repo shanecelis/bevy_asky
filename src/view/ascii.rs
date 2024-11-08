@@ -193,14 +193,14 @@ pub(crate) fn radio_view(mut query: Query<(&Radio, &mut Text), (With<View>, Chan
 
 pub(crate) fn toggle_view(
     mut query: Query<
-        (&AskyState, &Toggle, &mut Text),
-        (With<View>, Or<(Changed<AskyState>, Changed<Toggle>)>),
-    >,
+        (Entity, &Toggle, &mut Text),
+        (With<View>, Or<(Changed<AskyState>, Changed<Toggle>)>)>,
+    focus: Focus,
 ) {
-    for (asky_state, toggle, mut text) in query.iter_mut() {
+    for (id, toggle, mut text) in query.iter_mut() {
         let o = ViewPart::Options as usize;
         text.sections[o].value.clear();
-        if !matches!(asky_state, AskyState::Complete) {
+        if focus.is_focused(id) {
             if toggle.index == 0 {
                 let _ = write!(
                     text.sections[o].value,
