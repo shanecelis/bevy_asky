@@ -6,8 +6,7 @@ use super::{
 use crate::construct::*;
 use crate::{
     prompt::{Confirm, Prompt},
-    AskyEvent, AskyState,
-};
+    AskyEvent, };
 use bevy::color::palettes::basic::*;
 use std::collections::HashMap;
 
@@ -91,11 +90,11 @@ fn button_interaction(
 
 pub(crate) fn confirm_view(
     mut query: Query<
-        (&AskyState, &Confirm, Option<&Prompt>, &Children),
+        (&Confirm, Option<&Prompt>, &Children),
         (
             With<View>,
             With<Confirm>,
-            Or<(Changed<AskyState>, Changed<Confirm>, Changed<Prompt>)>,
+            Or<(Changed<Focusable>, Changed<Confirm>, Changed<Prompt>)>,
         ),
     >,
     mut question: Query<&mut Text, With<Question>>,
@@ -110,7 +109,7 @@ pub(crate) fn confirm_view(
     >,
     color_view: Res<ButtonView>,
 ) {
-    for (asky_state, confirm, prompt, children) in query.iter_mut() {
+    for (confirm, prompt, children) in query.iter_mut() {
         eprint!(".");
 
         for child in children {

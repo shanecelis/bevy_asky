@@ -43,14 +43,6 @@ pub struct AskyEvent<T>(pub Result<T, Error>);
 #[derive(Event, Deref, Debug)]
 pub struct AskyChange<T>(T);
 
-#[derive(Debug, Component, Default, Clone)]
-pub enum AskyState {
-    #[default]
-    Reading,
-    Complete,
-    Error,
-}
-
 // #[derive(Event, Debug)]
 // pub enum AskyEvent<T> {
 //     Change(T),
@@ -72,12 +64,6 @@ pub unsafe trait Submitter {
     /// Output of submitter.
     type Out;
     // fn submit(&self) -> Result<Self::Out, Error>;
-}
-
-impl AskyState {
-    fn is_done(&self) -> bool {
-        matches!(self, AskyState::Complete | AskyState::Error)
-    }
 }
 
 /// Asky errors

@@ -20,12 +20,11 @@ pub struct View;
 #[repr(u8)]
 enum ViewPart {
     Focus = 0,
-    Header = 1,
-    PreQuestion = 2,
-    Question = 3,
-    Answer = 4,
-    Options = 5,
-    Feedback = 6,
+    PreQuestion = 1,
+    Question = 2,
+    Answer = 3,
+    Options = 4,
+    Feedback = 5,
 }
 
 impl Construct for View {
@@ -193,7 +192,6 @@ pub fn plugin(app: &mut App) {
         Update,
         (
             (focus_view,
-            header_view,
             radio_view,
             checkbox_view,
             prompt_view,
@@ -285,29 +283,6 @@ pub(crate) fn focus_view(
                                     text.sections[0].style.color = palette.highlight.into();
                                })
             .expect("focus");
-    }
-}
-
-pub(crate) fn header_view(
-    mut query: Query<(Entity, &AskyState), (With<View>, Changed<AskyState>)>,
-    mut writer: Inserter<Text>,
-) {
-    for (id, asky_state) in query.iter_mut() {
-        writer
-            .insert_or_get_mut(id,
-                               ViewPart::Header as usize,
-                               |mut text| {
-                                   replace_or_insert(
-                                       &mut text,
-                                       0,
-                                       match asky_state {
-                                           AskyState::Reading => "[ ] ",
-                                           AskyState::Complete => "[x] ",
-                                           AskyState::Error => "[!] ",
-                                       },
-                                   );
-                               })
-            .expect("header");
     }
 }
 
@@ -559,14 +534,14 @@ pub(crate) fn toggle_view(
 
 pub(crate) fn confirm_view(
     mut query: Query<
-        (Entity, &AskyState, &Confirm),
-        (With<View>, Or<(Changed<AskyState>, Changed<Confirm>)>),
+        (Entity, &Confirm),
+        (With<View>, Or<(Changed<Focusable>, Changed<Confirm>)>),
     >,
     palette: Res<Palette>,
     mut commands: Commands,
     mut writer: Inserter<BackgroundColor>,
 ) {
-    for (root, asky_state, confirm) in query.iter_mut() {
+    for (root, confirm) in query.iter_mut() {
         let id = match writer.insert_or_get_child(root, ViewPart::Options as usize) {
             Ok(options) => {
 

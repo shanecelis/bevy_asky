@@ -1,6 +1,6 @@
 use super::{Feedback, Prompt};
 use crate::construct::*;
-use crate::{AskyEvent, AskyState, Error, NumLike, CursorDirection, StringCursor, Focus, Focusable, FocusParam};
+use crate::{AskyEvent, Error, NumLike, CursorDirection, StringCursor, Focus, Focusable, FocusParam};
 use bevy::{
     input::{
         keyboard::{Key, KeyboardInput},
@@ -74,15 +74,13 @@ impl<T: NumLike> Construct for Number<T> {
         props: Self::Props,
     ) -> Result<Self, ConstructError> {
         // Our requirements.
-        let state: AskyState = context.construct(AskyState::default())?;
         let input_state = StringCursor::default();
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
             .insert(Prompt(props))
             .insert(input_state)
-            .insert(Focusable::default())
-            .insert(state);
+            .insert(Focusable::default());
 
         context.world.flush();
         Ok(Number {

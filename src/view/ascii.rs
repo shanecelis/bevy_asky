@@ -7,7 +7,7 @@ use crate::{
     Focusable,
     Focus,
     FocusParam,
-    AskyState, StringCursor,
+    StringCursor,
 };
 use bevy::prelude::*;
 #[cfg(feature = "focus")]
@@ -17,12 +17,11 @@ use std::fmt::Write;
 #[repr(u8)]
 enum ViewPart {
     Focus = 0,
-    Header = 1,
-    PreQuestion = 2,
-    Question = 3,
-    Answer = 4,
-    Options = 5,
-    Feedback = 6,
+    PreQuestion = 1,
+    Question = 2,
+    Answer = 3,
+    Options = 4,
+    Feedback = 5,
 }
 
 #[derive(Component, Default)]
@@ -46,7 +45,6 @@ impl Construct for View {
                     "".into(), // 3
                     "".into(), // 4
                     "".into(), // 5
-                    "".into(), // 6
                 ]),
                 ..default()
             });
@@ -67,7 +65,6 @@ pub fn plugin(app: &mut App) {
         Update,
         (
             focus_view,
-            header_view,
             checkbox_view,
             radio_view,
             prompt_view,
@@ -117,23 +114,6 @@ pub(crate) fn checkbox_view(
         text.sections[ViewPart::PreQuestion as usize]
             .value
             .replace_range(.., if checkbox.checked { "[x] " } else { "[ ] " });
-    }
-}
-
-pub(crate) fn header_view(
-    mut query: Query<(&mut Text, &AskyState), (With<View>, Changed<AskyState>)>,
-) {
-    for (mut text, asky_state) in query.iter_mut() {
-        text.sections[ViewPart::Header as usize]
-            .value
-            .replace_range(
-                ..,
-                match asky_state {
-                    AskyState::Reading => "[ ] ",
-                    AskyState::Complete => "[x] ",
-                    AskyState::Error => "[!] ",
-                },
-            );
     }
 }
 
@@ -194,7 +174,7 @@ pub(crate) fn radio_view(mut query: Query<(&Radio, &mut Text), (With<View>, Chan
 pub(crate) fn toggle_view(
     mut query: Query<
         (Entity, &Toggle, &mut Text),
-        (With<View>, Or<(Changed<AskyState>, Changed<Toggle>)>)>,
+        (With<View>, Or<(Changed<Focusable>, Changed<Toggle>)>)>,
     focus: Focus,
 ) {
     for (id, toggle, mut text) in query.iter_mut() {

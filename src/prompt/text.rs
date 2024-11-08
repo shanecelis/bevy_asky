@@ -1,6 +1,6 @@
 use super::{Feedback, Password, Prompt};
 use crate::construct::*;
-use crate::{AskyEvent, AskyState, CursorDirection, Error, StringCursor, Submitter, Focus, Focusable, FocusParam};
+use crate::{AskyEvent, CursorDirection, Error, StringCursor, Submitter, Focus, Focusable, FocusParam};
 use bevy::{
     input::{
         keyboard::{Key, KeyboardInput},
@@ -62,7 +62,6 @@ impl Construct for TextField {
         props: Self::Props,
     ) -> Result<Self, ConstructError> {
         // Our requirements.
-        let state: AskyState = context.construct(AskyState::default())?;
         let input_state = StringCursor::default();
         let mut commands = context.world.commands();
         commands
@@ -70,8 +69,7 @@ impl Construct for TextField {
             .insert(Prompt(props))
             .insert(NodeBundle::default())
             .insert(input_state)
-            .insert(Focusable::default())
-            .insert(state);
+            .insert(Focusable::default());
 
         context.world.flush();
 

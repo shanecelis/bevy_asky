@@ -1,14 +1,21 @@
 use bevy::prelude::*;
 use bevy_asky::{construct::*, prompt::*, view::*, *};
 
+fn views(app: &mut App) {
+    app
+        .add_plugins(view::ascii::plugin)
+        .add_plugins(view::color::plugin);
+
+    #[cfg(feature = "button")]
+    app
+        .add_plugins(view::button::plugin);
+}
+
 fn main() {
     App::new()
         .add_plugins((DefaultPlugins, AskyPlugin))
-        .add_plugins(view::ascii::plugin)
-        .add_plugins(view::color::plugin)
-        .add_plugins(view::button::plugin)
+        .add_plugins(views)
         .add_systems(Startup, setup)
-        .add_systems(Update, read_keys)
         .run();
 }
 
@@ -42,12 +49,4 @@ fn setup(mut commands: Commands) {
                     },
                 );
         });
-}
-
-fn read_keys(input: Res<ButtonInput<KeyCode>>, mut query: Query<&mut AskyState>) {
-    if input.just_pressed(KeyCode::KeyR) {
-        for mut state in query.iter_mut() {
-            *state = AskyState::Reading;
-        }
-    }
 }

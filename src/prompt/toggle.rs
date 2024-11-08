@@ -1,6 +1,6 @@
 use super::{Feedback, Prompt};
 use crate::construct::*;
-use crate::{AskyEvent, AskyState, Error, Focus, Focusable, FocusParam};
+use crate::{AskyEvent, Error, Focus, Focusable, FocusParam};
 use bevy::prelude::*;
 #[cfg(feature = "focus")]
 use bevy_alt_ui_navigation_lite::prelude::*;
@@ -40,14 +40,12 @@ impl Construct for Toggle {
         props: Self::Props,
     ) -> Result<Self, ConstructError> {
         // Our requirements.
-        let state: AskyState = context.construct(AskyState::default())?;
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
             .insert(NodeBundle::default())
             .insert(Prompt(props.message.clone()))
-            .insert(Focusable::default())
-            .insert(state);
+            .insert(Focusable::default());
 
         context.world.flush();
         Ok(props)

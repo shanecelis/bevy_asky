@@ -1,6 +1,6 @@
 use super::Prompt;
 use crate::construct::*;
-use crate::{AskyState, StringCursor, Focusable};
+use crate::{StringCursor, Focusable};
 use bevy::prelude::*;
 #[cfg(feature = "focus")]
 use bevy_alt_ui_navigation_lite::prelude::*;
@@ -46,15 +46,13 @@ impl Construct for Password {
         props: Self::Props,
     ) -> Result<Self, ConstructError> {
         // Our requirements.
-        let state: AskyState = context.construct(AskyState::default())?;
         let input_state = StringCursor::default();
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
             .insert(Prompt(props))
             .insert(input_state)
-            .insert(Focusable::default())
-            .insert(state);
+            .insert(Focusable::default());
 
         context.world.flush();
 
