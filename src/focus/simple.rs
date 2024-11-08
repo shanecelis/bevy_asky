@@ -9,14 +9,14 @@ use bevy::{
 mod private {
     use bevy::prelude::*;
 
-#[derive(Resource, Deref, DerefMut, Default, Debug)]
-pub struct Focus(pub Option<Entity>);
+    #[derive(Resource, Deref, DerefMut, Default, Debug)]
+    pub struct Focus(pub Option<Entity>);
 
-impl Focus {
-    pub fn is_focused(&self, id: Entity) -> bool {
-        self.map(|f| f == id).unwrap_or(false)
+    impl Focus {
+        pub fn is_focused(&self, id: Entity) -> bool {
+            self.map(|f| f == id).unwrap_or(false)
+        }
     }
-}
 }
 
 #[derive(SystemParam)]
@@ -30,9 +30,6 @@ impl<'w> Focus<'w> {
     }
 }
 
-
-#[derive(Resource, Deref, DerefMut, Default, Debug)]
-pub struct Foci(Vec<Entity>);
 
 #[derive(Resource, Default, Debug)]
 pub struct KeyboardNav(bool);
@@ -54,7 +51,6 @@ impl Focusable {
 
 pub fn plugin(app: &mut App) {
     app
-        .init_resource::<Foci>()
         .insert_resource(private::Focus(None))
         .insert_resource(KeyboardNav(true))
         .add_systems(Update, (focus_on_tab,
@@ -68,7 +64,6 @@ pub struct FocusParam<'w, 's> {
     query: Query<'w, 's, (Entity, &'static mut Focusable)>,
     focus: ResMut<'w, private::Focus>,
     keyboard_nav: ResMut<'w, KeyboardNav>,
-    foci: ResMut<'w, Foci>,
     commands: Commands<'w, 's>,
 }
 
@@ -206,25 +201,3 @@ fn reset_focus(mut focus: FocusParam) {
 }
 
 
-// impl Component for Focusable {
-//     const STORAGE_TYPE: StorageType = StorageType::Table;
-
-//     fn register_component_hooks(hooks: &mut ComponentHooks) {
-//         hooks.on_add(|mut world, targeted_entity, _component_id| {
-//             let mut foci = world.get_resource_mut::<Foci>().expect("Foci resource");
-//             foci.push(targeted_entity);
-
-//             if let Some(mut focus) = world.get_resource_mut::<a11y::FocusParam>() {
-//                 if focus.is_none() {
-//                     focus.0 = Some(targeted_entity);
-//                 }
-//             }
-//         });
-//         hooks.on_remove(|mut world, targeted_entity, _component_id| {
-//             let mut foci = world.get_resource_mut::<Foci>().expect("Foci resource");
-//             if let Some(index) = foci.iter().position(|&x| x == targeted_entity) {
-//                 foci.remove(index);
-//             }
-//         });
-//     }
-// }
