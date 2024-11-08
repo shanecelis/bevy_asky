@@ -66,10 +66,10 @@ fn confirm_controller(
             if input.just_pressed(KeyCode::Enter) {
                 // *state = AskyState::Complete;
                 // Make this not focusable again.
-                focus.block(id);
                 // I had tried using triggers in bevy_ui_navigation to fix my issues.
                 // commands.trigger(NavRequest::Move(NavDirection::South));
                 commands.trigger_targets(AskyEvent::<bool>(Ok(confirm.yes)), id);
+                focus.block_and_move(id);
                 // commands
                 //     .entity(id)
                 //     .insert(Feedback::info(if yes { "Yes" } else { "No" }));

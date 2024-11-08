@@ -47,7 +47,6 @@ impl Asky {
                 let mut entity_commands = match d {
                     Append(id) => {
                         let mut child = None;
-
                         commands.entity(id).with_children(|parent| {
                             child = Some(parent.spawn_empty().id());
                         });
@@ -57,7 +56,6 @@ impl Asky {
                     Root => commands.spawn_empty(),
                 };
                 entity_commands
-                    // .construct::<ascii::View>(())
                     .construct::<V>(())
                     .construct::<T>(p)
                     .observe(

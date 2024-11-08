@@ -44,6 +44,7 @@ impl Construct for Toggle {
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
+            .insert(NodeBundle::default())
             .insert(Prompt(props.message.clone()))
             .insert(Focusable::default())
             .insert(state);
