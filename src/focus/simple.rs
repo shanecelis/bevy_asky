@@ -1,8 +1,5 @@
 use bevy::{
-    ecs::{
-        system::SystemParam,
-        component::{StorageType, ComponentHooks},
-    },
+    ecs::system::SystemParam,
     prelude::*
 };
 
@@ -91,10 +88,8 @@ impl<'w, 's> FocusParam<'w, 's> {
                     result = Some(id);
                     break;
                 }
-                if !focusable.block {
-                    if result.is_none() {
-                        result = Some(id);
-                    }
+                if !focusable.block && result.is_none() {
+                    result = Some(id);
                 }
                 if focus_id == id {
                     seen_id = true;
@@ -157,7 +152,7 @@ impl<'w, 's> FocusParam<'w, 's> {
 
     pub fn block_and_move(&mut self, id_maybe: impl Into<Option<Entity>>) {
         let id = id_maybe.into();
-        self.block(id.clone());
+        self.block(id);
         self.move_focus(id);
     }
 

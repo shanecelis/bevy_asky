@@ -1,6 +1,6 @@
 use super::{Feedback, Prompt};
 use crate::construct::*;
-use crate::{AskyEvent, Error, Focus, Focusable, FocusParam};
+use crate::{AskyEvent, Error, Focusable, FocusParam};
 use bevy::prelude::*;
 #[cfg(feature = "focus")]
 use bevy_alt_ui_navigation_lite::prelude::*;

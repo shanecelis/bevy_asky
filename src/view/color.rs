@@ -2,16 +2,11 @@ use crate::construct::*;
 use crate::prelude::*;
 use bevy::{
     ecs::{
-        system::{
-            SystemParam,
-            SystemState,
-        },
-        world::Command,
+        system::SystemParam,
         query::QueryEntityError,
     },
     prelude::*,
 };
-use std::fmt::Write;
 
 #[derive(Component, Reflect, Default)]
 pub struct View;
@@ -227,9 +222,9 @@ pub(crate) fn prompt_view(
         writer
             .insert_or_get_mut(id,
                                ViewPart::Question as usize,
-                               |mut text| {
+                               |text| {
                                     replace_or_insert(
-                                        &mut text,
+                                        text,
                                         0,
                                         prompt);
                                })
@@ -245,8 +240,8 @@ pub(crate) fn feedback_view(
         writer
             .insert_or_get_mut(id,
                                ViewPart::Feedback as usize,
-                               |mut text| {
-                                   replace_or_insert(&mut text, 0, &format!(" {}", feedback.message));
+                               |text| {
+                                   replace_or_insert(text, 0, &format!(" {}", feedback.message));
                                })
             .expect("feedback");
     }
@@ -270,9 +265,9 @@ pub(crate) fn focus_view(
         writer
             .insert_or_get_mut(id,
                                ViewPart::Focus as usize,
-                               |mut text| {
+                               |text| {
                                     replace_or_insert(
-                                        &mut text,
+                                        text,
                                         0,
                                         if focus.is_focused(id) {
                                             "> "
@@ -297,7 +292,7 @@ pub(crate) fn text_view(
         ),
     >,
     mut texts: Query<&mut Text>, //, &mut BackgroundColor)>,
-    mut sections: Query<&Children>,
+    sections: Query<&Children>,
     palette: Res<Palette>,
     mut commands: Commands,
     focus: Focus,
@@ -390,7 +385,7 @@ pub(crate) fn password_view(
         ),
     >,
     mut texts: Query<&mut Text>, //, &mut BackgroundColor)>,
-    mut sections: Query<&Children>,
+    sections: Query<&Children>,
     palette: Res<Palette>,
     mut commands: Commands,
     focus: Focus,
@@ -485,11 +480,11 @@ pub(crate) fn toggle_view(
 ) {
     // TODO: Shouldn't this just show the answer when it is not in focus?
     for (root, toggle) in query.iter_mut() {
-        let id = match writer.insert_or_get_child(root, ViewPart::Options as usize) {
+        match writer.insert_or_get_child(root, ViewPart::Options as usize) {
             Ok(options) => {
                 writer.insert_or_get_mut(options,
                                 1,
-                                |mut color| {
+                                |color| {
                                     *color = if toggle.index == 0 {
                                         palette.highlight.into()
                                     } else {
@@ -500,7 +495,7 @@ pub(crate) fn toggle_view(
 
                 writer.insert_or_get_mut(options,
                                 3,
-                                |mut color| {
+                                |color| {
                                     *color = if toggle.index == 1 {
                                         palette.highlight.into()
                                     } else {
@@ -542,12 +537,12 @@ pub(crate) fn confirm_view(
     mut writer: Inserter<BackgroundColor>,
 ) {
     for (root, confirm) in query.iter_mut() {
-        let id = match writer.insert_or_get_child(root, ViewPart::Options as usize) {
+        match writer.insert_or_get_child(root, ViewPart::Options as usize) {
             Ok(options) => {
 
                 writer.insert_or_get_mut(options,
                                 1,
-                                |mut color| {
+                                |color| {
                                     *color = if ! confirm.yes {
                                         palette.highlight.into()
                                     } else {
@@ -558,7 +553,7 @@ pub(crate) fn confirm_view(
 
                 writer.insert_or_get_mut(options,
                                 3,
-                                |mut color| {
+                                |color| {
                                     *color = if confirm.yes {
                                         palette.highlight.into()
                                     } else {
@@ -604,8 +599,8 @@ pub(crate) fn checkbox_view(
         writer
             .insert_or_get_mut(id,
                                ViewPart::PreQuestion as usize,
-                               |mut text| {
-                                   replace_or_insert(&mut text, 0, if checkbox.checked { "[x] " } else { "[ ] " });
+                               |text| {
+                                   replace_or_insert(text, 0, if checkbox.checked { "[x] " } else { "[ ] " });
                                    // text.sections[0].style.color = if focusable.state() == FocusState::Focused {
                                    text.sections[0].style.color = if focus.is_focused(id) {
                                        palette.highlight.into()
@@ -631,8 +626,8 @@ pub(crate) fn radio_view(
         writer
             .insert_or_get_mut(id,
                                ViewPart::PreQuestion as usize,
-                               |mut text| {
-                                   replace_or_insert(&mut text, 0, if radio.checked { "(x) " } else { "( ) " });
+                               |text| {
+                                   replace_or_insert(text, 0, if radio.checked { "(x) " } else { "( ) " });
                                    text.sections[0].style.color = if focus.is_focused(id) {
                                        palette.highlight.into()
                                    } else {
