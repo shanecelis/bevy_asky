@@ -157,7 +157,7 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
 #[cfg(test)]
 mod test {
 
-    use crate::{ceil_char_boundary, floor_char_boundary};
+    use crate::string_cursor::{ceil_char_boundary, floor_char_boundary};
 
     #[test]
     fn test_floor_char() {

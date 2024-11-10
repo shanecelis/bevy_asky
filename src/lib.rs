@@ -2,7 +2,6 @@
 #![allow(clippy::type_complexity)]
 use bevy::prelude::*;
 
-use futures::channel::oneshot;
 pub(crate) mod focus;
 use std::borrow::Cow;
 
@@ -13,12 +12,15 @@ pub(crate) mod string_cursor;
 pub mod view;
 #[cfg(feature = "async")]
 mod r#async;
-
+#[cfg(feature = "async")]
+use futures::channel::oneshot;
 #[cfg(feature = "async")]
 pub use r#async::*;
 
 pub mod prelude {
     pub use super::{AskyPlugin, AskyEvent, AskyChange, Submitter, Error, construct::*, prompt::*, view::*, focus::*, num_like::NumLike};
+    #[cfg(feature = "async")]
+    pub use super::r#async::*;
 }
 
 pub struct AskyPlugin;
@@ -28,6 +30,10 @@ impl Plugin for AskyPlugin {
         app
             .add_plugins(prompt::plugin)
             .add_plugins(focus::plugin);
+        // #[cfg(feature = "async")]
+        // app
+        //     .add_plugins(bevy_defer::AsyncPlugin::default_settings());
+
     }
 }
 
@@ -89,6 +95,7 @@ pub enum Error {
     /// There was an [std::io::Error].
     // #[error("io error {0}")]
     // Io(#[from] std::io::Error),
+    #[cfg(feature = "async")]
     #[error("channel cancel {0}")]
     Channel(#[from] oneshot::Canceled),
     // Async error

@@ -32,10 +32,6 @@ fn setup(mut commands: Commands) {
             ..default()
         })
         .id();
-    // commands
-    //     .construct::<Confirm>("What up?")
-    //     .construct::<ascii::View>(());
-
     commands.entity(column).with_children(|parent| {
         parent
             .construct::<Confirm>("Do you like ascii?")

@@ -10,7 +10,7 @@ use bevy::{
 #[derive(Component, Reflect, Default)]
 pub struct View;
 
-// #[derive(Debug, Component, Reflect)]
+#[derive(Debug, Reflect)]
 #[repr(u8)]
 enum ViewPart {
     Focus = 0,
@@ -21,11 +21,11 @@ enum ViewPart {
     Feedback = 5,
 }
 
-#[derive(Component)]
+#[derive(Debug, Component, Reflect)]
 struct Cursor;
 
-#[derive(Resource, Deref, DerefMut)]
-struct CursorTime(Timer);
+#[derive(Resource, Deref, DerefMut, Reflect)]
+struct CursorBlink(Timer);
 
 impl Construct for View {
     type Props = ();
@@ -34,49 +34,15 @@ impl Construct for View {
         _context: &mut ConstructContext,
         _props: Self::Props,
     ) -> Result<Self, ConstructError> {
-        // let mut system_state: SystemState<Query<&Parent>> = SystemState::new(&mut context.world);
-        // let parents = system_state.get(&context.world);
 
-        // let mut commands = context.world.commands();
-        // commands
-        //     .entity(context.id)
-        //     .insert(NodeBundle::default());
-        //     // .with_children(|parent| {
-        //     //     // Q: Why have these broken into different bundles?
-        //     //     // A: So I can control the background color independently.
-        //     //     parent.spawn(TextBundle::default()); // Focus
-        //     //     parent.spawn(TextBundle::default()); // Header
-        //     //     parent.spawn(TextBundle::default()); // PreQuestion
-        //     //     parent.spawn(TextBundle::default()); // Question
-        //     //     parent.spawn(TextBundle::default()); // Answer
-        //     //     parent
-        //     //         .spawn(NodeBundle::default()) // Answer
-        //     //         // .spawn_empty() // Options
-        //     //         .with_children(|parent| {
-        //     //             parent.spawn(TextBundle::default());
-        //     //             parent.spawn(TextBundle::default());
-        //     //             parent.spawn(TextBundle::default());
-        //     //             parent.spawn(TextBundle::default());
-        //     //         });
-        //     //     parent.spawn(TextBundle::default()); // Feedback
-        //     // });
-
-        // context.world.flush();
-
+            //.insert(NodeBundle::default())
         Ok(View)
     }
 }
 
 #[derive(SystemParam)]
 pub(crate) struct Inserter<'w, 's, C: Component> {
-    roots: Query<
-        'w,
-        's,
-
-            &'static mut C
-            // Option<&'static mut BackgroundColor>,
-       ,
-    >,
+    roots: Query<'w, 's, &'static mut C>,
     children: Query<'w, 's, &'static Children>,
     commands: Commands<'w, 's>,
 }
@@ -157,7 +123,7 @@ impl<'w, 's, C: Component> Inserter<'w, 's, C> {
     }
 }
 
-#[derive(Debug, Resource, Component)]
+#[derive(Debug, Resource, Component, Reflect)]
 pub struct Palette {
     pub text_color: Srgba,
     pub background: Option<Srgba>,
@@ -181,31 +147,36 @@ impl Default for Palette {
 }
 
 pub fn plugin(app: &mut App) {
-    app.add_systems(
-        PreUpdate,
-        (
-            super::add_view_to_checkbox::<View>,
-            super::add_view_to_radio::<View>,
-        ),
-    );
-    app.add_systems(
-        Update,
-        (
-            (focus_view,
-            radio_view,
-            checkbox_view,
-            prompt_view,
-            text_view,
-            password_view,
-            confirm_view,
-            toggle_view,
-            feedback_view).chain(),
-            clear_feedback::<StringCursor>,
-            clear_feedback::<Toggle>,
-            blink_cursor,
-        ),
-    )
-       .insert_resource(CursorTime(Timer::from_seconds(1.0/3.0, TimerMode::Repeating)))
+    app
+        .register_type::<View>()
+        .register_type::<ViewPart>()
+        .register_type::<Cursor>()
+        .register_type::<CursorBlink>()
+        .register_type::<Palette>()
+        .add_systems(PreUpdate,
+                     (
+                         super::add_view_to_checkbox::<View>,
+                         super::add_view_to_radio::<View>,
+                     ),
+        )
+        .add_systems(
+            Update,
+            (
+                (focus_view,
+                 radio_view,
+                 checkbox_view,
+                 prompt_view,
+                 text_view,
+                 password_view,
+                 confirm_view,
+                 toggle_view,
+                 feedback_view).chain(),
+                clear_feedback::<StringCursor>,
+                clear_feedback::<Toggle>,
+                blink_cursor,
+            ),
+        )
+       .insert_resource(CursorBlink(Timer::from_seconds(1.0/3.0, TimerMode::Repeating)))
        .insert_resource(Palette::default());
 }
 
@@ -214,6 +185,7 @@ pub(crate) fn prompt_view(
     mut writer: Inserter<Text>,
 ) {
     for (id, prompt) in query.iter_mut() {
+        warn!("HEREFSF");
         writer
             .insert_or_get_mut(id,
                                ViewPart::Question as usize,
@@ -288,7 +260,7 @@ pub(crate) fn text_view(
     >,
     mut texts: Query<&mut Text>, //, &mut BackgroundColor)>,
     sections: Query<&Children>,
-    // palette: Res<Palette>,
+    palette: Res<Palette>,
     mut commands: Commands,
     focus: Focus,
 ) {
@@ -307,15 +279,11 @@ pub(crate) fn text_view(
             new_node.unwrap()
         };
         if let Ok(cursor_parts) = sections.get(id) {
+            // Update the parts.
             let mut parts = texts.iter_many_mut(cursor_parts);
             if focus.is_focused(root) {
                 let mut pre_cursor = parts.fetch_next().expect("pre cursor");
-                replace_or_insert(&mut pre_cursor, 0, if text_state.value.is_empty() && placeholder.is_some() {
-                    &placeholder.unwrap().0
-
-                } else {
-                    &text_state.value[0..text_state.index]
-                });
+                replace_or_insert(&mut pre_cursor, 0, &text_state.value[0..text_state.index]);
                 let mut cursor = parts.fetch_next().expect("cursor");
                 replace_or_insert(
                     &mut cursor,
@@ -327,11 +295,14 @@ pub(crate) fn text_view(
                     },
                 );
                 let mut post_cursor = parts.fetch_next().expect("post cursor");
-                replace_or_insert(
-                    &mut post_cursor,
-                    0,
-                    &text_state.value[text_state.next_index()..],
-                );
+                if text_state.value.is_empty() && placeholder.is_some() {
+                    // Use placeholder.
+                    replace_or_insert(&mut post_cursor, 0, &placeholder.unwrap().0);
+                    post_cursor.sections[0].style.color = palette.lowlight.into();
+                } else {
+                    replace_or_insert(&mut post_cursor, 0, &text_state.value[text_state.next_index()..]);
+                    post_cursor.sections[0].style.color = palette.text_color.into();
+                }
             } else {
                 let mut pre_cursor = parts.fetch_next().expect("pre cursor");
                 replace_or_insert(&mut pre_cursor, 0, &text_state.value);
@@ -345,11 +316,7 @@ pub(crate) fn text_view(
             commands.entity(id).with_children(|parent| {
                 // pre cursor
                 parent.spawn(TextBundle::from_section(
-                    if text_state.value.is_empty() && placeholder.is_some() {
-                        &placeholder.unwrap().0
-                    } else {
-                    &text_state.value[0..text_state.index]
-                    },
+                    &text_state.value[text_state.next_index()..],
                     TextStyle::default(),
                 ));
                 // cursor
@@ -360,18 +327,20 @@ pub(crate) fn text_view(
                         } else {
                             &text_state.value[text_state.index..text_state.next_index()]
                         },
-                        TextStyle {
-                            color: Color::BLACK,
-                            ..default()
-                        },
-                    )
-                    .with_background_color(Color::WHITE),
+                        TextStyle::default())
                 ).insert(Cursor);
                 // post cursor
-                parent.spawn(TextBundle::from_section(
-                    &text_state.value[text_state.next_index()..],
-                    TextStyle::default(),
-                ));
+                if text_state.value.is_empty() && placeholder.is_some() {
+                    parent.spawn(TextBundle::from_section(placeholder.unwrap().0.to_owned(),
+                                                          TextStyle {
+                                                              color: palette.lowlight.into(),
+                                                              .. default()
+                                                          }));
+
+                } else {
+                    parent.spawn(TextBundle::from_section(&text_state.value[0..text_state.index],
+                                                          TextStyle::default()));
+                }
             });
         }
     }
@@ -380,13 +349,10 @@ pub(crate) fn text_view(
 pub(crate) fn password_view(
     mut query: Query<
         (Entity, &StringCursor, &Children, Option<&Placeholder>),
-        (
-            With<View>,
-            With<Password>,
-            Or<(Changed<StringCursor>,
-               Changed<Focusable>
-            )>,
-        ),
+        (With<View>,
+         With<Password>,
+         Or<(Changed<StringCursor>,
+             Changed<Focusable>)>),
     >,
     mut texts: Query<&mut Text>, //, &mut BackgroundColor)>,
     sections: Query<&Children>,
@@ -642,14 +608,23 @@ pub(crate) fn radio_view(
     }
 }
 
-fn blink_cursor(mut query: Query<&mut BackgroundColor, With<Cursor>>, mut timer: ResMut<CursorTime>, time: Res<Time>, mut count: Local<u8>) {
+fn blink_cursor(mut query: Query<(&mut BackgroundColor, &mut Text), With<Cursor>>,
+                mut timer: ResMut<CursorBlink>,
+                time: Res<Time>,
+                mut count: Local<u8>,
+                palette: Res<Palette>) {
     if timer.tick(time.delta()).just_finished() {
         *count = count.checked_add(1).unwrap_or(0);
-        for mut color in &mut query {
+        for (mut color, mut text) in &mut query {
             color.0 = if *count % 2 == 0 {
                 Color::WHITE
             } else {
                 Color::NONE
+            };
+            text.sections[0].style.color = if *count % 2 == 0 {
+                Color::BLACK
+            } else {
+                palette.text_color.into()
             };
         }
     }

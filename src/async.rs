@@ -6,13 +6,14 @@ use bevy_defer::AsyncWorld;
 use futures::{channel::oneshot, Future};
 use std::fmt::Debug;
 
-#[derive(Clone, SystemParam)]
+#[derive(Clone, SystemParam, Default)]
 pub struct Asky;
 
 #[derive(Clone, Debug)]
 pub enum Dest {
     Root,
     Replace(Entity),
+    ReplaceChildren(Entity),
     Append(Entity)
 }
 
@@ -53,6 +54,15 @@ impl Asky {
                         commands.entity(child.unwrap())
                     }
                     Replace(id) => commands.entity(id),
+                    ReplaceChildren(id) => {
+                        commands.entity(id)
+                            .despawn_descendants();
+                        let mut child = None;
+                        commands.entity(id).with_children(|parent| {
+                            child = Some(parent.spawn_empty().id());
+                        });
+                        commands.entity(child.unwrap())
+                    }
                     Root => commands.spawn_empty(),
                 };
                 entity_commands
