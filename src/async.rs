@@ -23,7 +23,34 @@ impl From<Entity> for Dest {
     }
 }
 
+impl Dest {
+    pub fn entity_commands<'a>(&self, commands: &'a mut Commands) -> bevy::ecs::system::EntityCommands<'a> {
+        use Dest::*;
+        match self {
+            Append(id) => {
+                let mut child = None;
+                commands.entity(*id).with_children(|parent| {
+                    child = Some(parent.spawn_empty().id());
+                });
+                commands.entity(child.unwrap())
+            }
+            Replace(id) => commands.entity(*id),
+            ReplaceChildren(id) => {
+                commands.entity(*id)
+                    .despawn_descendants();
+                let mut child = None;
+                commands.entity(*id).with_children(|parent| {
+                    child = Some(parent.spawn_empty().id());
+                });
+                commands.entity(child.unwrap())
+            }
+            Root => commands.spawn_empty(),
+        }
+    }
+}
+
 impl Asky {
+
     /// Prompt the user with `T`, rendering in element `dest`.
     pub fn prompt<T: Construct + Component + Submitter, V: Construct<Props = ()> + Component + Default>(
         &mut self,
@@ -45,27 +72,7 @@ impl Asky {
 
             async_world.apply_command(move |world: &mut World| {
                 let mut commands = world.commands();
-                let mut entity_commands = match d {
-                    Append(id) => {
-                        let mut child = None;
-                        commands.entity(id).with_children(|parent| {
-                            child = Some(parent.spawn_empty().id());
-                        });
-                        commands.entity(child.unwrap())
-                    }
-                    Replace(id) => commands.entity(id),
-                    ReplaceChildren(id) => {
-                        commands.entity(id)
-                            .despawn_descendants();
-                        let mut child = None;
-                        commands.entity(id).with_children(|parent| {
-                            child = Some(parent.spawn_empty().id());
-                        });
-                        commands.entity(child.unwrap())
-                    }
-                    Root => commands.spawn_empty(),
-                };
-                entity_commands
+                d.entity_commands(&mut commands)
                     .construct::<V>(())
                     .construct::<T>(p)
                     .observe(
