@@ -1,6 +1,6 @@
 #![allow(clippy::type_complexity)]
 use super::*;
-use crate::{construct::*, view::*};
+use crate::{construct::*, view::*, sync::AskyCommands};
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_defer::AsyncWorld;
 use futures::{channel::oneshot, Future};
@@ -72,9 +72,12 @@ impl Asky {
 
             async_world.apply_command(move |world: &mut World| {
                 let mut commands = world.commands();
-                d.entity_commands(&mut commands)
-                    .construct::<V>(())
-                    .construct::<T>(p)
+                // let id = commands.prompt::<T, V>(p, d);
+                // commands.entity(id)
+                commands.prompt::<T, V>(p, d)
+                // d.entity_commands(&mut commands)
+                //     .construct::<V>(())
+                //     .construct::<T>(p)
                     .observe(
                         move |trigger: Trigger<AskyEvent<T::Out>>, mut commands: Commands| {
                             if let Some(sender) = send_once.take() {

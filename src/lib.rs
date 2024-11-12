@@ -16,6 +16,7 @@ mod r#async;
 use futures::channel::oneshot;
 #[cfg(feature = "async")]
 pub use r#async::*;
+pub mod sync;
 
 pub mod prelude {
     pub use super::{AskyPlugin, AskyEvent, AskyChange, Submitter, Error, construct::*, prompt::*, view::*, focus::*, num_like::NumLike};
