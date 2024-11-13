@@ -31,11 +31,15 @@ impl Construct for View {
     type Props = ();
 
     fn construct(
-        _context: &mut ConstructContext,
+        context: &mut ConstructContext,
         _props: Self::Props,
     ) -> Result<Self, ConstructError> {
 
-            //.insert(NodeBundle::default())
+        let mut commands = context.world.commands();
+        commands
+            .entity(context.id)
+            .insert(NodeBundle::default());
+        // context.world.flush();
         Ok(View)
     }
 }
@@ -52,31 +56,35 @@ impl<'w, 's, C: Component> Inserter<'w, 's, C> {
     fn insert_or_get_child(&mut self,
                            root: Entity,
                            index: usize,
-    ) -> Result<Entity, Entity> {
+    ) -> Result<Entity, Option<Entity>> {
         match self.children.get(root) {
             Ok(children) => {
                 if index < children.len() {
                     Ok(children[index])
                 } else {
                     let mut id = None;
-                    self.commands.entity(root).with_children(|parent| {
+                    self.commands.get_entity(root).map(|mut ecommands| {
+                        ecommands.with_children(|parent| {
                         for _ in children.len()..index {
                             parent.spawn(TextBundle::default());
                         }
                         id = Some(parent.spawn(TextBundle::default()).id());
                     });
-                    Err(id.unwrap())
+                    });
+                    Err(id)
                 }
             }
             _ => {
                 let mut id = None;
-                self.commands.entity(root).with_children(|parent| {
+                self.commands.get_entity(root).map(|mut ecommands| {
+                    ecommands.with_children(|parent| {
                     for _ in 0..index {
                         parent.spawn(TextBundle::default());
                     }
                     id = Some(parent.spawn(TextBundle::default()).id());
                 });
-                Err(id.unwrap())
+                });
+                Err(id)
             }
         }
     }
@@ -93,7 +101,8 @@ impl<'w, 's, C: Component> Inserter<'w, 's, C> {
                     self.roots.get_mut(children[index]).map(|mut t: Mut<C>| apply(&mut t))
                 } else {
                     // dbg!(index, children.len());
-                    self.commands.entity(root).with_children(|parent| {
+                    self.commands.get_entity(root).map(|mut ecommands| {
+                        ecommands.with_children(|parent| {
                         for _ in children.len()..index {
                             parent.spawn(TextBundle::default());
                         }
@@ -103,11 +112,13 @@ impl<'w, 's, C: Component> Inserter<'w, 's, C> {
                             .spawn(TextBundle::default())
                             .insert(text);
                     });
+                    });
                     Ok(())
                 }
             }
             _ => {
-                self.commands.entity(root).with_children(|parent| {
+                self.commands.get_entity(root).map(|mut ecommands| {
+                    ecommands.with_children(|parent| {
                     for _ in 0..index {
                         parent.spawn(TextBundle::default());
                     }
@@ -116,6 +127,7 @@ impl<'w, 's, C: Component> Inserter<'w, 's, C> {
                     parent
                         .spawn(TextBundle::default())
                         .insert(text);
+                });
                 });
                 Ok(())
             }
@@ -185,7 +197,6 @@ pub(crate) fn prompt_view(
     mut writer: Inserter<Text>,
 ) {
     for (id, prompt) in query.iter_mut() {
-        warn!("HEREFSF");
         writer
             .insert_or_get_mut(id,
                                ViewPart::Question as usize,
@@ -474,7 +485,7 @@ pub(crate) fn toggle_view(
                                 })
                 .expect("option 1");
             }
-            Err(new) => {
+            Err(Some(new)) => {
                 commands.entity(new).with_children(|parent| {
                     let style = TextStyle::default();
                     parent.spawn(TextBundle::from_section(" ", style.clone())); // 0
@@ -493,6 +504,7 @@ pub(crate) fn toggle_view(
                                 }));
                 });
             }
+            _ => (),
         };
     }
 }
@@ -532,7 +544,7 @@ pub(crate) fn confirm_view(
                                 })
                 .expect("option 1");
             }
-            Err(new) => {
+            Err(Some(new)) => {
                 commands.entity(new).with_children(|parent| {
                     let style = TextStyle::default();
                     parent.spawn(TextBundle::from_section(" ", style.clone())); // 0
@@ -551,6 +563,7 @@ pub(crate) fn confirm_view(
                                 }));
                 });
             }
+            _ => (),
         };
     }
 }
@@ -607,25 +620,28 @@ pub(crate) fn radio_view(
             .expect("prequestion");
     }
 }
-
-fn blink_cursor(mut query: Query<(&mut BackgroundColor, &mut Text), With<Cursor>>,
+// We don't know if it's focusable.
+fn blink_cursor(mut query: Query<(&mut BackgroundColor, &mut Text, &Parent), With<Cursor>>,
                 mut timer: ResMut<CursorBlink>,
                 time: Res<Time>,
                 mut count: Local<u8>,
+                focus: Focus,
                 palette: Res<Palette>) {
     if timer.tick(time.delta()).just_finished() {
         *count = count.checked_add(1).unwrap_or(0);
-        for (mut color, mut text) in &mut query {
-            color.0 = if *count % 2 == 0 {
-                Color::WHITE
-            } else {
-                Color::NONE
-            };
-            text.sections[0].style.color = if *count % 2 == 0 {
-                Color::BLACK
-            } else {
-                palette.text_color.into()
-            };
+        for (mut color, mut text, parent) in &mut query {
+            if focus.is_focused(parent.get()) {
+                color.0 = if *count % 2 == 0 {
+                    Color::WHITE
+                } else {
+                    Color::NONE
+                };
+                text.sections[0].style.color = if *count % 2 == 0 {
+                    Color::BLACK
+                } else {
+                    palette.text_color.into()
+                };
+            }
         }
     }
 }

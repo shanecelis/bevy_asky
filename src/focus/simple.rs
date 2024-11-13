@@ -3,10 +3,11 @@ use bevy::{
     prelude::*
 };
 
-mod private {
+pub mod private {
     use bevy::prelude::*;
 
-    #[derive(Resource, Deref, DerefMut, Default, Debug)]
+    #[derive(Resource, Deref, DerefMut, Default, Debug, Reflect)]
+    #[reflect(Resource)]
     pub struct Focus(pub Option<Entity>);
 
     impl Focus {
@@ -31,7 +32,7 @@ impl<'w> Focus<'w> {
 #[derive(Resource, Default, Debug)]
 pub struct KeyboardNav(bool);
 
-#[derive(Component, Clone, Default)]
+#[derive(Component, Clone, Default, Reflect)]
 pub struct Focusable {
     version: usize,
     block: bool,
@@ -48,6 +49,8 @@ impl Focusable {
 
 pub fn plugin(app: &mut App) {
     app
+        .register_type::<private::Focus>()
+        .register_type::<Focusable>()
         .insert_resource(private::Focus(None))
         .insert_resource(KeyboardNav(true))
         .add_systems(Update, (focus_on_tab,
@@ -188,9 +191,12 @@ fn focus_on_tab(
     }
 }
 
-fn reset_focus(mut focus: FocusParam) {
-    if focus.focus.is_none() {
-        focus.move_focus(None);
+fn reset_focus(mut focus: FocusParam, mut commands: Commands) {
+    match focus.focus.0 {
+        None => focus.move_focus(None),
+        Some(id) => if commands.get_entity(id).is_none() {
+            focus.move_focus(None)
+        }
     }
 }
 

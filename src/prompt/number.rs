@@ -65,6 +65,11 @@ pub struct Number<T: NumLike> {
     /// Default value to submit when the input is empty
     pub default_value: Option<T>,
 }
+
+unsafe impl<T: NumLike> Submitter for Number<T> {
+    type Out = T;
+}
+
 impl<T: NumLike> Construct for Number<T> {
     type Props = Cow<'static, str>;
 
@@ -135,6 +140,7 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                         Err(_) => {
                             commands
                                 .trigger_targets(AskyEvent::<T>(Err(Error::InvalidNumber)), id);
+                            focus.block(id);
                             commands.entity(id).insert(Feedback::warn(format!(
                                 "invalid number for {}",
                                 T::short_type_path()

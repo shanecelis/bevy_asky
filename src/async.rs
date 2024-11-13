@@ -9,46 +9,6 @@ use std::fmt::Debug;
 #[derive(Clone, SystemParam, Default)]
 pub struct Asky;
 
-#[derive(Clone, Debug)]
-pub enum Dest {
-    Root,
-    Replace(Entity),
-    ReplaceChildren(Entity),
-    Append(Entity)
-}
-
-impl From<Entity> for Dest {
-    fn from(id: Entity) -> Dest {
-        Dest::Replace(id)
-    }
-}
-
-impl Dest {
-    pub fn entity_commands<'a>(&self, commands: &'a mut Commands) -> bevy::ecs::system::EntityCommands<'a> {
-        use Dest::*;
-        match self {
-            Append(id) => {
-                let mut child = None;
-                commands.entity(*id).with_children(|parent| {
-                    child = Some(parent.spawn_empty().id());
-                });
-                commands.entity(child.unwrap())
-            }
-            Replace(id) => commands.entity(*id),
-            ReplaceChildren(id) => {
-                commands.entity(*id)
-                    .despawn_descendants();
-                let mut child = None;
-                commands.entity(*id).with_children(|parent| {
-                    child = Some(parent.spawn_empty().id());
-                });
-                commands.entity(child.unwrap())
-            }
-            Root => commands.spawn_empty(),
-        }
-    }
-}
-
 impl Asky {
 
     /// Prompt the user with `T`, rendering in element `dest`.
