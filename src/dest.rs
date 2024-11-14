@@ -47,22 +47,24 @@ impl Dest {
         match self {
             Append(id) => {
                 let mut child = None;
-                commands.get_entity(*id)
-                        .map(|ecommands|
-                             ecommands.with_children(|parent| {
-                                 child = Some(parent.spawn_empty().id());
-                             }));
+                if let Some(mut ecommands) = commands.get_entity(*id) {
+                    ecommands.with_children(|parent| {
+                        child = Some(parent.spawn_empty().id());
+                    });
+                }
                 child.and_then(|id| commands.get_entity(id))
             }
             Replace(id) => commands.get_entity(*id),
             ReplaceChildren(id) => {
-                commands.get_entity(*id).map(|mut ecommands|
-                    ecommands.despawn_descendants());
+                if let Some(mut ecommands) = commands.get_entity(*id) {
+                    ecommands.despawn_descendants();
+                }
                 let mut child = None;
-                commands.get_entity(*id).map(|mut ecommands|
-                                             ecommands.with_children(|parent| {
-                    child = Some(parent.spawn_empty().id());
-                }));
+                if let Some(mut ecommands) = commands.get_entity(*id) {
+                    ecommands.with_children(|parent| {
+                        child = Some(parent.spawn_empty().id());
+                    });
+                }
                 child.and_then(|id| commands.get_entity(id))
             }
             Root => Some(commands.spawn_empty()),
