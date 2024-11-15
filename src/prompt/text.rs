@@ -12,7 +12,9 @@ use bevy::{
 use std::borrow::Cow;
 
 pub fn plugin(app: &mut App) {
-    app.add_systems(PreUpdate, text_controller);
+    app
+        .register_type::<StringCursor>()
+        .add_systems(PreUpdate, text_controller);
 }
 
 /// Prompt to get one-line user input.

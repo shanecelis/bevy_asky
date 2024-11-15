@@ -6,13 +6,13 @@ use bevy::{
 pub mod private {
     use bevy::prelude::*;
 
-    #[derive(Resource, Deref, DerefMut, Default, Debug, Reflect)]
+    #[derive(Resource, Default, Debug, Reflect)]
     #[reflect(Resource)]
     pub struct Focus(pub Option<Entity>);
 
     impl Focus {
         pub fn is_focused(&self, id: Entity) -> bool {
-            self.map(|f| f == id).unwrap_or(false)
+            self.0.map(|f| f == id).unwrap_or(false)
         }
     }
 }
@@ -90,11 +90,10 @@ impl<'w, 's> FocusParam<'w, 's> {
                     result = Some(id);
                     break;
                 }
-                if !focusable.block && result.is_none() {
-                    result = Some(id);
-                }
                 if focus_id == id {
                     seen_id = true;
+                } else if !focusable.block && result.is_none() {
+                    result = Some(id);
                 }
             }
             if let Some(id) = result {
@@ -158,6 +157,10 @@ impl<'w, 's> FocusParam<'w, 's> {
         self.move_focus(id);
     }
 
+    pub fn is_blocked(&self, id: Entity) -> bool {
+        self.query.get(id).map(|(_, focusable)| focusable.block).unwrap_or(true)
+    }
+
     pub fn block(&mut self, id_maybe: impl Into<Option<Entity>>) {
         if let Some(id) = id_maybe.into().or(self.focus.0) {
             // self.commands.entity(id).insert(Blocked);
@@ -175,27 +178,21 @@ impl<'w, 's> FocusParam<'w, 's> {
             warn!("No id to unblock");
         }
     }
-
-
-    // pub fn unblock(&mut self, id: Entity) {
-    //     self.query.get_mut(id).map(|focus| focus.block = false).expect("no Focusable");
-    // }
 }
 
-fn focus_on_tab(
-    input: Res<ButtonInput<KeyCode>>,
-    mut focus: FocusParam,
-) {
+fn focus_on_tab(input: Res<ButtonInput<KeyCode>>,
+                mut focus: FocusParam) {
     if input.just_pressed(KeyCode::Tab) {
         focus.move_focus(None);
     }
 }
 
-fn reset_focus(mut focus: FocusParam, mut commands: Commands) {
+/// Reset focus if None or focus is blocked.
+fn reset_focus(mut focus: FocusParam) {
     match focus.focus.0 {
         None => focus.move_focus(None),
-        Some(id) => if commands.get_entity(id).is_none() {
-            focus.move_focus(None)
+        Some(id) => if focus.is_blocked(id) {
+             focus.move_focus(None)
         }
     }
 }

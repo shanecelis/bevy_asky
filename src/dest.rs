@@ -18,7 +18,7 @@ impl From<Entity> for Dest {
 }
 
 impl Dest {
-    pub fn entity_commands<'a>(&self, commands: &'a mut Commands) -> bevy::ecs::system::EntityCommands<'a> {
+    pub fn entity<'a>(&self, commands: &'a mut Commands) -> bevy::ecs::system::EntityCommands<'a> {
         use Dest::*;
         match self {
             Append(id) => {
@@ -42,7 +42,7 @@ impl Dest {
         }
     }
 
-    pub fn get_entity_commands<'a>(&self, commands: &'a mut Commands) -> Option<bevy::ecs::system::EntityCommands<'a>> {
+    pub fn get_entity<'a>(&self, commands: &'a mut Commands) -> Option<bevy::ecs::system::EntityCommands<'a>> {
         use Dest::*;
         match self {
             Append(id) => {

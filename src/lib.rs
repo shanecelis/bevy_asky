@@ -2,13 +2,13 @@
 #![allow(clippy::type_complexity)]
 use bevy::prelude::*;
 
-pub(crate) mod focus;
+pub mod focus;
 use std::borrow::Cow;
 
 pub mod construct;
 mod num_like;
 pub mod prompt;
-pub(crate) mod string_cursor;
+pub mod string_cursor;
 pub mod view;
 #[cfg(feature = "async")]
 mod r#async;

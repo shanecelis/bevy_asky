@@ -30,7 +30,7 @@ impl<'w, 's> AskyCommands for Commands<'w, 's> {
         let p = props.into();
         let d = dest.into();
 
-        let mut commands = d.entity_commands(self);
+        let mut commands = d.entity(self);
             commands.construct::<V>(())
             .construct::<T>(p);
         commands

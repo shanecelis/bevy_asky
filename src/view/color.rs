@@ -178,7 +178,7 @@ pub fn plugin(app: &mut App) {
                  radio_view,
                  checkbox_view,
                  prompt_view,
-                 text_view,
+                 text_view::<Without<Password>>,
                  password_view,
                  confirm_view,
                  toggle_view,
@@ -259,12 +259,13 @@ pub(crate) fn focus_view(
     }
 }
 
-pub(crate) fn text_view(
+pub fn text_view<F: bevy::ecs::query::QueryFilter>(
     query: Query<
         (Entity, &StringCursor, &Children, Option<&Placeholder>),
         (
             With<View>,
-            Without<Password>,
+            F,
+            // Without<Password>,
             Or<(Changed<StringCursor>,
                 Changed<Focusable>)>,
         ),

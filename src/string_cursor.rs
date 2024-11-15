@@ -9,7 +9,7 @@ pub enum CursorDirection {
 /// State of the user input for read-line text prompts (like [`Input`]).
 ///
 /// **Note**: This structure is not expected to be created, but it can be consumed when using a custom formatter.
-#[derive(Debug, PartialEq, Eq, Default, Component)]
+#[derive(Debug, PartialEq, Eq, Default, Component, Reflect)]
 pub struct StringCursor {
     /// Current value of the input.
     pub value: String,
@@ -19,17 +19,17 @@ pub struct StringCursor {
 
 impl StringCursor {
     #[allow(dead_code)]
-    pub(crate) fn set_value(&mut self, value: &str) {
+    pub fn set_value(&mut self, value: &str) {
         self.value.replace_range(.., value);
         self.index = self.value.len();
     }
 
-    pub(crate) fn insert(&mut self, ch: char) {
+    pub fn insert(&mut self, ch: char) {
         self.value.insert(self.index, ch);
         self.index += ch.len_utf8();
     }
 
-    pub(crate) fn backspace(&mut self) {
+    pub fn backspace(&mut self) {
         if self.index >= self.value.len() {
             self.value.pop();
             self.index = self.value.len();
@@ -40,21 +40,21 @@ impl StringCursor {
         }
     }
 
-    pub(crate) fn next_index(&self) -> usize {
+    pub fn next_index(&self) -> usize {
         ceil_char_boundary(&self.value, self.index + 1)
     }
 
-    pub(crate) fn prev_index(&self) -> usize {
+    pub fn prev_index(&self) -> usize {
         floor_char_boundary(&self.value, self.index.saturating_sub(1))
     }
 
-    pub(crate) fn delete(&mut self) {
+    pub fn delete(&mut self) {
         if !self.value.is_empty() && self.index < self.value.len() {
             self.value.remove(self.index);
         }
     }
 
-    pub(crate) fn move_cursor(&mut self, position: CursorDirection) {
+    pub fn move_cursor(&mut self, position: CursorDirection) {
         self.index = match position {
             // TODO: When round_char_boundary is stabilized, use std's impl.
             // CursorDirection::Left => self.value.floor_char_boundary(self.index.saturating_sub(1)),
