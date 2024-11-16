@@ -5,41 +5,40 @@ use bevy::prelude::*;
 pub mod focus;
 use std::borrow::Cow;
 
+#[cfg(feature = "async")]
+mod r#async;
 pub mod construct;
 mod num_like;
 pub mod prompt;
 pub mod string_cursor;
 pub mod view;
 #[cfg(feature = "async")]
-mod r#async;
-#[cfg(feature = "async")]
 use futures::channel::oneshot;
 #[cfg(feature = "async")]
 pub use r#async::*;
-pub mod sync;
 mod dest;
+pub mod sync;
 pub use dest::Dest;
 
 pub mod prelude {
-    pub use super::{AskyPlugin, AskyEvent, AskyChange, Submitter, Error, construct::*, prompt::*, view::*, focus::*, num_like::NumLike};
     #[cfg(feature = "async")]
     pub use super::r#async::*;
+    pub use super::{
+        construct::*, focus::*, num_like::NumLike, prompt::*, view::*, AskyChange, AskyEvent,
+        AskyPlugin, Error, Submitter,
+    };
 }
 
 pub struct AskyPlugin;
 
 impl Plugin for AskyPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_plugins(prompt::plugin)
-            .add_plugins(focus::plugin);
+        app.add_plugins(prompt::plugin).add_plugins(focus::plugin);
         // #[cfg(feature = "async")]
         // app
         //     .add_plugins(bevy_defer::AsyncPlugin::default_settings());
-
     }
 }
-
 
 #[derive(Event, Deref, DerefMut, Debug, Clone)]
 pub struct AskyEvent<T>(pub Result<T, Error>);

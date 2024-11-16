@@ -7,13 +7,11 @@ use bevy_asky::{
 };
 
 fn views(app: &mut App) {
-    app
-        .add_plugins(view::ascii::plugin)
+    app.add_plugins(view::ascii::plugin)
         .add_plugins(view::color::plugin);
 
     #[cfg(feature = "button")]
-    app
-        .add_plugins(view::button::plugin);
+    app.add_plugins(view::button::plugin);
 }
 
 fn main() {
@@ -34,11 +32,9 @@ fn setup(mut commands: Commands) {
         parent
             .construct::<color::View>(())
             .construct::<RadioGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
-            .observe(
-                move |trigger: Trigger<AskyEvent<usize>>| {
-                    eprintln!("trigger {:?}", trigger.event());
-                },
-            );
+            .observe(move |trigger: Trigger<AskyEvent<usize>>| {
+                eprintln!("trigger {:?}", trigger.event());
+            });
 
         parent
             .construct::<Prompt>("radio group 1")
@@ -46,10 +42,8 @@ fn setup(mut commands: Commands) {
         parent
             .construct::<ascii::View>(())
             .construct::<RadioGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
-            .observe(
-                move |trigger: Trigger<AskyEvent<usize>>| {
-                    eprintln!("trigger {:?}", trigger.event());
-                },
-            );
+            .observe(move |trigger: Trigger<AskyEvent<usize>>| {
+                eprintln!("trigger {:?}", trigger.event());
+            });
     });
 }

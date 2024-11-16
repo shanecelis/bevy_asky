@@ -2,13 +2,11 @@ use bevy::prelude::*;
 use bevy_asky::{construct::*, prompt::*, view::*, *};
 
 fn views(app: &mut App) {
-    app
-        .add_plugins(view::ascii::plugin)
+    app.add_plugins(view::ascii::plugin)
         .add_plugins(view::color::plugin);
 
     #[cfg(feature = "button")]
-    app
-        .add_plugins(view::button::plugin);
+    app.add_plugins(view::button::plugin);
 }
 
 fn main() {
@@ -35,31 +33,25 @@ fn setup(mut commands: Commands) {
             parent
                 .construct::<Confirm>("Do you like soda?")
                 .construct::<ascii::View>(())
-                .observe(
-                    move |trigger: Trigger<AskyEvent<bool>>| {
-                        eprintln!("trigger {:?}", trigger.event());
-                        // commands.entity(trigger.entity()).remove::<Focusable>();
-                    },
-                );
+                .observe(move |trigger: Trigger<AskyEvent<bool>>| {
+                    eprintln!("trigger {:?}", trigger.event());
+                    // commands.entity(trigger.entity()).remove::<Focusable>();
+                });
 
             parent
                 .construct::<Confirm>("Do you like coke?")
                 .construct::<ascii::View>(())
-                .observe(
-                    move |trigger: Trigger<AskyEvent<bool>>| {
-                        eprintln!("trigger {:?}", trigger.event());
-                        // commands.entity(trigger.entity()).remove::<Focusable>();
-                    },
-                );
+                .observe(move |trigger: Trigger<AskyEvent<bool>>| {
+                    eprintln!("trigger {:?}", trigger.event());
+                    // commands.entity(trigger.entity()).remove::<Focusable>();
+                });
 
             parent
                 .construct::<Confirm>("Do you like pepsi?")
                 .construct::<ascii::View>(())
-                .observe(
-                    move |trigger: Trigger<AskyEvent<bool>>| {
-                        eprintln!("trigger {:?}", trigger.event());
-                        // commands.entity(trigger.entity()).remove::<Focusable>();
-                    },
-                );
+                .observe(move |trigger: Trigger<AskyEvent<bool>>| {
+                    eprintln!("trigger {:?}", trigger.event());
+                    // commands.entity(trigger.entity()).remove::<Focusable>();
+                });
         });
 }

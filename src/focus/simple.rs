@@ -1,7 +1,4 @@
-use bevy::{
-    ecs::system::SystemParam,
-    prelude::*
-};
+use bevy::{ecs::system::SystemParam, prelude::*};
 
 pub mod private {
     use bevy::prelude::*;
@@ -28,7 +25,6 @@ impl<'w> Focus<'w> {
     }
 }
 
-
 #[derive(Resource, Default, Debug)]
 pub struct KeyboardNav(bool);
 
@@ -48,13 +44,11 @@ impl Focusable {
 // pub struct Blocked;
 
 pub fn plugin(app: &mut App) {
-    app
-        .register_type::<private::Focus>()
+    app.register_type::<private::Focus>()
         .register_type::<Focusable>()
         .insert_resource(private::Focus(None))
         .insert_resource(KeyboardNav(true))
-        .add_systems(Update, (focus_on_tab,
-                              reset_focus));
+        .add_systems(Update, (focus_on_tab, reset_focus));
 }
 
 // pub type Focusable = AskyState;
@@ -80,7 +74,7 @@ impl<'w, 's> FocusParam<'w, 's> {
     //     });
     // }
 
-    pub fn move_focus(&mut self, id_maybe: impl Into<Option<Entity>>)  {
+    pub fn move_focus(&mut self, id_maybe: impl Into<Option<Entity>>) {
         if let Some(focus_id) = id_maybe.into().or(self.focus.0) {
             // We're moving from a definite id.
             let mut seen_id = false;
@@ -103,12 +97,14 @@ impl<'w, 's> FocusParam<'w, 's> {
             self.focus.0 = result;
         } else {
             // We're moving to any available id.
-            self.focus.0 = self.query.iter_mut()
-                                     .find(|(_, focusable)| focusable.block)
-                                     .map(|(id, mut focusable)| {
-                                         focusable.touch();
-                                         id
-                                     });
+            self.focus.0 = self
+                .query
+                .iter_mut()
+                .find(|(_, focusable)| focusable.block)
+                .map(|(id, mut focusable)| {
+                    focusable.touch();
+                    id
+                });
         }
         // There is a focus resource.
         // if let Some(focus_id) = self.focus.0 {
@@ -157,13 +153,19 @@ impl<'w, 's> FocusParam<'w, 's> {
     }
 
     pub fn is_blocked(&self, id: Entity) -> bool {
-        self.query.get(id).map(|(_, focusable)| focusable.block).unwrap_or(true)
+        self.query
+            .get(id)
+            .map(|(_, focusable)| focusable.block)
+            .unwrap_or(true)
     }
 
     pub fn block(&mut self, id_maybe: impl Into<Option<Entity>>) {
         if let Some(id) = id_maybe.into().or(self.focus.0) {
             // self.commands.entity(id).insert(Blocked);
-            self.query.get_mut(id).map(|(_, mut focus)| focus.block = true).expect("no Focusable");
+            self.query
+                .get_mut(id)
+                .map(|(_, mut focus)| focus.block = true)
+                .expect("no Focusable");
         } else {
             warn!("No id to block");
         }
@@ -172,15 +174,17 @@ impl<'w, 's> FocusParam<'w, 's> {
     pub fn unblock(&mut self, id_maybe: impl Into<Option<Entity>>) {
         if let Some(id) = id_maybe.into().or(self.focus.0) {
             // self.commands.entity(id).remove::<Blocked>();
-            self.query.get_mut(id).map(|(_, mut focus)| focus.block = false).expect("no Focusable");
+            self.query
+                .get_mut(id)
+                .map(|(_, mut focus)| focus.block = false)
+                .expect("no Focusable");
         } else {
             warn!("No id to unblock");
         }
     }
 }
 
-fn focus_on_tab(input: Res<ButtonInput<KeyCode>>,
-                mut focus: FocusParam) {
+fn focus_on_tab(input: Res<ButtonInput<KeyCode>>, mut focus: FocusParam) {
     if input.just_pressed(KeyCode::Tab) {
         focus.move_focus(None);
     }
@@ -190,10 +194,10 @@ fn focus_on_tab(input: Res<ButtonInput<KeyCode>>,
 fn reset_focus(mut focus: FocusParam) {
     match focus.focus.0 {
         None => focus.move_focus(None),
-        Some(id) => if focus.is_blocked(id) {
-             focus.move_focus(None)
+        Some(id) => {
+            if focus.is_blocked(id) {
+                focus.move_focus(None)
+            }
         }
     }
 }
-
-

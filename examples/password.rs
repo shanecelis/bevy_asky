@@ -4,13 +4,11 @@ use bevy_asky::{construct::*, prompt::*, view::*, *};
 // use bevy_asky::view::button::*;
 
 fn views(app: &mut App) {
-    app
-        .add_plugins(view::ascii::plugin)
+    app.add_plugins(view::ascii::plugin)
         .add_plugins(view::color::plugin);
 
     #[cfg(feature = "button")]
-    app
-        .add_plugins(view::button::plugin);
+    app.add_plugins(view::button::plugin);
 }
 fn main() {
     App::new()

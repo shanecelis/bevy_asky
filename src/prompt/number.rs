@@ -1,7 +1,4 @@
-use crate::{prelude::*,
-            string_cursor::*,
-            construct::*,
-};
+use crate::{construct::*, prelude::*, string_cursor::*};
 use bevy::{
     input::{
         keyboard::{Key, KeyboardInput},

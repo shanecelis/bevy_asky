@@ -2,13 +2,11 @@ use bevy::prelude::*;
 use bevy_asky::{construct::*, prompt::*, view::*, *};
 
 fn views(app: &mut App) {
-    app
-        .add_plugins(view::ascii::plugin)
+    app.add_plugins(view::ascii::plugin)
         .add_plugins(view::color::plugin);
 
     #[cfg(feature = "button")]
-    app
-        .add_plugins(view::button::plugin);
+    app.add_plugins(view::button::plugin);
 }
 
 fn main() {
@@ -18,7 +16,6 @@ fn main() {
         .add_systems(Startup, setup)
         .run();
 }
-
 
 fn setup(mut commands: Commands) {
     // UI camera
@@ -50,4 +47,3 @@ fn setup(mut commands: Commands) {
         });
     // commands.insert_resource(Focus(first));
 }
-

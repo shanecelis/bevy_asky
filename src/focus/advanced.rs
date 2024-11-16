@@ -1,20 +1,10 @@
+use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_alt_ui_navigation_lite::{
-    prelude::*,
-    systems::InputMapping,
-    events::Direction as NavDirection
-};
-use bevy::{
-    ecs::{
-        system::{
-            SystemParam,
-        }
-    },
-    prelude::*,
+    events::Direction as NavDirection, prelude::*, systems::InputMapping,
 };
 
 pub fn plugin(app: &mut App) {
-    app
-        .add_event::<BlockRequest>()
+    app.add_event::<BlockRequest>()
         .add_systems(Startup, setup)
         .add_systems(Update, handle_block_requests.after(NavRequestSystem))
         .add_plugins(DefaultNavigationPlugins);
@@ -48,8 +38,10 @@ pub struct FocusParam<'w, 's> {
 #[derive(Event, Debug)]
 struct BlockRequest(Entity);
 
-fn handle_block_requests(mut blocks: EventReader<BlockRequest>,
-                         mut focusables: Query<&mut Focusable>) {
+fn handle_block_requests(
+    mut blocks: EventReader<BlockRequest>,
+    mut focusables: Query<&mut Focusable>,
+) {
     for request in blocks.read() {
         if let Ok(mut focusable) = focusables.get_mut(request.0) {
             warn!("handle block");
@@ -62,10 +54,13 @@ fn handle_block_requests(mut blocks: EventReader<BlockRequest>,
 
 impl<'w, 's> FocusParam<'w, 's> {
     pub fn is_focused(&self, id: Entity) -> bool {
-        self.focus.get(id).map(|focusable| FocusState::Focused == focusable.state()).unwrap_or(true)
+        self.focus
+            .get(id)
+            .map(|focusable| FocusState::Focused == focusable.state())
+            .unwrap_or(true)
     }
 
-    pub fn move_focus(&mut self, _id_maybe: impl Into<Option<Entity>>)  {
+    pub fn move_focus(&mut self, _id_maybe: impl Into<Option<Entity>>) {
         self.requests.send(NavRequest::Move(NavDirection::South));
     }
 

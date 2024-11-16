@@ -6,7 +6,7 @@ pub enum Dest {
     Root,
     Replace(Entity),
     ReplaceChildren(Entity),
-    Append(Entity)
+    Append(Entity),
 }
 
 impl From<Entity> for Dest {
@@ -28,8 +28,7 @@ impl Dest {
             }
             Replace(id) => commands.entity(*id),
             ReplaceChildren(id) => {
-                commands.entity(*id)
-                    .despawn_descendants();
+                commands.entity(*id).despawn_descendants();
                 let mut child = None;
                 commands.entity(*id).with_children(|parent| {
                     child = Some(parent.spawn_empty().id());
@@ -40,7 +39,10 @@ impl Dest {
         }
     }
 
-    pub fn get_entity<'a>(&self, commands: &'a mut Commands) -> Option<bevy::ecs::system::EntityCommands<'a>> {
+    pub fn get_entity<'a>(
+        &self,
+        commands: &'a mut Commands,
+    ) -> Option<bevy::ecs::system::EntityCommands<'a>> {
         use Dest::*;
         match self {
             Append(id) => {

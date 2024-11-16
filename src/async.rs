@@ -1,6 +1,6 @@
 #![allow(clippy::type_complexity)]
 use super::*;
-use crate::{construct::*, view::*, sync::AskyCommands};
+use crate::{construct::*, sync::AskyCommands, view::*};
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_defer::AsyncWorld;
 use futures::{channel::oneshot, Future};
@@ -10,9 +10,11 @@ use std::fmt::Debug;
 pub struct Asky;
 
 impl Asky {
-
     /// Prompt the user with `T`, rendering in element `dest`.
-    pub fn prompt<T: Construct + Component + Submitter, V: Construct<Props = ()> + Component + Default>(
+    pub fn prompt<
+        T: Construct + Component + Submitter,
+        V: Construct<Props = ()> + Component + Default,
+    >(
         &mut self,
         props: impl Into<T::Props>,
         dest: impl Into<Dest>,
@@ -34,10 +36,11 @@ impl Asky {
                 let mut commands = world.commands();
                 // let id = commands.prompt::<T, V>(p, d);
                 // commands.entity(id)
-                commands.prompt::<T, V>(p, d)
-                // d.entity_commands(&mut commands)
-                //     .construct::<V>(())
-                //     .construct::<T>(p)
+                commands
+                    .prompt::<T, V>(p, d)
+                    // d.entity_commands(&mut commands)
+                    //     .construct::<V>(())
+                    //     .construct::<T>(p)
                     .observe(
                         move |trigger: Trigger<AskyEvent<T::Out>>, mut commands: Commands| {
                             if let Some(sender) = send_once.take() {

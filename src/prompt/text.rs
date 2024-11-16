@@ -1,7 +1,4 @@
-use crate::{
-    string_cursor::*,
-    prelude::*,
-};
+use crate::{prelude::*, string_cursor::*};
 use bevy::{
     input::{
         keyboard::{Key, KeyboardInput},
@@ -12,8 +9,7 @@ use bevy::{
 use std::borrow::Cow;
 
 pub fn plugin(app: &mut App) {
-    app
-        .register_type::<StringCursor>()
+    app.register_type::<StringCursor>()
         .add_systems(PreUpdate, text_controller);
 }
 
@@ -76,10 +72,7 @@ impl Construct for TextField {
 
 fn text_controller(
     mut focus: FocusParam,
-    mut query: Query<
-        (Entity, &mut StringCursor),
-        Or<(With<TextField>, With<Password>)>,
-    >,
+    mut query: Query<(Entity, &mut StringCursor), Or<(With<TextField>, With<Password>)>>,
     mut input: EventReader<KeyboardInput>,
     mut commands: Commands,
 ) {
@@ -89,32 +82,32 @@ fn text_controller(
             continue;
         }
         any_focused_text |= true;
-            for ev in input.read() {
-                if ev.state != ButtonState::Pressed {
-                    continue;
+        for ev in input.read() {
+            if ev.state != ButtonState::Pressed {
+                continue;
+            }
+            match &ev.logical_key {
+                Key::Character(s) => {
+                    for c in s.chars() {
+                        text_state.insert(c);
+                    }
                 }
-                match &ev.logical_key {
-                    Key::Character(s) => {
-                        for c in s.chars() {
-                            text_state.insert(c);
-                        }
-                    }
-                    Key::Space => text_state.insert(' '),
-                    Key::Backspace => text_state.backspace(),
-                    Key::Delete => text_state.delete(),
-                    Key::ArrowLeft => text_state.move_cursor(CursorDirection::Left),
-                    Key::ArrowRight => text_state.move_cursor(CursorDirection::Right),
-                    Key::Enter => {
-                        commands.trigger_targets(AskyEvent(Ok(text_state.value.clone())), id);
-                        focus.block_and_move(id);
-                    }
-                    Key::Escape => {
-                        commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
-                        commands.entity(id).insert(Feedback::error("canceled"));
-                        focus.block(id);
-                    }
-                    x => info!("Unhandled key {x:?}"),
+                Key::Space => text_state.insert(' '),
+                Key::Backspace => text_state.backspace(),
+                Key::Delete => text_state.delete(),
+                Key::ArrowLeft => text_state.move_cursor(CursorDirection::Left),
+                Key::ArrowRight => text_state.move_cursor(CursorDirection::Right),
+                Key::Enter => {
+                    commands.trigger_targets(AskyEvent(Ok(text_state.value.clone())), id);
+                    focus.block_and_move(id);
                 }
+                Key::Escape => {
+                    commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
+                    commands.entity(id).insert(Feedback::error("canceled"));
+                    focus.block(id);
+                }
+                x => info!("Unhandled key {x:?}"),
+            }
         }
     }
     focus.set_keyboard_nav(!any_focused_text);

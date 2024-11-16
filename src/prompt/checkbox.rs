@@ -46,7 +46,6 @@ impl Construct for Checkbox {
     }
 }
 
-
 fn checkbox_controller(
     focus: Focus,
     mut query: Query<(Entity, &mut Checkbox)>,
@@ -134,9 +133,7 @@ impl Construct for CheckboxGroup {
                 // let mut entity_commands = parent.column();
 
                 for prompt in props {
-                    let id = parent
-                        .construct::<Checkbox>(prompt)
-                        .id();
+                    let id = parent.construct::<Checkbox>(prompt).id();
                     children.push(id);
                 }
             });

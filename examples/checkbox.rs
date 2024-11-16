@@ -2,13 +2,11 @@ use bevy::prelude::*;
 use bevy_asky::{construct::*, prompt::*, view::*, *};
 
 fn views(app: &mut App) {
-    app
-        .add_plugins(view::ascii::plugin)
+    app.add_plugins(view::ascii::plugin)
         .add_plugins(view::color::plugin);
 
     #[cfg(feature = "button")]
-    app
-        .add_plugins(view::button::plugin);
+    app.add_plugins(view::button::plugin);
 }
 
 fn main() {
@@ -34,19 +32,15 @@ fn setup(mut commands: Commands) {
             parent
                 .construct::<Checkbox>("Money?")
                 .construct::<ascii::View>(())
-                .observe(
-                    move |trigger: Trigger<AskyEvent<bool>>| {
-                        eprintln!("trigger {:?}", trigger.event());
-                    },
-                );
+                .observe(move |trigger: Trigger<AskyEvent<bool>>| {
+                    eprintln!("trigger {:?}", trigger.event());
+                });
 
             parent
                 .construct::<Checkbox>("Time?")
                 .construct::<ascii::View>(())
-                .observe(
-                    move |trigger: Trigger<AskyEvent<bool>>| {
-                        eprintln!("trigger {:?}", trigger.event());
-                    },
-                );
+                .observe(move |trigger: Trigger<AskyEvent<bool>>| {
+                    eprintln!("trigger {:?}", trigger.event());
+                });
         });
 }

@@ -1,9 +1,6 @@
 use crate::{construct::*, prelude::*, string_cursor::*};
 use bevy::{
-    ecs::{
-        system::SystemParam,
-        query::QueryEntityError,
-    },
+    ecs::{query::QueryEntityError, system::SystemParam},
     prelude::*,
 };
 
@@ -34,11 +31,8 @@ impl Construct for View {
         context: &mut ConstructContext,
         _props: Self::Props,
     ) -> Result<Self, ConstructError> {
-
         let mut commands = context.world.commands();
-        commands
-            .entity(context.id)
-            .insert(NodeBundle::default());
+        commands.entity(context.id).insert(NodeBundle::default());
         // context.world.flush();
         Ok(View)
     }
@@ -52,10 +46,10 @@ pub(crate) struct Inserter<'w, 's, C: Component> {
 }
 
 impl<'w, 's, C: Component> Inserter<'w, 's, C> {
-
-    fn insert_or_get_child(&mut self,
-                           root: Entity,
-                           index: usize,
+    fn insert_or_get_child(
+        &mut self,
+        root: Entity,
+        index: usize,
     ) -> Result<Entity, Option<Entity>> {
         match self.children.get(root) {
             Ok(children) => {
@@ -63,64 +57,74 @@ impl<'w, 's, C: Component> Inserter<'w, 's, C> {
                     Ok(children[index])
                 } else {
                     let mut id = None;
-                    if let Some(mut ecommands) = self.commands.get_entity(root) { ecommands.with_children(|parent| {
-                        for _ in children.len()..index {
-                            parent.spawn(TextBundle::default());
-                        }
-                        id = Some(parent.spawn(TextBundle::default()).id());
-                    }); }
+                    if let Some(mut ecommands) = self.commands.get_entity(root) {
+                        ecommands.with_children(|parent| {
+                            for _ in children.len()..index {
+                                parent.spawn(TextBundle::default());
+                            }
+                            id = Some(parent.spawn(TextBundle::default()).id());
+                        });
+                    }
                     Err(id)
                 }
             }
             _ => {
                 let mut id = None;
-                if let Some(mut ecommands) = self.commands.get_entity(root) { ecommands.with_children(|parent| {
-                    for _ in 0..index {
-                        parent.spawn(TextBundle::default());
-                    }
-                    id = Some(parent.spawn(TextBundle::default()).id());
-                }); }
+                if let Some(mut ecommands) = self.commands.get_entity(root) {
+                    ecommands.with_children(|parent| {
+                        for _ in 0..index {
+                            parent.spawn(TextBundle::default());
+                        }
+                        id = Some(parent.spawn(TextBundle::default()).id());
+                    });
+                }
                 Err(id)
             }
         }
     }
 
-    fn insert_or_get_mut<F>(&mut self,
-                            root: Entity,
-                            index: usize,
-                            apply: F,
+    fn insert_or_get_mut<F>(
+        &mut self,
+        root: Entity,
+        index: usize,
+        apply: F,
     ) -> Result<(), QueryEntityError>
-    where F: Fn(&mut C), C: Default {
+    where
+        F: Fn(&mut C),
+        C: Default,
+    {
         match self.children.get(root) {
             Ok(children) => {
                 if index < children.len() {
-                    self.roots.get_mut(children[index]).map(|mut t: Mut<C>| apply(&mut t))
+                    self.roots
+                        .get_mut(children[index])
+                        .map(|mut t: Mut<C>| apply(&mut t))
                 } else {
                     // dbg!(index, children.len());
-                    if let Some(mut ecommands) = self.commands.get_entity(root) { ecommands.with_children(|parent| {
-                        for _ in children.len()..index {
-                            parent.spawn(TextBundle::default());
-                        }
-                        let mut text = C::default();
-                        apply(&mut text);
-                        parent
-                            .spawn(TextBundle::default())
-                            .insert(text);
-                    }); }
+                    if let Some(mut ecommands) = self.commands.get_entity(root) {
+                        ecommands.with_children(|parent| {
+                            for _ in children.len()..index {
+                                parent.spawn(TextBundle::default());
+                            }
+                            let mut text = C::default();
+                            apply(&mut text);
+                            parent.spawn(TextBundle::default()).insert(text);
+                        });
+                    }
                     Ok(())
                 }
             }
             _ => {
-                if let Some(mut ecommands) = self.commands.get_entity(root) { ecommands.with_children(|parent| {
-                    for _ in 0..index {
-                        parent.spawn(TextBundle::default());
-                    }
-                    let mut text = C::default();
-                    apply(&mut text);
-                    parent
-                        .spawn(TextBundle::default())
-                        .insert(text);
-                }); }
+                if let Some(mut ecommands) = self.commands.get_entity(root) {
+                    ecommands.with_children(|parent| {
+                        for _ in 0..index {
+                            parent.spawn(TextBundle::default());
+                        }
+                        let mut text = C::default();
+                        apply(&mut text);
+                        parent.spawn(TextBundle::default()).insert(text);
+                    });
+                }
                 Ok(())
             }
         }
@@ -151,37 +155,43 @@ impl Default for Palette {
 }
 
 pub fn plugin(app: &mut App) {
-    app
-        .register_type::<View>()
+    app.register_type::<View>()
         .register_type::<ViewPart>()
         .register_type::<Cursor>()
         .register_type::<CursorBlink>()
         .register_type::<Palette>()
-        .add_systems(PreUpdate,
-                     (
-                         super::add_view_to_checkbox::<View>,
-                         super::add_view_to_radio::<View>,
-                     ),
+        .add_systems(
+            PreUpdate,
+            (
+                super::add_view_to_checkbox::<View>,
+                super::add_view_to_radio::<View>,
+            ),
         )
         .add_systems(
             Update,
             (
-                (focus_view,
-                 radio_view,
-                 checkbox_view,
-                 prompt_view,
-                 text_view::<Without<Password>>,
-                 password_view,
-                 confirm_view,
-                 toggle_view,
-                 feedback_view).chain(),
+                (
+                    focus_view,
+                    radio_view,
+                    checkbox_view,
+                    prompt_view,
+                    text_view::<Without<Password>>,
+                    password_view,
+                    confirm_view,
+                    toggle_view,
+                    feedback_view,
+                )
+                    .chain(),
                 clear_feedback::<StringCursor>,
                 clear_feedback::<Toggle>,
                 blink_cursor,
             ),
         )
-       .insert_resource(CursorBlink(Timer::from_seconds(1.0/3.0, TimerMode::Repeating)))
-       .insert_resource(Palette::default());
+        .insert_resource(CursorBlink(Timer::from_seconds(
+            1.0 / 3.0,
+            TimerMode::Repeating,
+        )))
+        .insert_resource(Palette::default());
 }
 
 pub(crate) fn prompt_view(
@@ -190,14 +200,9 @@ pub(crate) fn prompt_view(
 ) {
     for (id, prompt) in query.iter_mut() {
         writer
-            .insert_or_get_mut(id,
-                               ViewPart::Question as usize,
-                               |text| {
-                                    replace_or_insert(
-                                        text,
-                                        0,
-                                        prompt);
-                               })
+            .insert_or_get_mut(id, ViewPart::Question as usize, |text| {
+                replace_or_insert(text, 0, prompt);
+            })
             .expect("prompt");
     }
 }
@@ -208,11 +213,9 @@ pub(crate) fn feedback_view(
 ) {
     for (id, feedback) in query.iter_mut() {
         writer
-            .insert_or_get_mut(id,
-                               ViewPart::Feedback as usize,
-                               |text| {
-                                   replace_or_insert(text, 0, &format!(" {}", feedback.message));
-                               })
+            .insert_or_get_mut(id, ViewPart::Feedback as usize, |text| {
+                replace_or_insert(text, 0, &format!(" {}", feedback.message));
+            })
             .expect("feedback");
     }
 }
@@ -233,20 +236,10 @@ pub(crate) fn focus_view(
 ) {
     for id in query.iter_mut() {
         writer
-            .insert_or_get_mut(id,
-                               ViewPart::Focus as usize,
-                               |text| {
-                                    replace_or_insert(
-                                        text,
-                                        0,
-                                        if focus.is_focused(id) {
-                                            "> "
-                                        } else {
-                                            "  "
-                                        },
-                                    );
-                                    text.sections[0].style.color = palette.highlight.into();
-                               })
+            .insert_or_get_mut(id, ViewPart::Focus as usize, |text| {
+                replace_or_insert(text, 0, if focus.is_focused(id) { "> " } else { "  " });
+                text.sections[0].style.color = palette.highlight.into();
+            })
             .expect("focus");
     }
 }
@@ -258,8 +251,7 @@ pub fn text_view<F: bevy::ecs::query::QueryFilter>(
             With<View>,
             F,
             // Without<Password>,
-            Or<(Changed<StringCursor>,
-                Changed<Focusable>)>,
+            Or<(Changed<StringCursor>, Changed<Focusable>)>,
         ),
     >,
     mut texts: Query<&mut Text>, //, &mut BackgroundColor)>,
@@ -304,7 +296,11 @@ pub fn text_view<F: bevy::ecs::query::QueryFilter>(
                     replace_or_insert(&mut post_cursor, 0, &placeholder.unwrap().0);
                     post_cursor.sections[0].style.color = palette.lowlight.into();
                 } else {
-                    replace_or_insert(&mut post_cursor, 0, &text_state.value[text_state.next_index()..]);
+                    replace_or_insert(
+                        &mut post_cursor,
+                        0,
+                        &text_state.value[text_state.next_index()..],
+                    );
                     post_cursor.sections[0].style.color = palette.text_color.into();
                 }
             } else {
@@ -324,27 +320,32 @@ pub fn text_view<F: bevy::ecs::query::QueryFilter>(
                     TextStyle::default(),
                 ));
                 // cursor
-                parent.spawn(
-                    TextBundle::from_section(
+                parent
+                    .spawn(TextBundle::from_section(
                         if text_state.index >= text_state.value.len() {
                             " "
                         } else {
                             &text_state.value[text_state.index..text_state.next_index()]
                         },
-                        TextStyle::default())
-                ).insert(Cursor);
+                        TextStyle::default(),
+                    ))
+                    .insert(Cursor);
                 // post cursor
                 match placeholder {
                     Some(placeholder) if text_state.value.is_empty() => {
-                        parent.spawn(TextBundle::from_section(placeholder.0.clone(),
-                                                            TextStyle {
-                                                                color: palette.lowlight.into(),
-                                                                .. default()
-                                                            }));
+                        parent.spawn(TextBundle::from_section(
+                            placeholder.0.clone(),
+                            TextStyle {
+                                color: palette.lowlight.into(),
+                                ..default()
+                            },
+                        ));
                     }
                     _ => {
-                        parent.spawn(TextBundle::from_section(&text_state.value[0..text_state.index],
-                                                            TextStyle::default()));
+                        parent.spawn(TextBundle::from_section(
+                            &text_state.value[0..text_state.index],
+                            TextStyle::default(),
+                        ));
                     }
                 }
             });
@@ -355,10 +356,11 @@ pub fn text_view<F: bevy::ecs::query::QueryFilter>(
 pub(crate) fn password_view(
     mut query: Query<
         (Entity, &StringCursor, &Children, Option<&Placeholder>),
-        (With<View>,
-         With<Password>,
-         Or<(Changed<StringCursor>,
-             Changed<Focusable>)>),
+        (
+            With<View>,
+            With<Password>,
+            Or<(Changed<StringCursor>, Changed<Focusable>)>,
+        ),
     >,
     mut texts: Query<&mut Text>, //, &mut BackgroundColor)>,
     sections: Query<&Children>,
@@ -446,10 +448,7 @@ pub(crate) fn password_view(
 }
 
 pub(crate) fn toggle_view(
-    mut query: Query<
-        (Entity, &Toggle),
-        (With<View>, Or<(Changed<Focusable>, Changed<Toggle>)>),
-    >,
+    mut query: Query<(Entity, &Toggle), (With<View>, Or<(Changed<Focusable>, Changed<Toggle>)>)>,
     palette: Res<Palette>,
     mut commands: Commands,
     mut writer: Inserter<BackgroundColor>,
@@ -458,45 +457,47 @@ pub(crate) fn toggle_view(
     for (root, toggle) in query.iter_mut() {
         match writer.insert_or_get_child(root, ViewPart::Options as usize) {
             Ok(options) => {
-                writer.insert_or_get_mut(options,
-                                1,
-                                |color| {
-                                    *color = if toggle.index == 0 {
-                                        palette.highlight.into()
-                                    } else {
-                                        palette.lowlight.into()
-                                    };
-                                })
-                .expect("option 0");
+                writer
+                    .insert_or_get_mut(options, 1, |color| {
+                        *color = if toggle.index == 0 {
+                            palette.highlight.into()
+                        } else {
+                            palette.lowlight.into()
+                        };
+                    })
+                    .expect("option 0");
 
-                writer.insert_or_get_mut(options,
-                                3,
-                                |color| {
-                                    *color = if toggle.index == 1 {
-                                        palette.highlight.into()
-                                    } else {
-                                        palette.lowlight.into()
-                                    };
-                                })
-                .expect("option 1");
+                writer
+                    .insert_or_get_mut(options, 3, |color| {
+                        *color = if toggle.index == 1 {
+                            palette.highlight.into()
+                        } else {
+                            palette.lowlight.into()
+                        };
+                    })
+                    .expect("option 1");
             }
             Err(Some(new)) => {
                 commands.entity(new).with_children(|parent| {
                     let style = TextStyle::default();
                     parent.spawn(TextBundle::from_section(" ", style.clone())); // 0
-                    parent.spawn(TextBundle::from_section(format!(" {} ", toggle.options[0]), style.clone())
-                                .with_background_color(if toggle.index == 0 {
-                                    palette.highlight.into()
-                                } else {
-                                    palette.lowlight.into()
-                                })); // 1
+                    parent.spawn(
+                        TextBundle::from_section(format!(" {} ", toggle.options[0]), style.clone())
+                            .with_background_color(if toggle.index == 0 {
+                                palette.highlight.into()
+                            } else {
+                                palette.lowlight.into()
+                            }),
+                    ); // 1
                     parent.spawn(TextBundle::from_section(" ", style.clone())); // 2
-                    parent.spawn(TextBundle::from_section(format!(" {} ", toggle.options[1]), style) // 3
-                                .with_background_color(if toggle.index == 1 {
-                                    palette.highlight.into()
-                                } else {
-                                    palette.lowlight.into()
-                                }));
+                    parent.spawn(
+                        TextBundle::from_section(format!(" {} ", toggle.options[1]), style) // 3
+                            .with_background_color(if toggle.index == 1 {
+                                palette.highlight.into()
+                            } else {
+                                palette.lowlight.into()
+                            }),
+                    );
                 });
             }
             _ => (),
@@ -505,10 +506,7 @@ pub(crate) fn toggle_view(
 }
 
 pub(crate) fn confirm_view(
-    mut query: Query<
-        (Entity, &Confirm),
-        (With<View>, Or<(Changed<Focusable>, Changed<Confirm>)>),
-    >,
+    mut query: Query<(Entity, &Confirm), (With<View>, Or<(Changed<Focusable>, Changed<Confirm>)>)>,
     palette: Res<Palette>,
     mut commands: Commands,
     mut writer: Inserter<BackgroundColor>,
@@ -516,46 +514,48 @@ pub(crate) fn confirm_view(
     for (root, confirm) in query.iter_mut() {
         match writer.insert_or_get_child(root, ViewPart::Options as usize) {
             Ok(options) => {
+                writer
+                    .insert_or_get_mut(options, 1, |color| {
+                        *color = if !confirm.yes {
+                            palette.highlight.into()
+                        } else {
+                            palette.lowlight.into()
+                        };
+                    })
+                    .expect("option 0");
 
-                writer.insert_or_get_mut(options,
-                                1,
-                                |color| {
-                                    *color = if ! confirm.yes {
-                                        palette.highlight.into()
-                                    } else {
-                                        palette.lowlight.into()
-                                    };
-                                })
-                .expect("option 0");
-
-                writer.insert_or_get_mut(options,
-                                3,
-                                |color| {
-                                    *color = if confirm.yes {
-                                        palette.highlight.into()
-                                    } else {
-                                        palette.lowlight.into()
-                                    };
-                                })
-                .expect("option 1");
+                writer
+                    .insert_or_get_mut(options, 3, |color| {
+                        *color = if confirm.yes {
+                            palette.highlight.into()
+                        } else {
+                            palette.lowlight.into()
+                        };
+                    })
+                    .expect("option 1");
             }
             Err(Some(new)) => {
                 commands.entity(new).with_children(|parent| {
                     let style = TextStyle::default();
                     parent.spawn(TextBundle::from_section(" ", style.clone())); // 0
-                    parent.spawn(TextBundle::from_section(" No ", style.clone())
-                                .with_background_color(if !confirm.yes {
-                                    palette.highlight.into()
-                                } else {
-                                    palette.lowlight.into()
-                                })); // 1
+                    parent.spawn(
+                        TextBundle::from_section(" No ", style.clone()).with_background_color(
+                            if !confirm.yes {
+                                palette.highlight.into()
+                            } else {
+                                palette.lowlight.into()
+                            },
+                        ),
+                    ); // 1
                     parent.spawn(TextBundle::from_section(" ", style.clone())); // 2
-                    parent.spawn(TextBundle::from_section(" Yes ", style) // 3
-                                .with_background_color(if confirm.yes {
-                                    palette.highlight.into()
-                                } else {
-                                    palette.lowlight.into()
-                                }));
+                    parent.spawn(
+                        TextBundle::from_section(" Yes ", style) // 3
+                            .with_background_color(if confirm.yes {
+                                palette.highlight.into()
+                            } else {
+                                palette.lowlight.into()
+                            }),
+                    );
                 });
             }
             _ => (),
@@ -566,8 +566,7 @@ pub(crate) fn confirm_view(
 pub(crate) fn checkbox_view(
     mut query: Query<
         (Entity, &Checkbox),
-        (With<View>, Or<(Changed<Checkbox>,
-                         Changed<Focusable>)>),
+        (With<View>, Or<(Changed<Checkbox>, Changed<Focusable>)>),
     >,
     palette: Res<Palette>,
     mut writer: Inserter<Text>,
@@ -575,53 +574,47 @@ pub(crate) fn checkbox_view(
 ) {
     for (id, checkbox) in query.iter_mut() {
         writer
-            .insert_or_get_mut(id,
-                               ViewPart::PreQuestion as usize,
-                               |text| {
-                                   replace_or_insert(text, 0, if checkbox.checked { "[x] " } else { "[ ] " });
-                                   // text.sections[0].style.color = if focusable.state() == FocusState::Focused {
-                                   text.sections[0].style.color = if focus.is_focused(id) {
-                                       palette.highlight.into()
-                                   } else {
-                                       palette.text_color.into()
-                                   };
-                               })
+            .insert_or_get_mut(id, ViewPart::PreQuestion as usize, |text| {
+                replace_or_insert(text, 0, if checkbox.checked { "[x] " } else { "[ ] " });
+                // text.sections[0].style.color = if focusable.state() == FocusState::Focused {
+                text.sections[0].style.color = if focus.is_focused(id) {
+                    palette.highlight.into()
+                } else {
+                    palette.text_color.into()
+                };
+            })
             .expect("prequestion");
     }
 }
 
 pub(crate) fn radio_view(
-    mut query: Query<
-        (Entity, &Radio),
-        (With<View>, Or<(Changed<Radio>,
-                         Changed<Focusable>)>),
-    >,
+    mut query: Query<(Entity, &Radio), (With<View>, Or<(Changed<Radio>, Changed<Focusable>)>)>,
     palette: Res<Palette>,
     mut writer: Inserter<Text>,
     focus: Focus,
 ) {
     for (id, radio) in query.iter_mut() {
         writer
-            .insert_or_get_mut(id,
-                               ViewPart::PreQuestion as usize,
-                               |text| {
-                                   replace_or_insert(text, 0, if radio.checked { "(x) " } else { "( ) " });
-                                   text.sections[0].style.color = if focus.is_focused(id) {
-                                       palette.highlight.into()
-                                   } else {
-                                       palette.text_color.into()
-                                   };
-                               })
+            .insert_or_get_mut(id, ViewPart::PreQuestion as usize, |text| {
+                replace_or_insert(text, 0, if radio.checked { "(x) " } else { "( ) " });
+                text.sections[0].style.color = if focus.is_focused(id) {
+                    palette.highlight.into()
+                } else {
+                    palette.text_color.into()
+                };
+            })
             .expect("prequestion");
     }
 }
 // We don't know if it's focusable.
-fn blink_cursor(mut query: Query<(&mut BackgroundColor, &mut Text, &Parent), With<Cursor>>,
-                mut timer: ResMut<CursorBlink>,
-                time: Res<Time>,
-                mut count: Local<u8>,
-                focus: Focus,
-                palette: Res<Palette>) {
+fn blink_cursor(
+    mut query: Query<(&mut BackgroundColor, &mut Text, &Parent), With<Cursor>>,
+    mut timer: ResMut<CursorBlink>,
+    time: Res<Time>,
+    mut count: Local<u8>,
+    focus: Focus,
+    palette: Res<Palette>,
+) {
     if timer.tick(time.delta()).just_finished() {
         *count = count.checked_add(1).unwrap_or(0);
         for (mut color, mut text, parent) in &mut query {

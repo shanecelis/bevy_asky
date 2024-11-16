@@ -27,12 +27,14 @@ fn setup(mut commands: Commands, mut asky: Asky) {
         })
         .id();
     commands.spawn_task(move || async move {
-        let response: Result<String, Error>
-            = asky.prompt::<TextField, view::ascii::View>("What up? ", Dest::Append(id)).await;
+        let response: Result<String, Error> = asky
+            .prompt::<TextField, view::ascii::View>("What up? ", Dest::Append(id))
+            .await;
         dbg!(response);
 
-        let response: Result<String, Error>
-            = asky.prompt::<TextField, view::color::View>("Really? ", Dest::Append(id)).await;
+        let response: Result<String, Error> = asky
+            .prompt::<TextField, view::color::View>("Really? ", Dest::Append(id))
+            .await;
         dbg!(response);
         Ok(())
     });

@@ -1,8 +1,4 @@
-use crate::{
-    string_cursor::*,
-    construct::*,
-    prelude::*,
-};
+use crate::{construct::*, prelude::*, string_cursor::*};
 use bevy::prelude::*;
 use std::borrow::Cow;
 

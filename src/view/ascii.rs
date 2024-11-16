@@ -1,5 +1,5 @@
-use crate::{prelude::*, string_cursor::*,};
 use super::replace_or_insert_rep;
+use crate::{prelude::*, string_cursor::*};
 use bevy::prelude::*;
 use std::fmt::Write;
 
@@ -24,19 +24,17 @@ impl Construct for View {
         _props: Self::Props,
     ) -> Result<Self, ConstructError> {
         let mut commands = context.world.commands();
-        commands
-            .entity(context.id)
-            .insert(TextBundle {
-                text: Text::from_sections([
-                    "".into(), // 0
-                    "".into(), // 1
-                    "".into(), // 2
-                    "".into(), // 3
-                    "".into(), // 4
-                    "".into(), // 5
-                ]),
-                ..default()
-            });
+        commands.entity(context.id).insert(TextBundle {
+            text: Text::from_sections([
+                "".into(), // 0
+                "".into(), // 1
+                "".into(), // 2
+                "".into(), // 3
+                "".into(), // 4
+                "".into(), // 5
+            ]),
+            ..default()
+        });
         context.world.flush();
         Ok(View)
     }
@@ -71,8 +69,7 @@ pub fn plugin(app: &mut App) {
 pub(crate) fn confirm_view(
     mut query: Query<
         (Entity, &Confirm, &mut Text),
-        (With<View>, Or<(Changed<Focusable>,
-                         Changed<Confirm>,)>),
+        (With<View>, Or<(Changed<Focusable>, Changed<Confirm>)>),
     >,
     focus: Focus,
 ) {
@@ -163,7 +160,8 @@ pub(crate) fn radio_view(mut query: Query<(&Radio, &mut Text), (With<View>, Chan
 pub(crate) fn toggle_view(
     mut query: Query<
         (Entity, &Toggle, &mut Text),
-        (With<View>, Or<(Changed<Focusable>, Changed<Toggle>)>)>,
+        (With<View>, Or<(Changed<Focusable>, Changed<Toggle>)>),
+    >,
     focus: Focus,
 ) {
     for (id, toggle, mut text) in query.iter_mut() {

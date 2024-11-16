@@ -58,31 +58,31 @@ fn toggle_controller(
         if !focus.is_focused(id) {
             continue;
         }
-            if input.any_just_pressed([
-                KeyCode::KeyH,
-                KeyCode::ArrowLeft,
-                KeyCode::KeyL,
-                KeyCode::ArrowRight,
-                KeyCode::Enter,
-                KeyCode::Escape,
-            ]) {
-                if input.any_just_pressed([KeyCode::KeyH, KeyCode::ArrowLeft]) {
-                    toggle.index = 0;
-                }
-                if input.any_just_pressed([KeyCode::KeyL, KeyCode::ArrowRight]) {
-                    toggle.index = 1;
-                }
-                if input.just_pressed(KeyCode::Enter) {
-                    commands.trigger_targets(AskyEvent(Ok(toggle.index)), id);
-                    focus.block_and_move(id);
-                }
-
-                if input.just_pressed(KeyCode::Escape) {
-                    commands.trigger_targets(AskyEvent::<bool>(Err(Error::Cancel)), id);
-                    focus.move_focus(id);
-                    // focus.unfocus(id, false);
-                    commands.entity(id).insert(Feedback::error("canceled"));
-                }
+        if input.any_just_pressed([
+            KeyCode::KeyH,
+            KeyCode::ArrowLeft,
+            KeyCode::KeyL,
+            KeyCode::ArrowRight,
+            KeyCode::Enter,
+            KeyCode::Escape,
+        ]) {
+            if input.any_just_pressed([KeyCode::KeyH, KeyCode::ArrowLeft]) {
+                toggle.index = 0;
             }
+            if input.any_just_pressed([KeyCode::KeyL, KeyCode::ArrowRight]) {
+                toggle.index = 1;
+            }
+            if input.just_pressed(KeyCode::Enter) {
+                commands.trigger_targets(AskyEvent(Ok(toggle.index)), id);
+                focus.block_and_move(id);
+            }
+
+            if input.just_pressed(KeyCode::Escape) {
+                commands.trigger_targets(AskyEvent::<bool>(Err(Error::Cancel)), id);
+                focus.move_focus(id);
+                // focus.unfocus(id, false);
+                commands.entity(id).insert(Feedback::error("canceled"));
+            }
+        }
     }
 }
