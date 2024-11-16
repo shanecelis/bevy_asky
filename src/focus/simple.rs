@@ -100,7 +100,7 @@ impl<'w, 's> FocusParam<'w, 's> {
             self.focus.0 = self
                 .query
                 .iter_mut()
-                .find(|(_, focusable)| focusable.block)
+                .find(|(_, focusable)| !focusable.block)
                 .map(|(id, mut focusable)| {
                     focusable.touch();
                     id
