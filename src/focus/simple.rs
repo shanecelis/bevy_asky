@@ -104,8 +104,7 @@ impl<'w, 's> FocusParam<'w, 's> {
         } else {
             // We're moving to any available id.
             self.focus.0 = self.query.iter_mut()
-                                     .skip_while(|(_, focusable)| focusable.block)
-                                     .next()
+                                     .find(|(_, focusable)| focusable.block)
                                      .map(|(id, mut focusable)| {
                                          focusable.touch();
                                          id

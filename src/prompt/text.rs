@@ -105,9 +105,7 @@ fn text_controller(
                     Key::ArrowLeft => text_state.move_cursor(CursorDirection::Left),
                     Key::ArrowRight => text_state.move_cursor(CursorDirection::Right),
                     Key::Enter => {
-                        warn!("trigger");
                         commands.trigger_targets(AskyEvent(Ok(text_state.value.clone())), id);
-                        warn!("block&move");
                         focus.block_and_move(id);
                     }
                     Key::Escape => {

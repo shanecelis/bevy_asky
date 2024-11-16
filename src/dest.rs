@@ -1,6 +1,4 @@
 use super::*;
-use crate::{construct::*, view::*, sync::AskyCommands};
-use bevy::{ecs::system::SystemParam, prelude::*};
 use std::fmt::Debug;
 
 #[derive(Clone, Debug)]

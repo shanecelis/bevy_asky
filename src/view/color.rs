@@ -63,27 +63,23 @@ impl<'w, 's, C: Component> Inserter<'w, 's, C> {
                     Ok(children[index])
                 } else {
                     let mut id = None;
-                    self.commands.get_entity(root).map(|mut ecommands| {
-                        ecommands.with_children(|parent| {
+                    if let Some(mut ecommands) = self.commands.get_entity(root) { ecommands.with_children(|parent| {
                         for _ in children.len()..index {
                             parent.spawn(TextBundle::default());
                         }
                         id = Some(parent.spawn(TextBundle::default()).id());
-                    });
-                    });
+                    }); }
                     Err(id)
                 }
             }
             _ => {
                 let mut id = None;
-                self.commands.get_entity(root).map(|mut ecommands| {
-                    ecommands.with_children(|parent| {
+                if let Some(mut ecommands) = self.commands.get_entity(root) { ecommands.with_children(|parent| {
                     for _ in 0..index {
                         parent.spawn(TextBundle::default());
                     }
                     id = Some(parent.spawn(TextBundle::default()).id());
-                });
-                });
+                }); }
                 Err(id)
             }
         }
@@ -101,8 +97,7 @@ impl<'w, 's, C: Component> Inserter<'w, 's, C> {
                     self.roots.get_mut(children[index]).map(|mut t: Mut<C>| apply(&mut t))
                 } else {
                     // dbg!(index, children.len());
-                    self.commands.get_entity(root).map(|mut ecommands| {
-                        ecommands.with_children(|parent| {
+                    if let Some(mut ecommands) = self.commands.get_entity(root) { ecommands.with_children(|parent| {
                         for _ in children.len()..index {
                             parent.spawn(TextBundle::default());
                         }
@@ -111,14 +106,12 @@ impl<'w, 's, C: Component> Inserter<'w, 's, C> {
                         parent
                             .spawn(TextBundle::default())
                             .insert(text);
-                    });
-                    });
+                    }); }
                     Ok(())
                 }
             }
             _ => {
-                self.commands.get_entity(root).map(|mut ecommands| {
-                    ecommands.with_children(|parent| {
+                if let Some(mut ecommands) = self.commands.get_entity(root) { ecommands.with_children(|parent| {
                     for _ in 0..index {
                         parent.spawn(TextBundle::default());
                     }
@@ -127,8 +120,7 @@ impl<'w, 's, C: Component> Inserter<'w, 's, C> {
                     parent
                         .spawn(TextBundle::default())
                         .insert(text);
-                });
-                });
+                }); }
                 Ok(())
             }
         }
@@ -342,16 +334,18 @@ pub fn text_view<F: bevy::ecs::query::QueryFilter>(
                         TextStyle::default())
                 ).insert(Cursor);
                 // post cursor
-                if text_state.value.is_empty() && placeholder.is_some() {
-                    parent.spawn(TextBundle::from_section(placeholder.unwrap().0.to_owned(),
-                                                          TextStyle {
-                                                              color: palette.lowlight.into(),
-                                                              .. default()
-                                                          }));
-
-                } else {
-                    parent.spawn(TextBundle::from_section(&text_state.value[0..text_state.index],
-                                                          TextStyle::default()));
+                match placeholder {
+                    Some(placeholder) if text_state.value.is_empty() => {
+                        parent.spawn(TextBundle::from_section(placeholder.0.clone(),
+                                                            TextStyle {
+                                                                color: palette.lowlight.into(),
+                                                                .. default()
+                                                            }));
+                    }
+                    _ => {
+                        parent.spawn(TextBundle::from_section(&text_state.value[0..text_state.index],
+                                                            TextStyle::default()));
+                    }
                 }
             });
         }

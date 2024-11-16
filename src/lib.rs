@@ -64,6 +64,11 @@ pub enum Submit {
 }
 
 /// This is a commitment to fire a `Trigger<Result<Self::Out, Error>>`.
+///
+/// # Safety
+///
+/// Structs that implement this trait commit to firing
+/// `Trigger<Result<Self::Out, Error>>` at some point in their life cycle.
 pub unsafe trait Submitter {
     /// Output of submitter.
     type Out;
