@@ -19,7 +19,7 @@ pub enum Answer<T> {
     Final, //(Option<T>)
 }
 
-pub(crate) fn add_view_to_checkbox<V>(
+pub fn add_view_to_checkbox<V>(
     checkboxes: Query<(Entity, &Parent), Added<Checkbox>>,
     group: Query<&CheckboxGroup, With<V>>,
     mut commands: Commands,
@@ -47,7 +47,7 @@ pub(crate) fn add_view_to_checkbox<V>(
 //     }
 // }
 
-pub(crate) fn add_view_to_radio<V>(
+pub fn add_view_to_radio<V>(
     radios: Query<(Entity, &Parent), Added<Radio>>,
     group: Query<&RadioGroup, With<V>>,
     mut commands: Commands,
@@ -61,7 +61,7 @@ pub(crate) fn add_view_to_radio<V>(
     }
 }
 
-pub(crate) fn replace_or_insert(text: &mut Text, index: usize, replacement: &str) {
+pub fn replace_or_insert(text: &mut Text, index: usize, replacement: &str) {
     let len = text.sections.len();
     if len <= index {
         for _ in len.saturating_sub(1)..index {
@@ -73,7 +73,7 @@ pub(crate) fn replace_or_insert(text: &mut Text, index: usize, replacement: &str
     }
 }
 
-pub(crate) fn replace_or_insert_rep(
+pub fn replace_or_insert_rep(
     text: &mut Text,
     index: usize,
     replacement: &str,
