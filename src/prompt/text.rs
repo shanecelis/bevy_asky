@@ -8,7 +8,7 @@ use bevy::{
 };
 use std::borrow::Cow;
 
-pub fn plugin(app: &mut App) {
+pub(crate) fn plugin(app: &mut App) {
     app.register_type::<StringCursor>()
         .add_systems(PreUpdate, text_controller);
 }

@@ -3,7 +3,7 @@ use bevy_alt_ui_navigation_lite::{
     events::Direction as NavDirection, prelude::*, systems::InputMapping,
 };
 
-pub fn plugin(app: &mut App) {
+pub(crate) fn plugin(app: &mut App) {
     app.add_event::<BlockRequest>()
         .add_systems(Startup, setup)
         .add_systems(Update, handle_block_requests.after(NavRequestSystem))

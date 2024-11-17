@@ -2,7 +2,7 @@ use crate::{construct::*, prelude::*, string_cursor::*};
 use bevy::prelude::*;
 use std::borrow::Cow;
 
-pub fn plugin(_app: &mut App) {}
+pub(crate) fn plugin(_app: &mut App) {}
 
 /// Prompt to get one-line user input.
 ///

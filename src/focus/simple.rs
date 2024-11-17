@@ -43,7 +43,7 @@ impl Focusable {
 // #[derive(Component, Default, Debug)]
 // pub struct Blocked;
 
-pub fn plugin(app: &mut App) {
+pub(crate) fn plugin(app: &mut App) {
     app.register_type::<private::Focus>()
         .register_type::<Focusable>()
         .insert_resource(private::Focus(None))
