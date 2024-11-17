@@ -48,7 +48,8 @@ pub(crate) fn plugin(app: &mut App) {
         .register_type::<Focusable>()
         .insert_resource(private::Focus(None))
         .insert_resource(KeyboardNav(true))
-        .add_systems(Update, (focus_on_tab, reset_focus));
+        // .add_systems(Update, focus_on_tab)
+        .add_systems(Update, reset_focus);
 }
 
 // pub type Focusable = AskyState;
@@ -184,6 +185,7 @@ impl<'w, 's> FocusParam<'w, 's> {
     }
 }
 
+#[allow(dead_code)]
 fn focus_on_tab(input: Res<ButtonInput<KeyCode>>, mut focus: FocusParam) {
     if input.just_pressed(KeyCode::Tab) {
         focus.move_focus(None);
