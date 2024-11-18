@@ -7,6 +7,10 @@ pub struct Confirm {
     pub yes: bool,
 }
 
+unsafe impl Submitter for Confirm {
+    type Out = bool;
+}
+
 pub(crate) fn plugin(app: &mut App) {
     app.add_systems(PreUpdate, confirm_controller);
 }
