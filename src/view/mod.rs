@@ -1,6 +1,9 @@
 use crate::construct::*;
 use crate::prelude::*;
-use bevy::prelude::*;
+use bevy::{
+    prelude::*,
+    ecs::{system::SystemParam},
+};
 
 pub mod ascii;
 // pub mod button;
@@ -17,6 +20,20 @@ pub struct Question;
 pub enum Answer<T> {
     Selection(T),
     Final, //(Option<T>)
+}
+
+#[derive(SystemParam)]
+pub struct Ancestors<'w, 's> {
+    pub parents: Query<'w, 's, &'static Parent>,
+}
+
+impl<'w, 's> Ancestors<'w, 's> {
+    /// Iterate over ancestors.
+    pub fn iter(&self, child: Entity) -> impl Iterator<Item = Entity> + '_{
+        std::iter::successors(Some(child), move |id| {
+            self.parents.get(*id).map(|parent| parent.get()).ok()
+        })
+    }
 }
 
 pub fn add_view_to_checkbox<V>(
