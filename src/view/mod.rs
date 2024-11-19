@@ -18,6 +18,9 @@ pub mod widget;
 pub(crate) fn plugin(app: &mut App) {
 }
 
+#[derive(Debug, Component, Reflect)]
+pub struct NeedsView;
+
 #[derive(Component)]
 pub struct Question;
 
@@ -27,9 +30,6 @@ pub enum Answer<T> {
     Selection(T),
     Final, //(Option<T>)
 }
-
-#[derive(Event, Debug)]
-pub struct AddView(pub Entity);
 
 pub fn add_view_to_checkbox<V>(
     checkboxes: Query<(Entity, &Parent), Added<Checkbox>>,

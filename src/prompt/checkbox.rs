@@ -1,4 +1,4 @@
-use crate::{construct::*, prelude::*, view::AddView};
+use crate::{construct::*, prelude::*};
 use bevy::prelude::*;
 
 use std::borrow::Cow;
@@ -39,8 +39,8 @@ impl Construct for Checkbox {
             .entity(context.id)
             .insert(NodeBundle::default())
             .insert(Focusable::default())
+            .insert(NeedsView)
             .insert(Prompt(props.clone()));
-        commands.trigger(AddView(context.id));
         context.world.flush();
         Ok(Checkbox { checked: false })
     }
@@ -117,6 +117,7 @@ impl Construct for CheckboxGroup {
         let mut children = vec![];
         commands
             .entity(context.id)
+            .insert(NeedsView)
             // .insert(Focusable::default())
             // .insert(MenuSetting::default())
             // .insert(MenuBuilder::Root)
@@ -137,7 +138,6 @@ impl Construct for CheckboxGroup {
                     children.push(id);
                 }
             });
-        commands.trigger(AddView(context.id));
         context.world.flush();
         Ok(CheckboxGroup)
     }

@@ -1,18 +1,12 @@
 use bevy::prelude::*;
 use bevy_asky::{construct::*, prompt::*, view::*, *};
 
-fn views(app: &mut App) {
-    app//.add_plugins(view::ascii::plugin)
-        .add_plugins(view::color::plugin);
-
-    #[cfg(feature = "button")]
-    app.add_plugins(view::button::plugin);
-}
-
+#[path = "common/lib.rs"]
+mod common;
 fn main() {
     App::new()
         .add_plugins((DefaultPlugins, AskyPlugin))
-        .add_plugins(views)
+        .add_plugins(common::views)
         .add_systems(Startup, setup)
         .run();
 }

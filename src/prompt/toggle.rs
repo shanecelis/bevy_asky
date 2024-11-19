@@ -1,4 +1,4 @@
-use crate::{construct::*, prelude::*, view::AddView};
+use crate::{construct::*, prelude::*};
 use bevy::prelude::*;
 use std::borrow::Cow;
 
@@ -41,8 +41,8 @@ impl Construct for Toggle {
             .entity(context.id)
             .insert(NodeBundle::default())
             .insert(Prompt(props.message.clone()))
+            .insert(NeedsView)
             .insert(Focusable::default());
-        commands.trigger(AddView(context.id));
         context.world.flush();
         Ok(props)
     }

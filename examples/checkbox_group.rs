@@ -6,17 +6,13 @@ use bevy_asky::{
     *,
 };
 
-fn views(app: &mut App) {
-    app//.add_plugins(view::ascii::plugin)
-        .add_plugins(view::color::plugin);
+#[path = "common/lib.rs"]
+mod common;
 
-    #[cfg(feature = "button")]
-    app.add_plugins(view::button::plugin);
-}
 fn main() {
     App::new()
         .add_plugins((DefaultPlugins, AskyPlugin))
-        .add_plugins(views)
+        .add_plugins(common::views)
         .add_plugins(bevy_inspector_egui::quick::WorldInspectorPlugin::new())
         .add_systems(Startup, setup)
         .run();

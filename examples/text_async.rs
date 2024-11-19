@@ -2,12 +2,13 @@ use bevy::prelude::*;
 use bevy_asky::{prompt::*, *};
 use bevy_defer::{AsyncCommandsExtension, AsyncPlugin};
 
+#[path = "common/lib.rs"]
+mod common;
+
 fn main() {
     App::new()
         .add_plugins((DefaultPlugins, AskyPlugin, AsyncPlugin::default_settings()))
-        // .add_plugins(view::ascii::plugin)
-        .add_plugins(view::color::plugin)
-        // .add_plugins(view::button::plugin)
+        .add_plugins(common::views)
         .add_systems(Startup, setup)
         .run();
 }

@@ -1,4 +1,4 @@
-use crate::{construct::*, prelude::*, string_cursor::*, view::AddView};
+use crate::{construct::*, prelude::*, string_cursor::*};
 use bevy::prelude::*;
 use std::borrow::Cow;
 
@@ -48,8 +48,8 @@ impl Construct for Password {
             .entity(context.id)
             .insert(Prompt(props))
             .insert(input_state)
+            .insert(NeedsView)
             .insert(Focusable::default());
-        commands.trigger(AddView(context.id));
         context.world.flush();
         Ok(Password)
     }

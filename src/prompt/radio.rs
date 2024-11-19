@@ -1,4 +1,4 @@
-use crate::{construct::*, prelude::*, view::AddView};
+use crate::{construct::*, prelude::*};
 use bevy::{
     ecs::system::SystemState,
     a11y::{accesskit::*, AccessibilityNode},
@@ -30,8 +30,9 @@ impl Construct for Radio {
             .entity(context.id)
             .insert(Focusable::default())
             .insert(Prompt(props.clone()))
+            .insert(NeedsView)
             .insert(AccessibilityNode(NodeBuilder::new(Role::RadioButton)));
-        commands.trigger(AddView(context.id));
+        // commands.trigger(AddView(context.id));
         context.world.flush();
         Ok(Radio { checked: false })
     }
@@ -106,6 +107,7 @@ impl Construct for RadioGroup {
         // let mut children = vec![];
         commands
             .entity(context.id)
+            .insert(NeedsView)
             // .insert(Focusable::default())
             // .insert(MenuSetting::default())
             // .insert(MenuBuilder::Root)
@@ -129,7 +131,7 @@ impl Construct for RadioGroup {
             //         children.push(id);
             //     }
             // });
-        commands.trigger(AddView(context.id));
+        // commands.trigger(AddView(context.id));
 
         context.world.flush();
         Ok(RadioGroup)

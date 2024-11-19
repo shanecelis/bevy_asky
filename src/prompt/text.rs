@@ -1,4 +1,4 @@
-use crate::{prelude::*, string_cursor::*, view::AddView};
+use crate::{prelude::*, string_cursor::*};
 use bevy::{
     input::{
         keyboard::{Key, KeyboardInput},
@@ -62,8 +62,9 @@ impl Construct for TextField {
             .insert(Prompt(props))
             .insert(NodeBundle::default())
             .insert(input_state)
+            .insert(NeedsView)
             .insert(Focusable::default());
-        commands.trigger(AddView(context.id));
+        // commands.trigger(AddView(context.id));
         context.world.flush();
         Ok(TextField)
     }

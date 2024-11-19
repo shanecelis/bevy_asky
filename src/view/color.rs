@@ -1,5 +1,4 @@
 use crate::{construct::*, prelude::*, string_cursor::*};
-use super::AddView;
 use bevy::{
     ecs::{query::QueryEntityError, system::SystemParam},
     prelude::*,
@@ -39,9 +38,19 @@ impl Construct for View {
     }
 }
 
-pub fn add_view(trigger: Trigger<AddView>, mut commands: Commands) {
-    commands.entity(trigger.event().0)
-        .construct::<View>(());
+// pub fn add_view(trigger: Trigger<AddView>, mut commands: Commands) {
+//     commands.entity(trigger.event().0)
+//         .construct::<View>(());
+// }
+
+pub fn replace_view(query: Query<Entity, Added<NeedsView>>,
+                    mut commands: Commands) {
+    for id in &query {
+        commands
+            .entity(id)
+            .remove::<NeedsView>()
+            .construct::<View>(());
+    }
 }
 
 #[derive(SystemParam)]
@@ -166,7 +175,7 @@ pub fn plugin(app: &mut App) {
         .register_type::<Cursor>()
         .register_type::<CursorBlink>()
         .register_type::<Palette>()
-        .observe(add_view)
+        // .observe(add_view)
         // .add_systems(
         //     PreUpdate,
         //     (
