@@ -82,6 +82,12 @@ pub trait ConstructExt {
     fn construct<T: Construct + Component>(&mut self, props: impl Into<T::Props>) -> EntityCommands
     where
         <T as Construct>::Props: Send;
+
+    fn construct_children<T: Construct + Component>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
+    where
+        <T as Construct>::Props: Send,
+        // X: Into<T::Props>
+        ;
 }
 
 struct ConstructCommand<T: Construct>(T::Props);
@@ -107,6 +113,20 @@ impl<'w> ConstructExt for Commands<'w, '_> {
         s.add(ConstructCommand::<T>(props.into()));
         s
     }
+
+    fn construct_children<T: Construct + Component>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
+    where
+        <T as Construct>::Props: Send,
+    {
+        let mut s = self.spawn_empty();
+        s.with_children(|parent| {
+            for prop in props.into_iter() {
+                parent.construct::<T>(prop);
+            }
+        });
+        s
+    }
+
 }
 
 impl<'w> ConstructExt for ChildBuilder<'w> {
@@ -119,6 +139,19 @@ impl<'w> ConstructExt for ChildBuilder<'w> {
         s.add(ConstructCommand::<T>(props.into()));
         s
     }
+
+    fn construct_children<T: Construct + Component>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
+    where
+        <T as Construct>::Props: Send,
+    {
+        let mut s = self.spawn_empty();
+        s.with_children(|parent| {
+            for prop in props.into_iter() {
+                parent.construct::<T>(prop);
+            }
+        });
+        s
+    }
 }
 
 impl<'w> ConstructExt for bevy::ecs::system::EntityCommands<'w> {
@@ -128,6 +161,18 @@ impl<'w> ConstructExt for bevy::ecs::system::EntityCommands<'w> {
         <T as Construct>::Props: Send,
     {
         self.add(ConstructCommand::<T>(props.into()));
+        self.reborrow()
+    }
+
+    fn construct_children<T: Construct + Component>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
+    where
+        <T as Construct>::Props: Send,
+    {
+        self.with_children(|parent| {
+            for prop in props.into_iter() {
+                parent.construct::<T>(prop);
+            }
+        });
         self.reborrow()
     }
 }

@@ -60,7 +60,7 @@ impl<'w, 's> FocusParam<'w, 's> {
             .unwrap_or(true)
     }
 
-    pub fn move_focus(&mut self, _id_maybe: impl Into<Option<Entity>>) {
+    pub fn move_focus_from(&mut self, _id_maybe: impl Into<Option<Entity>>) {
         self.requests.send(NavRequest::Move(NavDirection::South));
     }
 
@@ -71,7 +71,7 @@ impl<'w, 's> FocusParam<'w, 's> {
     pub fn block(&mut self, id_maybe: impl Into<Option<Entity>>) {
         if let Some(id) = id_maybe.into() {
             self.blocks.send(BlockRequest(id));
-            // self.move_focus(id);
+            // self.move_focus_from(id);
             // self.focus.get_mut(id).map(|mut focusable| {
             //     if !focusable.block() {
             //         warn!("Unable to block focusable. Is it the only one?");
@@ -84,7 +84,7 @@ impl<'w, 's> FocusParam<'w, 's> {
 
     pub fn block_and_move(&mut self, id_maybe: impl Into<Option<Entity>>) {
         let id = id_maybe.into();
-        self.move_focus(id.clone());
+        self.move_focus_from(id.clone());
         self.block(id);
     }
 }

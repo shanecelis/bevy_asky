@@ -16,12 +16,15 @@ pub mod private {
 
 #[derive(SystemParam)]
 pub struct Focus<'w> {
-    focus: Res<'w, private::Focus>,
+    focus: ResMut<'w, private::Focus>,
 }
 
 impl<'w> Focus<'w> {
     pub fn is_focused(&self, id: Entity) -> bool {
         self.focus.is_focused(id)
+    }
+    pub fn focus_on(&mut self, id: Entity) {
+        self.focus.0 = Some(id);
     }
 }
 
@@ -74,8 +77,23 @@ impl<'w, 's> FocusParam<'w, 's> {
     //         AskyState::Error
     //     });
     // }
+    // 
+    pub fn move_focus_to(&mut self, id: Entity) {
+        if let Some(old_focus) = self.focus.0.take() {
+            if let Ok((_, mut focusable)) = self.query.get_mut(old_focus) {
+                // Touch the old one so it knows it's no longer the focus.
+                focusable.touch()
+            }
+        }
+        self.focus.0 = Some(id);
 
-    pub fn move_focus(&mut self, id_maybe: impl Into<Option<Entity>>) {
+        if let Ok((_, mut focusable)) = self.query.get_mut(id) {
+            // Touch the old one so it knows it's no longer the focus.
+            focusable.touch()
+        }
+    }
+
+    pub fn move_focus_from(&mut self, id_maybe: impl Into<Option<Entity>>) {
         if let Some(focus_id) = id_maybe.into().or(self.focus.0) {
             // We're moving from a definite id.
             let mut seen_id = false;
@@ -150,7 +168,7 @@ impl<'w, 's> FocusParam<'w, 's> {
     pub fn block_and_move(&mut self, id_maybe: impl Into<Option<Entity>>) {
         let id = id_maybe.into();
         self.block(id);
-        self.move_focus(id);
+        self.move_focus_from(id);
     }
 
     pub fn is_blocked(&self, id: Entity) -> bool {
@@ -188,17 +206,17 @@ impl<'w, 's> FocusParam<'w, 's> {
 #[allow(dead_code)]
 fn focus_on_tab(input: Res<ButtonInput<KeyCode>>, mut focus: FocusParam) {
     if input.just_pressed(KeyCode::Tab) {
-        focus.move_focus(None);
+        focus.move_focus_from(None);
     }
 }
 
 /// Reset focus if None or focus is blocked.
 fn reset_focus(mut focus: FocusParam) {
     match focus.focus.0 {
-        None => focus.move_focus(None),
+        None => focus.move_focus_from(None),
         Some(id) => {
             if focus.is_blocked(id) {
-                focus.move_focus(None)
+                focus.move_focus_from(None)
             }
         }
     }

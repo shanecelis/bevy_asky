@@ -132,7 +132,7 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                             commands.trigger_targets(AskyEvent(Ok(number)), id);
                             focus.block(id);
                             // focus.unfocus(id, true);
-                            focus.move_focus(id);
+                            focus.move_focus_from(id);
                         }
                         Err(_) => {
                             // commands
@@ -149,7 +149,7 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                     commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
                     commands.entity(id).insert(Feedback::error("canceled"));
                     focus.block(id);
-                    focus.move_focus(id);
+                    focus.move_focus_from(id);
                     // focus.unfocus(id, false);
                 }
                 x => info!("Unhandled key {x:?}"),

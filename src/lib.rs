@@ -1,6 +1,6 @@
 // #![feature(round_char_boundary)]
 #![allow(clippy::type_complexity)]
-use bevy::prelude::*;
+use bevy::{ecs::system::SystemId, prelude::*};
 
 pub mod focus;
 use std::borrow::Cow;
@@ -33,7 +33,10 @@ pub struct AskyPlugin;
 
 impl Plugin for AskyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(prompt::plugin).add_plugins(focus::plugin);
+        app
+            .add_plugins(prompt::plugin)
+            .add_plugins(view::plugin)
+            .add_plugins(focus::plugin);
         // #[cfg(feature = "async")]
         // app
         //     .add_plugins(bevy_defer::AsyncPlugin::default_settings());

@@ -1,5 +1,6 @@
-use crate::{construct::*, prelude::*};
+use crate::{construct::*, prelude::*, view::ViewHook};
 use bevy::{
+    ecs::system::SystemState,
     a11y::{accesskit::*, AccessibilityNode},
     prelude::*,
 };
@@ -23,7 +24,7 @@ impl Construct for Radio {
         props: Self::Props,
     ) -> Result<Self, ConstructError> {
         // Our requirements.
-        let mut commands = context.world.commands();
+        let mut commands = ViewHook::run_hook_commands(context.id, context.world);
         commands
             .entity(context.id)
             .insert(Focusable::default())
@@ -93,11 +94,11 @@ unsafe impl Submitter for RadioGroup {
 }
 
 impl Construct for RadioGroup {
-    type Props = Cow<'static, str>;
+    type Props = ();
 
     fn construct(
         context: &mut ConstructContext,
-        props: Self::Props,
+        _props: Self::Props,
     ) -> Result<Self, ConstructError> {
         // Our requirements.
         let mut commands = context.world.commands();
@@ -107,7 +108,7 @@ impl Construct for RadioGroup {
             // .insert(Focusable::default())
             // .insert(MenuSetting::default())
             // .insert(MenuBuilder::Root)
-            .insert(TextBundle::from_section(props, TextStyle::default()))
+            // .insert(TextBundle::from_section(props, TextStyle::default()))
             .insert(NodeBundle {
                 style: Style {
                     flex_direction: FlexDirection::Column,
@@ -138,18 +139,26 @@ impl Construct for RadioGroup {
 fn radio_group_controller(
     mut query: Query<(Entity, &Children), With<RadioGroup>>,
     radios: Query<(Entity, &Radio)>,
-    focus: Focus,
+    mut focus: FocusParam,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
 ) {
-    if !input.any_just_pressed([KeyCode::Escape, KeyCode::Enter]) {
+    if !input.any_just_pressed([KeyCode::Escape, KeyCode::Enter, KeyCode::ArrowDown, KeyCode::ArrowUp]) {
         return;
     }
     for (id, children) in query.iter_mut() {
-        if radios
+        if let Some(index) = radios
             .iter_many(children)
-            .any(|(id, _)| focus.is_focused(id))
+            .position(|(id, _)| focus.is_focused(id))
         {
+            if input.just_pressed(KeyCode::ArrowDown) {
+                focus.move_focus_to(*children.get(index + 1).unwrap_or(&children[0]));
+            }
+
+            if input.just_pressed(KeyCode::ArrowUp) {
+                focus.move_focus_to(children[index.checked_sub(1).unwrap_or(children.len() - 1)]);
+            }
+
             if input.just_pressed(KeyCode::Enter) {
                 let selection = radios
                     .iter_many(children)

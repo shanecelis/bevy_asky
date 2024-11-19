@@ -1,4 +1,5 @@
 use crate::{construct::*, prelude::*, string_cursor::*};
+use super::ViewHook;
 use bevy::{
     ecs::{query::QueryEntityError, system::SystemParam},
     prelude::*,
@@ -36,6 +37,11 @@ impl Construct for View {
         // context.world.flush();
         Ok(View)
     }
+}
+
+pub fn add_view(input: In<Entity>, mut commands: Commands) {
+    commands.entity(*input)
+        .construct::<View>(());
 }
 
 #[derive(SystemParam)]
@@ -155,16 +161,18 @@ impl Default for Palette {
 }
 
 pub fn plugin(app: &mut App) {
+    let hook = ViewHook(Some(app.register_system(add_view)));
     app.register_type::<View>()
         .register_type::<ViewPart>()
         .register_type::<Cursor>()
         .register_type::<CursorBlink>()
         .register_type::<Palette>()
+        .insert_resource(hook)
         .add_systems(
             PreUpdate,
             (
                 super::add_view_to_checkbox::<View>,
-                super::add_view_to_radio::<View>,
+                // super::add_view_to_radio::<View>,
             ),
         )
         .add_systems(

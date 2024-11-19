@@ -165,7 +165,7 @@ fn checkbox_group_controller(
                         .collect();
                     commands.trigger_targets(AskyEvent(Ok(result)), id);
                     focus.block(id);
-                    // focus.move_focus(id);
+                    // focus.move_focus_from(id);
                     // *state = AskyState::Complete;
                 }
 

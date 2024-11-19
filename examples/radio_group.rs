@@ -7,9 +7,9 @@ use bevy_asky::{
 };
 
 fn views(app: &mut App) {
-    app.add_plugins(view::ascii::plugin)
+    app
+        .add_plugins(view::ascii::plugin)
         .add_plugins(view::color::plugin);
-
     #[cfg(feature = "button")]
     app.add_plugins(view::button::plugin);
 }
@@ -26,21 +26,21 @@ fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
     commands.column().with_children(|parent| {
-        // parent
-        //     .construct::<Prompt>("radio group 0")
-        //     .construct::<ascii::View>(());
+        parent
+            .construct::<Prompt>("radio group 0")
+            .construct::<ascii::View>(());
         parent
             .construct::<color::View>(())
-            .construct::<RadioGroup>("radio group 0*")
-            .with_children(|group| {
-
-                group.construct::<Radio>("Money")
-                    .construct::<color::View>(());
-                group.construct::<Radio>("Time")
-                    .construct::<color::View>(());
-                group.construct::<Radio>("Power")
-                    .construct::<color::View>(());
-            })
+            .construct::<RadioGroup>(())
+            .construct_children::<Radio>(["Money", "Time", "Power"])
+            // .with_children(|group| {
+            //     group.construct::<Radio>("Money")
+            //         .construct::<color::View>(());
+            //     group.construct::<Radio>("Time")
+            //         .construct::<color::View>(());
+            //     group.construct::<Radio>("Power")
+            //         .construct::<color::View>(());
+            // })
             // .construct_children::<Radio>(["Money", "Time", "Power"])
             .observe(move |trigger: Trigger<AskyEvent<usize>>| {
                 eprintln!("trigger {:?}", trigger.event());
