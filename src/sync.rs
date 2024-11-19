@@ -16,6 +16,22 @@ pub trait AskyCommands {
     where
         <T as Construct>::Props: Send,
         <T as Submitter>::Out: Clone + Debug + Send + Sync;
+
+    fn prompt_group<
+        T: Construct + Component + Submitter + Part,
+        V: Construct<Props = ()> + Component + Default,
+        X>(
+        &mut self,
+        group_prop: impl Into<<<T as Part>::Group as Construct>::Props>,
+        props: impl IntoIterator<Item = X>,
+        dest: impl Into<Dest>,
+    ) -> EntityCommands
+    where
+        <T as Construct>::Props: Send,
+        <<T as Part>::Group as Construct>::Props: Send,
+        X: Into<T::Props>,
+        <T as Part>::Group: Component + Construct + Clone + Send + Sync,
+        <T as Submitter>::Out: Clone + Debug + Send + Sync;
 }
 
 impl<'w, 's> AskyCommands for Commands<'w, 's> {
@@ -36,6 +52,35 @@ impl<'w, 's> AskyCommands for Commands<'w, 's> {
 
         let mut commands = d.entity(self);
         commands.construct::<V>(()).construct::<T>(p);
+        commands
+    }
+
+    fn prompt_group<
+        T: Construct + Component + Submitter + Part,
+        V: Construct<Props = ()> + Component + Default,
+        X>(
+        &mut self,
+        group_prop: impl Into<<<T as Part>::Group as Construct>::Props>,
+        props: impl IntoIterator<Item = X>,
+        dest: impl Into<Dest>,
+    ) -> EntityCommands
+    where
+        <T as Construct>::Props: Send,
+        <<T as Part>::Group as Construct>::Props: Send,
+        X: Into<T::Props>,
+        <T as Part>::Group: Component + Construct + Clone + Send + Sync,
+        <T as Submitter>::Out: Clone + Debug + Send + Sync {
+        let d = dest.into();
+
+        let mut commands = d.entity(self);
+        commands.construct::<V>(())
+            .construct::<T::Group>(group_prop)
+            .with_children(|parent| {
+                for prop in props.into_iter() {
+                    parent.construct::<V>(())
+                        .construct::<T>(prop);
+                }
+            });
         commands
     }
 }

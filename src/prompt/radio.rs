@@ -93,7 +93,7 @@ unsafe impl Submitter for RadioGroup {
 }
 
 impl Construct for RadioGroup {
-    type Props = Vec<Cow<'static, str>>;
+    type Props = Cow<'static, str>;
 
     fn construct(
         context: &mut ConstructContext,
@@ -101,32 +101,32 @@ impl Construct for RadioGroup {
     ) -> Result<Self, ConstructError> {
         // Our requirements.
         let mut commands = context.world.commands();
-        let mut children = vec![];
+        // let mut children = vec![];
         commands
             .entity(context.id)
             // .insert(Focusable::default())
             // .insert(MenuSetting::default())
             // .insert(MenuBuilder::Root)
-            // .insert(TextBundle::from_section("header", TextStyle::default()))
+            .insert(TextBundle::from_section(props, TextStyle::default()))
             .insert(NodeBundle {
                 style: Style {
                     flex_direction: FlexDirection::Column,
                     ..default()
                 },
                 ..default()
-            })
-            // .insert(Focusable::default())
-            .with_children(|parent| {
-                // let mut entity_commands = parent.column();
-
-                for prompt in props {
-                    let id = parent
-                        .construct::<Radio>(prompt)
-                        .insert(Focusable::default())
-                        .id();
-                    children.push(id);
-                }
             });
+            // // .insert(Focusable::default())
+            // .with_children(|parent| {
+            //     // let mut entity_commands = parent.column();
+
+            //     for prompt in props {
+            //         let id = parent
+            //             .construct::<Radio>(prompt)
+            //             .insert(Focusable::default())
+            //             .id();
+            //         children.push(id);
+            //     }
+            // });
 
         context.world.flush();
         Ok(RadioGroup)

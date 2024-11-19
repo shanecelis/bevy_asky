@@ -74,6 +74,11 @@ pub unsafe trait Submitter {
     // fn submit(&self) -> Result<Self::Out, Error>;
 }
 
+/// A part of a group.
+pub trait Part {
+    type Group: Default + Component;
+}
+
 /// Asky errors
 #[derive(Debug, thiserror::Error, Clone)]
 pub enum Error {

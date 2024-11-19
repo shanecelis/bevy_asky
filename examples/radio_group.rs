@@ -26,24 +26,34 @@ fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
     commands.column().with_children(|parent| {
-        parent
-            .construct::<Prompt>("radio group 0")
-            .construct::<ascii::View>(());
+        // parent
+        //     .construct::<Prompt>("radio group 0")
+        //     .construct::<ascii::View>(());
         parent
             .construct::<color::View>(())
-            .construct::<RadioGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
+            .construct::<RadioGroup>("radio group 0*")
+            .with_children(|group| {
+
+                group.construct::<Radio>("Money")
+                    .construct::<color::View>(());
+                group.construct::<Radio>("Time")
+                    .construct::<color::View>(());
+                group.construct::<Radio>("Power")
+                    .construct::<color::View>(());
+            })
+            // .construct_children::<Radio>(["Money", "Time", "Power"])
             .observe(move |trigger: Trigger<AskyEvent<usize>>| {
                 eprintln!("trigger {:?}", trigger.event());
             });
 
-        parent
-            .construct::<Prompt>("radio group 1")
-            .construct::<ascii::View>(());
-        parent
-            .construct::<ascii::View>(())
-            .construct::<RadioGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
-            .observe(move |trigger: Trigger<AskyEvent<usize>>| {
-                eprintln!("trigger {:?}", trigger.event());
-            });
+        // parent
+        //     .construct::<Prompt>("radio group 1")
+        //     .construct::<ascii::View>(());
+        // parent
+        //     .construct::<ascii::View>(())
+        //     .construct::<RadioGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
+        //     .observe(move |trigger: Trigger<AskyEvent<usize>>| {
+        //         eprintln!("trigger {:?}", trigger.event());
+        //     });
     });
 }
