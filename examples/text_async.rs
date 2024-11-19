@@ -5,11 +5,10 @@ use bevy_defer::{AsyncCommandsExtension, AsyncPlugin};
 fn main() {
     App::new()
         .add_plugins((DefaultPlugins, AskyPlugin, AsyncPlugin::default_settings()))
-        .add_plugins(view::ascii::plugin)
+        // .add_plugins(view::ascii::plugin)
         .add_plugins(view::color::plugin)
         // .add_plugins(view::button::plugin)
         .add_systems(Startup, setup)
-        // .add_systems(Update, read_keys)
         .run();
 }
 
@@ -28,12 +27,12 @@ fn setup(mut commands: Commands, mut asky: Asky) {
         .id();
     commands.spawn_task(move || async move {
         let response: Result<String, Error> = asky
-            .prompt::<TextField, view::color::View>("What up? ", Dest::Append(id))
+            .prompt::<TextField>("What up? ", Dest::Append(id))
             .await;
         dbg!(response);
 
         let response: Result<String, Error> = asky
-            .prompt::<TextField, view::color::View>("Really? ", Dest::Append(id))
+            .prompt::<TextField>("Really? ", Dest::Append(id))
             .await;
         dbg!(response);
         Ok(())

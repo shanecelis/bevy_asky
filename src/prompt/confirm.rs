@@ -27,8 +27,8 @@ impl Construct for Confirm {
         commands
             .entity(context.id)
             .insert(Focusable::default())
-            // .insert(AskyState::default())
             .insert(Prompt(props.clone()));
+        commands.trigger(AddView(context.id));
 
         context.world.flush();
         Ok(Confirm { yes: false })

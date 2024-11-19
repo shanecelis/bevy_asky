@@ -1,4 +1,4 @@
-use crate::{construct::*, prelude::*};
+use crate::{construct::*, prelude::*, view::AddView};
 use bevy::prelude::*;
 
 use std::borrow::Cow;
@@ -40,7 +40,7 @@ impl Construct for Checkbox {
             .insert(NodeBundle::default())
             .insert(Focusable::default())
             .insert(Prompt(props.clone()));
-
+        commands.trigger(AddView(context.id));
         context.world.flush();
         Ok(Checkbox { checked: false })
     }
@@ -137,7 +137,7 @@ impl Construct for CheckboxGroup {
                     children.push(id);
                 }
             });
-
+        commands.trigger(AddView(context.id));
         context.world.flush();
         Ok(CheckboxGroup)
     }

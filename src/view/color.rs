@@ -1,5 +1,5 @@
 use crate::{construct::*, prelude::*, string_cursor::*};
-use super::ViewHook;
+use super::AddView;
 use bevy::{
     ecs::{query::QueryEntityError, system::SystemParam},
     prelude::*,
@@ -39,8 +39,8 @@ impl Construct for View {
     }
 }
 
-pub fn add_view(input: In<Entity>, mut commands: Commands) {
-    commands.entity(*input)
+pub fn add_view(trigger: Trigger<AddView>, mut commands: Commands) {
+    commands.entity(trigger.event().0)
         .construct::<View>(());
 }
 
@@ -161,20 +161,19 @@ impl Default for Palette {
 }
 
 pub fn plugin(app: &mut App) {
-    let hook = ViewHook(Some(app.register_system(add_view)));
     app.register_type::<View>()
         .register_type::<ViewPart>()
         .register_type::<Cursor>()
         .register_type::<CursorBlink>()
         .register_type::<Palette>()
-        .insert_resource(hook)
-        .add_systems(
-            PreUpdate,
-            (
-                super::add_view_to_checkbox::<View>,
-                // super::add_view_to_radio::<View>,
-            ),
-        )
+        .observe(add_view)
+        // .add_systems(
+        //     PreUpdate,
+        //     (
+        //         // super::add_view_to_checkbox::<View>,
+        //         // super::add_view_to_radio::<View>,
+        //     ),
+        // )
         .add_systems(
             Update,
             (
@@ -269,6 +268,7 @@ pub fn text_view<F: bevy::ecs::query::QueryFilter>(
     focus: Focus,
 ) {
     for (root, text_state, children, placeholder) in query.iter() {
+        warn!("textview");
         let index = ViewPart::Answer as usize;
         let id = if index < children.len() {
             children[index]
@@ -416,7 +416,7 @@ pub(crate) fn password_view(
                 );
             } else {
                 let mut pre_cursor = parts.fetch_next().expect("pre cursor");
-                replace_or_insert(&mut pre_cursor, 0, &text_state.value);
+                replace_or_insert_rep(&mut pre_cursor, 0, glyph, text_state.value.len());
                 let mut cursor = parts.fetch_next().expect("cursor");
                 replace_or_insert(&mut cursor, 0, "");
                 let mut post_cursor = parts.fetch_next().expect("post cursor");

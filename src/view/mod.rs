@@ -16,7 +16,6 @@ pub mod color;
 pub mod widget;
 
 pub(crate) fn plugin(app: &mut App) {
-    app.init_resource::<ViewHook>();
 }
 
 #[derive(Component)]
@@ -29,70 +28,8 @@ pub enum Answer<T> {
     Final, //(Option<T>)
 }
 
-#[derive(Resource, Default, Debug)]
-pub struct ViewHook(Option<SystemId<Entity>>);
-
-impl ViewHook {
-
-    // pub fn run_hook_commands<'w,'s>(context: &'s mut ConstructContext<'w>) -> Commands<'w,'s> {
-    //     let view_hook = context.world.resource::<ViewHook>();
-    //     let cmd = view_hook.add_view_cmd(context.id);
-    //     let mut commands = context.world.commands();
-    //     if let Some(cmd) = cmd {
-    //         commands.add(cmd);
-    //     }
-    //     commands
-    // }
-    pub fn run_hook_commands(id: Entity, world: &mut World) -> Commands {
-        let view_hook = world.resource::<ViewHook>();
-        let cmd = view_hook.add_view_cmd(id);
-        let mut commands = world.commands();
-        if let Some(cmd) = cmd {
-            commands.add(cmd);
-        }
-        commands
-    }
-
-    pub fn add_view_cmd(&self, id: Entity) -> Option<impl Command> {
-        self.0.map(|system_id| {
-            move |world: &mut World| {
-                if let Err(e) = world.run_system_with_input(system_id, id) {
-                    warn!("error in ViewHook: {e}");
-                }
-            }
-        })
-    }
-
-    pub fn add_view(&self, id: Entity, commands: &mut Commands) -> bool {
-        if let Some(system_id) = self.0 {
-            commands.run_system_with_input(system_id, id);
-            true
-        } else {
-            // warn?
-            false
-        }
-    }
-
-    pub fn run_add_view(id: Entity, world: &mut World) -> bool {
-        if let Some(system_id) = world.resource::<Self>().0 {
-            world.run_system_with_input(system_id, id);
-            true
-        } else {
-            // warn?
-            false
-        }
-    }
-
-    pub fn queue_add_view(id: Entity, world: &World, commands: &mut Commands) -> bool {
-        if let Some(system_id) = world.resource::<Self>().0 {
-            commands.run_system_with_input(system_id, id);
-            true
-        } else {
-            // warn?
-            false
-        }
-    }
-}
+#[derive(Event, Debug)]
+pub struct AddView(pub Entity);
 
 pub fn add_view_to_checkbox<V>(
     checkboxes: Query<(Entity, &Parent), Added<Checkbox>>,

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_asky::{construct::*, prompt::*, view::*, *};
 
 fn views(app: &mut App) {
-    app.add_plugins(view::ascii::plugin)
+    app//.add_plugins(view::ascii::plugin)
         .add_plugins(view::color::plugin);
 
     #[cfg(feature = "button")]
@@ -32,7 +32,6 @@ fn setup(mut commands: Commands) {
             parent
                 .construct::<Number<i8>>("Age? ")
                 .construct::<Placeholder>("333")
-                .construct::<ascii::View>(())
                 .observe(move |trigger: Trigger<AskyEvent<i8>>| {
                     eprintln!("trigger {:?}", trigger.event());
                 });
@@ -40,7 +39,6 @@ fn setup(mut commands: Commands) {
             parent
                 .construct::<Number<i32>>("Phone number ? ")
                 .construct::<Placeholder>("123-4567")
-                .construct::<ascii::View>(())
                 .observe(move |trigger: Trigger<AskyEvent<i8>>| {
                     eprintln!("trigger {:?}", trigger.event());
                 });

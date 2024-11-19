@@ -1,4 +1,4 @@
-use crate::{construct::*, prelude::*, string_cursor::*};
+use crate::{construct::*, prelude::*, string_cursor::*, view::AddView};
 use bevy::{
     input::{
         keyboard::{Key, KeyboardInput},
@@ -82,6 +82,7 @@ impl<T: NumLike> Construct for Number<T> {
             .insert(Prompt(props))
             .insert(input_state)
             .insert(Focusable::default());
+        commands.trigger(AddView(context.id));
 
         context.world.flush();
         Ok(Number {

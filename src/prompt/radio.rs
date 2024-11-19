@@ -1,4 +1,4 @@
-use crate::{construct::*, prelude::*, view::ViewHook};
+use crate::{construct::*, prelude::*, view::AddView};
 use bevy::{
     ecs::system::SystemState,
     a11y::{accesskit::*, AccessibilityNode},
@@ -24,13 +24,14 @@ impl Construct for Radio {
         props: Self::Props,
     ) -> Result<Self, ConstructError> {
         // Our requirements.
-        let mut commands = ViewHook::run_hook_commands(context.id, context.world);
+        //
+        let mut commands = context.world.commands();
         commands
             .entity(context.id)
             .insert(Focusable::default())
             .insert(Prompt(props.clone()))
             .insert(AccessibilityNode(NodeBuilder::new(Role::RadioButton)));
-
+        commands.trigger(AddView(context.id));
         context.world.flush();
         Ok(Radio { checked: false })
     }
@@ -128,6 +129,7 @@ impl Construct for RadioGroup {
             //         children.push(id);
             //     }
             // });
+        commands.trigger(AddView(context.id));
 
         context.world.flush();
         Ok(RadioGroup)

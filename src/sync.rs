@@ -7,7 +7,6 @@ use std::fmt::Debug;
 pub trait AskyCommands {
     fn prompt<
         T: Construct + Component + Submitter,
-        V: Construct<Props = ()> + Component + Default,
     >(
         &mut self,
         props: impl Into<T::Props>,
@@ -19,7 +18,6 @@ pub trait AskyCommands {
 
     fn prompt_group<
         T: Construct + Component + Submitter + Part,
-        V: Construct<Props = ()> + Component + Default,
         X>(
         &mut self,
         group_prop: impl Into<<<T as Part>::Group as Construct>::Props>,
@@ -37,7 +35,6 @@ pub trait AskyCommands {
 impl<'w, 's> AskyCommands for Commands<'w, 's> {
     fn prompt<
         T: Construct + Component + Submitter,
-        V: Construct<Props = ()> + Component + Default,
     >(
         &mut self,
         props: impl Into<T::Props>,
@@ -51,13 +48,12 @@ impl<'w, 's> AskyCommands for Commands<'w, 's> {
         let d = dest.into();
 
         let mut commands = d.entity(self);
-        commands.construct::<V>(()).construct::<T>(p);
+        commands.construct::<T>(p);
         commands
     }
 
     fn prompt_group<
         T: Construct + Component + Submitter + Part,
-        V: Construct<Props = ()> + Component + Default,
         X>(
         &mut self,
         group_prop: impl Into<<<T as Part>::Group as Construct>::Props>,
@@ -73,12 +69,11 @@ impl<'w, 's> AskyCommands for Commands<'w, 's> {
         let d = dest.into();
 
         let mut commands = d.entity(self);
-        commands.construct::<V>(())
+        commands
             .construct::<T::Group>(group_prop)
             .with_children(|parent| {
                 for prop in props.into_iter() {
-                    parent.construct::<V>(())
-                        .construct::<T>(prop);
+                    parent.construct::<T>(prop);
                 }
             });
         commands

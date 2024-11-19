@@ -7,7 +7,7 @@ use bevy_asky::{
 };
 
 fn views(app: &mut App) {
-    app.add_plugins(view::ascii::plugin)
+    app//.add_plugins(view::ascii::plugin)
         .add_plugins(view::color::plugin);
 
     #[cfg(feature = "button")]
@@ -29,7 +29,6 @@ fn setup(mut commands: Commands) {
         parent.spawn(TextBundle::from("checkbox group 0"));
 
         parent
-            .construct::<color::View>(())
             .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
             .observe(move |trigger: Trigger<AskyEvent<Vec<bool>>>| {
                 eprintln!("trigger {:?}", trigger.event());
@@ -37,7 +36,6 @@ fn setup(mut commands: Commands) {
 
         parent.spawn(TextBundle::from("checkbox group 1"));
         parent
-            .construct::<ascii::View>(())
             .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
             .observe(move |trigger: Trigger<AskyEvent<Vec<bool>>>| {
                 eprintln!("trigger {:?}", trigger.event());

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_asky::{construct::*, prompt::*, view::*, *};
 
 fn views(app: &mut App) {
-    app.add_plugins(view::ascii::plugin)
+    app//.add_plugins(view::ascii::plugin)
         .add_plugins(view::color::plugin);
 
     #[cfg(feature = "button")]
@@ -20,7 +20,6 @@ fn main() {
 fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
-    let mut first = None;
     commands
         .spawn(NodeBundle {
             style: Style {
@@ -30,20 +29,11 @@ fn setup(mut commands: Commands) {
             ..default()
         })
         .with_children(|parent| {
-            first = Some(
-                parent
-                    .construct::<Radio>("Money")
-                    .construct::<ascii::View>(())
-                    .id(),
-            );
-
             parent
-                .construct::<Radio>("Time")
-                .construct::<ascii::View>(());
-
+                .construct::<Radio>("Money");
             parent
-                .construct::<Radio>("Power")
-                .construct::<ascii::View>(());
+                .construct::<Radio>("Time");
+            parent
+                .construct::<Radio>("Power");
         });
-    // commands.insert_resource(Focus(first));
 }
