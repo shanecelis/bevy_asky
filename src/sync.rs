@@ -17,19 +17,18 @@ pub trait AskyCommands {
         <T as Submitter>::Out: Clone + Debug + Send + Sync;
 
     fn prompt_group<
-        T: Construct + Component + Submitter + Part,
-        X>(
+        T: Construct + Component + Part>(
         &mut self,
         group_prop: impl Into<<<T as Part>::Group as Construct>::Props>,
-        props: impl IntoIterator<Item = X>,
+        props: impl IntoIterator<Item = impl Into<T::Props>>,
         dest: impl Into<Dest>,
     ) -> EntityCommands
     where
         <T as Construct>::Props: Send,
         <<T as Part>::Group as Construct>::Props: Send,
-        X: Into<T::Props>,
-        <T as Part>::Group: Component + Construct + Clone + Send + Sync,
-        <T as Submitter>::Out: Clone + Debug + Send + Sync;
+        <T as Part>::Group: Component + Construct + Send + Sync,
+        <T as Part>::Group: Submitter,
+        <<T as Part>::Group as Submitter>::Out: Clone + Debug + Send + Sync;
 }
 
 impl<'w, 's> AskyCommands for Commands<'w, 's> {
@@ -53,19 +52,17 @@ impl<'w, 's> AskyCommands for Commands<'w, 's> {
     }
 
     fn prompt_group<
-        T: Construct + Component + Submitter + Part,
-        X>(
+        T: Construct + Component + Part>(
         &mut self,
         group_prop: impl Into<<<T as Part>::Group as Construct>::Props>,
-        props: impl IntoIterator<Item = X>,
+        props: impl IntoIterator<Item = impl Into<T::Props>>,
         dest: impl Into<Dest>,
     ) -> EntityCommands
     where
         <T as Construct>::Props: Send,
         <<T as Part>::Group as Construct>::Props: Send,
-        X: Into<T::Props>,
-        <T as Part>::Group: Component + Construct + Clone + Send + Sync,
-        <T as Submitter>::Out: Clone + Debug + Send + Sync {
+        <T as Part>::Group: Component + Construct + Send + Sync + Submitter,
+        <<T as Part>::Group as Submitter>::Out: Clone + Debug + Send + Sync {
         let d = dest.into();
 
         let mut commands = d.entity(self);

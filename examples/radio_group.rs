@@ -21,12 +21,11 @@ fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
     commands.column().with_children(|parent| {
+        // parent
+        //     .construct::<Prompt>("radio group 0")
+        //     .construct::<ascii::View>(());
         parent
-            .construct::<Prompt>("radio group 0")
-            .construct::<ascii::View>(());
-        parent
-            .construct::<color::View>(())
-            .construct::<RadioGroup>(())
+            .construct::<RadioGroup>("radio group 0")
             .construct_children::<Radio>(["Money", "Time", "Power"])
             // .with_children(|group| {
             //     group.construct::<Radio>("Money")

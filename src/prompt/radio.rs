@@ -1,4 +1,4 @@
-use crate::{construct::*, prelude::*};
+use crate::{construct::*, prelude::*, Part};
 use bevy::{
     ecs::system::SystemState,
     a11y::{accesskit::*, AccessibilityNode},
@@ -88,19 +88,23 @@ fn radio_controller(
     }
 }
 
-#[derive(Component, Reflect)]
+#[derive(Component, Reflect, Default)]
 pub struct RadioGroup;
 
 unsafe impl Submitter for RadioGroup {
     type Out = usize;
 }
 
+impl Part for Radio {
+    type Group = RadioGroup;
+}
+
 impl Construct for RadioGroup {
-    type Props = ();
+    type Props = Cow<'static, str>;
 
     fn construct(
         context: &mut ConstructContext,
-        _props: Self::Props,
+        props: Self::Props,
     ) -> Result<Self, ConstructError> {
         // Our requirements.
         let mut commands = context.world.commands();
@@ -118,6 +122,10 @@ impl Construct for RadioGroup {
                     ..default()
                 },
                 ..default()
+            })
+            .with_children(|parent| {
+                parent.spawn(TextBundle::from_section(props, TextStyle::default()));
+
             });
             // // .insert(Focusable::default())
             // .with_children(|parent| {
@@ -155,12 +163,13 @@ fn radio_group_controller(
             .iter_many(children)
             .position(|(id, _)| focus.is_focused(id))
         {
+            dbg!(index);
             if input.just_pressed(KeyCode::ArrowDown) {
-                focus.move_focus_to(*children.get(index + 1).unwrap_or(&children[0]));
+                focus.move_focus_to(dbg!(*children.get(index + 1).unwrap_or(&children[0])));
             }
 
             if input.just_pressed(KeyCode::ArrowUp) {
-                focus.move_focus_to(children[index.checked_sub(1).unwrap_or(children.len() - 1)]);
+                focus.move_focus_to(dbg!(children[index.checked_sub(1).unwrap_or(children.len() - 1)]));
             }
 
             if input.just_pressed(KeyCode::Enter) {

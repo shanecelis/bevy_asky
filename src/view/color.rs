@@ -31,9 +31,12 @@ impl Construct for View {
         context: &mut ConstructContext,
         _props: Self::Props,
     ) -> Result<Self, ConstructError> {
+        let has_node = context.world.get_entity(context.id).map(|eref| eref.contains::<Node>()).unwrap_or(false);
         let mut commands = context.world.commands();
-        commands.entity(context.id).insert(NodeBundle::default());
-        // context.world.flush();
+        if ! has_node {
+            commands.entity(context.id).insert(NodeBundle::default());
+        }
+        context.world.flush();
         Ok(View)
     }
 }

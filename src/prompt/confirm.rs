@@ -27,6 +27,7 @@ impl Construct for Confirm {
         commands
             .entity(context.id)
             .insert(Focusable::default())
+            .insert(NodeBundle::default())
             .insert(NeedsView)
             .insert(Prompt(props.clone()));
 

@@ -1,4 +1,4 @@
-use bevy::{ecs::system::SystemParam, prelude::*};
+use bevy::{ecs::system::SystemParam, prelude::*, math::CompassQuadrant};
 
 pub mod private {
     use bevy::prelude::*;
@@ -55,11 +55,21 @@ pub(crate) fn plugin(app: &mut App) {
         .add_systems(Update, reset_focus);
 }
 
+fn compass_dir(dir: CompassQuadrant) -> Dir3 {
+    use CompassQuadrant::*;
+    match dir {
+        North => Dir3::Y,
+        South => Dir3::NEG_Y,
+        East => Dir3::X,
+        West => Dir3::NEG_X,
+    }
+}
+
 // pub type Focusable = AskyState;
 
 #[derive(SystemParam)]
 pub struct FocusParam<'w, 's> {
-    query: Query<'w, 's, (Entity, &'static mut Focusable)>,
+    query: Query<'w, 's, (Entity, &'static mut Focusable, &'static Transform)>,
     focus: ResMut<'w, private::Focus>,
     keyboard_nav: ResMut<'w, KeyboardNav>,
 }
@@ -69,6 +79,29 @@ impl<'w, 's> FocusParam<'w, 's> {
         // self.focus_maybe.and_then(|focus| focus.0.map(|f| f == id)).unwrap_or(false)
         self.focus.is_focused(id)
     }
+
+    // pub fn move_focus(&mut self, dir: CompassQuadrant) {
+    //     let (old_id, old_pos) = if let Some(old_focus) = self.focus.0.take() {
+    //         if let Ok((id, _, transform)) = self.query.get_mut(old_focus) {
+    //             (id, transform.translation)
+    //         } else {
+    //             self.move_focus_from(None);
+    //             return;
+    //         }
+    //     } else {
+    //         self.move_focus_from(None);
+    //         return;
+    //     };
+    //     let dir: Dir3 = compass_dir(dir);
+    //     let mut mindist = f32::MAX;
+    //     let mut id
+    //     for (id, mut focusable, transform) in &mut self.query {
+    //         let delta = transform.translation - old_pos;
+    //         delta.dot(*dir)
+
+
+    //     }
+    // }
 
     // pub fn unfocus(&mut self, id: Entity, is_complete: bool)  {
     //     self.query.get_mut(id).map(|mut asky_state| *asky_state = if is_complete {
@@ -80,14 +113,14 @@ impl<'w, 's> FocusParam<'w, 's> {
     // 
     pub fn move_focus_to(&mut self, id: Entity) {
         if let Some(old_focus) = self.focus.0.take() {
-            if let Ok((_, mut focusable)) = self.query.get_mut(old_focus) {
+            if let Ok((_, mut focusable, _)) = self.query.get_mut(old_focus) {
                 // Touch the old one so it knows it's no longer the focus.
                 focusable.touch()
             }
         }
         self.focus.0 = Some(id);
 
-        if let Ok((_, mut focusable)) = self.query.get_mut(id) {
+        if let Ok((_, mut focusable, _)) = self.query.get_mut(id) {
             // Touch the old one so it knows it's no longer the focus.
             focusable.touch()
         }
@@ -98,7 +131,7 @@ impl<'w, 's> FocusParam<'w, 's> {
             // We're moving from a definite id.
             let mut seen_id = false;
             let mut result = None;
-            for (id, focusable) in &self.query {
+            for (id, focusable, _) in &self.query {
                 if seen_id {
                     result = Some(id);
                     break;
@@ -110,7 +143,7 @@ impl<'w, 's> FocusParam<'w, 's> {
                 }
             }
             if let Some(id) = result {
-                let (_, mut focusable) = self.query.get_mut(id).unwrap();
+                let (_, mut focusable, _) = self.query.get_mut(id).unwrap();
                 focusable.touch();
             }
             self.focus.0 = result;
@@ -119,8 +152,8 @@ impl<'w, 's> FocusParam<'w, 's> {
             self.focus.0 = self
                 .query
                 .iter_mut()
-                .find(|(_, focusable)| !focusable.block)
-                .map(|(id, mut focusable)| {
+                .find(|(_, focusable, _)| !focusable.block)
+                .map(|(id, mut focusable, _)| {
                     focusable.touch();
                     id
                 });
@@ -174,7 +207,7 @@ impl<'w, 's> FocusParam<'w, 's> {
     pub fn is_blocked(&self, id: Entity) -> bool {
         self.query
             .get(id)
-            .map(|(_, focusable)| focusable.block)
+            .map(|(_, focusable, _)| focusable.block)
             .unwrap_or(true)
     }
 
@@ -183,7 +216,7 @@ impl<'w, 's> FocusParam<'w, 's> {
             // self.commands.entity(id).insert(Blocked);
             self.query
                 .get_mut(id)
-                .map(|(_, mut focus)| focus.block = true)
+                .map(|(_, mut focus, _)| focus.block = true)
                 .expect("no Focusable");
         } else {
             warn!("No id to block");
@@ -195,7 +228,7 @@ impl<'w, 's> FocusParam<'w, 's> {
             // self.commands.entity(id).remove::<Blocked>();
             self.query
                 .get_mut(id)
-                .map(|(_, mut focus)| focus.block = false)
+                .map(|(_, mut focus, _)| focus.block = false)
                 .expect("no Focusable");
         } else {
             warn!("No id to unblock");
