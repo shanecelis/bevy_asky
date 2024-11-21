@@ -14,6 +14,7 @@ fn main() {
         .add_plugins((DefaultPlugins, AskyPlugin))
         .add_plugins(common::views)
         .add_systems(Startup, setup)
+        .add_plugins(bevy_inspector_egui::quick::WorldInspectorPlugin::new())
         .run();
 }
 

@@ -114,7 +114,9 @@ impl<'w> ConstructExt for Commands<'w, '_> {
         s
     }
 
-    fn construct_children<T: Construct + Component>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
+    fn construct_children<T: Construct + Component>(&mut self,
+                                                    props: impl IntoIterator<Item = impl Into<T::Props>>)
+                                                    -> EntityCommands
     where
         <T as Construct>::Props: Send,
     {

@@ -1,4 +1,4 @@
-use crate::{construct::*, prelude::*};
+use crate::{construct::*, prelude::*, Part};
 use bevy::prelude::*;
 
 use std::borrow::Cow;
@@ -26,6 +26,10 @@ pub(crate) fn plugin(app: &mut App) {
     app.add_systems(PreUpdate, (checkbox_controller, checkbox_group_controller));
 }
 
+impl Part for Checkbox {
+    type Group = CheckboxGroup;
+}
+
 impl Construct for Checkbox {
     type Props = Cow<'static, str>;
 
@@ -37,7 +41,7 @@ impl Construct for Checkbox {
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
-            .insert(NodeBundle::default())
+            // .insert(NodeBundle::default())
             .insert(Focusable::default())
             .insert(NeedsView)
             .insert(Prompt(props.clone()));
@@ -98,7 +102,7 @@ fn checkbox_controller(
 //     }
 // }
 
-#[derive(Component, Reflect)]
+#[derive(Component, Reflect, Default)]
 pub struct CheckboxGroup;
 
 unsafe impl Submitter for CheckboxGroup {
@@ -106,7 +110,7 @@ unsafe impl Submitter for CheckboxGroup {
 }
 
 impl Construct for CheckboxGroup {
-    type Props = Vec<Cow<'static, str>>;
+    type Props = Cow<'static, str>;
 
     fn construct(
         context: &mut ConstructContext,
@@ -114,14 +118,8 @@ impl Construct for CheckboxGroup {
     ) -> Result<Self, ConstructError> {
         // Our requirements.
         let mut commands = context.world.commands();
-        let mut children = vec![];
         commands
             .entity(context.id)
-            .insert(NeedsView)
-            // .insert(Focusable::default())
-            // .insert(MenuSetting::default())
-            // .insert(MenuBuilder::Root)
-            // .insert(TextBundle::from_section("header", TextStyle::default()))
             .insert(NodeBundle {
                 style: Style {
                     flex_direction: FlexDirection::Column,
@@ -129,21 +127,13 @@ impl Construct for CheckboxGroup {
                 },
                 ..default()
             })
-            // .insert(Focusable::default())
             .with_children(|parent| {
-                // let mut entity_commands = parent.column();
-
-                for prompt in props {
-                    let id = parent.construct::<Checkbox>(prompt).id();
-                    children.push(id);
-                }
+                parent.spawn(TextBundle::from_section(props, TextStyle::default()));
             });
         context.world.flush();
         Ok(CheckboxGroup)
     }
 }
-
-// fn add_menu_builders(query: Query<&MenuSetting, (Without<MenuBuild
 
 fn checkbox_group_controller(
     mut query: Query<(Entity, &Children), With<CheckboxGroup>>,
@@ -164,9 +154,6 @@ fn checkbox_group_controller(
                         .map(|(_, checkbox)| checkbox.checked)
                         .collect();
                     commands.trigger_targets(AskyEvent(Ok(result)), id);
-                    focus.block(id);
-                    // focus.move_focus_from(id);
-                    // *state = AskyState::Complete;
                 }
 
                 if input.just_pressed(KeyCode::Escape) {

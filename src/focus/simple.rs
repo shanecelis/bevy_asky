@@ -51,7 +51,7 @@ pub(crate) fn plugin(app: &mut App) {
         .register_type::<Focusable>()
         .insert_resource(private::Focus(None))
         .insert_resource(KeyboardNav(true))
-        // .add_systems(Update, focus_on_tab)
+        .add_systems(PreUpdate, focus_keys)
         .add_systems(Update, reset_focus);
 }
 
@@ -69,7 +69,7 @@ fn compass_dir(dir: CompassQuadrant) -> Dir3 {
 
 #[derive(SystemParam)]
 pub struct FocusParam<'w, 's> {
-    query: Query<'w, 's, (Entity, &'static mut Focusable, &'static Transform)>,
+    query: Query<'w, 's, (Entity, &'static mut Focusable, &'static GlobalTransform)>,
     focus: ResMut<'w, private::Focus>,
     keyboard_nav: ResMut<'w, KeyboardNav>,
 }
@@ -80,28 +80,62 @@ impl<'w, 's> FocusParam<'w, 's> {
         self.focus.is_focused(id)
     }
 
-    // pub fn move_focus(&mut self, dir: CompassQuadrant) {
-    //     let (old_id, old_pos) = if let Some(old_focus) = self.focus.0.take() {
-    //         if let Ok((id, _, transform)) = self.query.get_mut(old_focus) {
-    //             (id, transform.translation)
-    //         } else {
-    //             self.move_focus_from(None);
-    //             return;
-    //         }
-    //     } else {
-    //         self.move_focus_from(None);
-    //         return;
-    //     };
-    //     let dir: Dir3 = compass_dir(dir);
-    //     let mut mindist = f32::MAX;
-    //     let mut id
-    //     for (id, mut focusable, transform) in &mut self.query {
-    //         let delta = transform.translation - old_pos;
-    //         delta.dot(*dir)
-
-
-    //     }
-    // }
+    pub fn move_focus(&mut self, dir: CompassQuadrant) {
+        let (old_id, old_pos) = if let Some(old_focus) = self.focus.0 {
+            if let Ok((id, _, transform)) = self.query.get_mut(old_focus) {
+                (id, transform.translation())
+            } else {
+                self.move_focus_from(None);
+                return;
+            }
+        } else {
+            self.move_focus_from(None);
+            return;
+        };
+        let dir: Dir3 = compass_dir(dir);
+        dbg!(old_id, old_pos, dir);
+        if let Some((min_id, min_dist)) = self.query.iter().filter_map(|(id, focusable, transform)| {
+            if id == old_id {
+                None
+            } else {
+                let delta = old_pos - transform.translation();
+                let dirdist = delta.dot(*dir);
+                dbg!(id, dirdist);
+                (dirdist > 0.0).then_some((id, dirdist))
+            }
+        // }).min_by_key(|x| x.1) {
+        }).min_by(|a, b| a.1.total_cmp(&b.1)) {
+            info!("focus to {min_id}");
+            self.move_focus_to(min_id);
+        } else {
+            warn!("no focus found");
+            // self.move_focus_from(old_id);
+        }
+        // let mut mindist = f32::MAX;
+        // let mut mindirdist = f32::MAX;
+        // let mut min_id = None;
+        // for (id, mut focusable, transform) in &mut self.query {
+        //     if id == old_id {
+        //         continue;
+        //     }
+        //     let delta = transform.translation() - old_pos;
+        //     let dirdist = delta.dot(*dir);
+        //     let dist = delta.length();
+        //     if dirdist > 0. && mindirdist > dirdist {
+        //         mindirdist = dbg!(dirdist);
+        //         mindist = dbg!(dist);
+        //         min_id = dbg!(Some(id));
+        //     } else if dirdist > 0. && mindist > dist {
+        //         mindist = dist;
+        //         min_id = Some(id);
+        //     }
+        // }
+        // if let Some(min_id) = min_id {
+        //     self.move_focus_to(min_id);
+        // } else {
+        //     self.move_focus_from(old_id);
+        // }
+    }
 
     // pub fn unfocus(&mut self, id: Entity, is_complete: bool)  {
     //     self.query.get_mut(id).map(|mut asky_state| *asky_state = if is_complete {
@@ -233,6 +267,14 @@ impl<'w, 's> FocusParam<'w, 's> {
         } else {
             warn!("No id to unblock");
         }
+    }
+}
+
+fn focus_keys(input: Res<ButtonInput<KeyCode>>, mut focus: FocusParam) {
+    if input.just_pressed(KeyCode::ArrowUp) {
+        focus.move_focus(CompassQuadrant::North);
+    } else if input.just_pressed(KeyCode::ArrowDown) {
+        focus.move_focus(CompassQuadrant::South);
     }
 }
 

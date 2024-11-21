@@ -108,14 +108,8 @@ impl Construct for RadioGroup {
     ) -> Result<Self, ConstructError> {
         // Our requirements.
         let mut commands = context.world.commands();
-        // let mut children = vec![];
         commands
             .entity(context.id)
-            .insert(NeedsView)
-            // .insert(Focusable::default())
-            // .insert(MenuSetting::default())
-            // .insert(MenuBuilder::Root)
-            // .insert(TextBundle::from_section(props, TextStyle::default()))
             .insert(NodeBundle {
                 style: Style {
                     flex_direction: FlexDirection::Column,
@@ -127,26 +121,12 @@ impl Construct for RadioGroup {
                 parent.spawn(TextBundle::from_section(props, TextStyle::default()));
 
             });
-            // // .insert(Focusable::default())
-            // .with_children(|parent| {
-            //     // let mut entity_commands = parent.column();
-
-            //     for prompt in props {
-            //         let id = parent
-            //             .construct::<Radio>(prompt)
-            //             .insert(Focusable::default())
-            //             .id();
-            //         children.push(id);
-            //     }
-            // });
         // commands.trigger(AddView(context.id));
 
         context.world.flush();
         Ok(RadioGroup)
     }
 }
-
-// fn add_menu_builders(query: Query<&MenuSetting, (Without<MenuBuild
 
 fn radio_group_controller(
     mut query: Query<(Entity, &Children), With<RadioGroup>>,
@@ -163,23 +143,11 @@ fn radio_group_controller(
             .iter_many(children)
             .position(|(id, _)| focus.is_focused(id))
         {
-            dbg!(index);
-            if input.just_pressed(KeyCode::ArrowDown) {
-                focus.move_focus_to(dbg!(*children.get(index + 1).unwrap_or(&children[0])));
-            }
-
-            if input.just_pressed(KeyCode::ArrowUp) {
-                focus.move_focus_to(dbg!(children[index.checked_sub(1).unwrap_or(children.len() - 1)]));
-            }
-
             if input.just_pressed(KeyCode::Enter) {
                 let selection = radios
                     .iter_many(children)
                     .position(|(_, radio)| radio.checked);
-
                 commands.trigger_targets(AskyEvent(selection.ok_or(Error::InvalidInput)), id);
-                // requests.send(NavRequest::ScopeMove(ScopeDirection::Next));
-                // *state = AskyState::Complete;
             }
 
             if input.just_pressed(KeyCode::Escape) {

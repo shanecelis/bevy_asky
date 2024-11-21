@@ -214,7 +214,7 @@ pub fn plugin(app: &mut App) {
 }
 
 pub(crate) fn prompt_view(
-    mut query: Query<(Entity, &Prompt), (With<View>, Changed<Prompt>)>,
+    mut query: Query<(Entity, &Prompt), Or<(Changed<View>, Changed<Prompt>)>>,
     mut writer: Inserter<Text>,
 ) {
     for (id, prompt) in query.iter_mut() {
@@ -249,7 +249,7 @@ pub(crate) fn clear_feedback<T: Component>(
 
 pub(crate) fn focus_view(
     focus: Focus,
-    mut query: Query<Entity, (With<View>, Changed<Focusable>)>,
+    mut query: Query<Entity, Or<(Changed<View>, Changed<Focusable>)>>,
     mut writer: Inserter<Text>,
     palette: Res<Palette>,
 ) {

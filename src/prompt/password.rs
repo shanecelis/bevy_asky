@@ -34,6 +34,11 @@ pub(crate) fn plugin(_app: &mut App) {}
 #[derive(Debug, Clone, Component, Reflect)]
 pub struct Password;
 
+unsafe impl Submitter for Password {
+    type Out = String;
+}
+
+
 impl Construct for Password {
     type Props = Cow<'static, str>;
 
