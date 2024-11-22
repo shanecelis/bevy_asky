@@ -88,6 +88,7 @@ impl<T: Spawn> Widgets for T {
         self.spawn(NodeBundle {
             style: Style {
                 flex_direction: FlexDirection::Column,
+                flex_wrap: FlexWrap::Wrap,
                 ..default()
             },
             ..default()
@@ -194,6 +195,13 @@ trait Spawn {
 impl Spawn for Commands<'_, '_> {
     fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands {
         self.spawn(bundle)
+    }
+}
+
+impl Spawn for EntityCommands<'_> {
+    fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands {
+        self.insert(bundle);
+        self.reborrow()
     }
 }
 

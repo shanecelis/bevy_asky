@@ -38,7 +38,6 @@ unsafe impl Submitter for Password {
     type Out = String;
 }
 
-
 impl Construct for Password {
     type Props = Cow<'static, str>;
 

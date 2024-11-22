@@ -228,6 +228,10 @@ impl<'w, 's> FocusParam<'w, 's> {
         // self.query.get_mut(id).map(|mut asky_state| *asky_state = AskyState::Complete);
     }
 
+    pub fn keyboard_nav(&self) -> bool {
+        self.keyboard_nav.0
+    }
+
     pub fn set_keyboard_nav(&mut self, on: bool) {
         self.keyboard_nav.0 = on;
     }
@@ -271,12 +275,24 @@ impl<'w, 's> FocusParam<'w, 's> {
 }
 
 fn focus_keys(input: Res<ButtonInput<KeyCode>>, mut focus: FocusParam) {
+    if !focus.keyboard_nav() || !input.any_just_pressed([KeyCode::ArrowUp,
+                                KeyCode::ArrowDown,
+                                KeyCode::ArrowLeft,
+                                KeyCode::ArrowRight]) {
+        return;
+    }
+
     if input.just_pressed(KeyCode::ArrowUp) {
         focus.move_focus(CompassQuadrant::North);
     } else if input.just_pressed(KeyCode::ArrowDown) {
         focus.move_focus(CompassQuadrant::South);
+    } else if input.just_pressed(KeyCode::ArrowLeft) {
+        focus.move_focus(CompassQuadrant::West);
+    } else if input.just_pressed(KeyCode::ArrowRight) {
+        focus.move_focus(CompassQuadrant::East);
     }
 }
+
 
 #[allow(dead_code)]
 fn focus_on_tab(input: Res<ButtonInput<KeyCode>>, mut focus: FocusParam) {

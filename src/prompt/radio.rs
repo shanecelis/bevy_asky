@@ -1,5 +1,6 @@
-use crate::{construct::*, prelude::*, Part};
+use crate::{construct::*, prelude::*, Part, view::widget::Widgets};
 use bevy::{
+    math::CompassQuadrant,
     ecs::system::SystemState,
     a11y::{accesskit::*, AccessibilityNode},
     prelude::*,
@@ -39,13 +40,14 @@ impl Construct for Radio {
 }
 
 fn radio_controller(
-    focus: Focus,
+    mut focus: FocusParam,
     mut query: Query<(Entity, &mut Radio, Option<&Parent>)>,
     child_query: Query<&Children>,
     input: Res<ButtonInput<KeyCode>>,
     mut toggled: Local<Vec<(Entity, Entity)>>,
 ) {
     toggled.clear();
+    let mut changed = false;
     for (id, mut radio, parent) in query.iter_mut() {
         if !focus.is_focused(id) {
             continue;
@@ -54,13 +56,13 @@ fn radio_controller(
             KeyCode::Space,
             KeyCode::KeyH,
             KeyCode::KeyL,
-            KeyCode::Enter,
-            KeyCode::Escape,
+            // KeyCode::Enter,
+            // KeyCode::Escape,
         ]) {
             let was_checked = radio.checked;
 
             if input.just_pressed(KeyCode::Space) {
-                radio.checked = true;
+                radio.checked = !radio.checked;
             }
             if input.any_just_pressed([KeyCode::KeyL]) {
                 radio.checked = true;
@@ -110,13 +112,7 @@ impl Construct for RadioGroup {
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
-            .insert(NodeBundle {
-                style: Style {
-                    flex_direction: FlexDirection::Column,
-                    ..default()
-                },
-                ..default()
-            })
+            .column()
             .with_children(|parent| {
                 parent.spawn(TextBundle::from_section(props, TextStyle::default()));
 
@@ -144,14 +140,18 @@ fn radio_group_controller(
             .position(|(id, _)| focus.is_focused(id))
         {
             if input.just_pressed(KeyCode::Enter) {
-                let selection = radios
+                if let Some(selection) = radios
                     .iter_many(children)
-                    .position(|(_, radio)| radio.checked);
-                commands.trigger_targets(AskyEvent(selection.ok_or(Error::InvalidInput)), id);
+                    .position(|(_, radio)| radio.checked) {
+                        // commands.trigger_targets(AskyEvent(selection.ok_or(Error::InvalidInput)), id);
+                        commands.trigger_targets(AskyEvent(Ok(selection)), id);
+                    } else {
+                        commands.entity(id).insert(Feedback::warn("must select one"));
+                    }
             }
 
             if input.just_pressed(KeyCode::Escape) {
-                commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
+                commands.trigger_targets(AskyEvent::<usize>(Err(Error::Cancel)), id);
                 commands.entity(id).insert(Feedback::error("canceled"));
             }
         }

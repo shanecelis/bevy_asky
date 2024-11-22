@@ -27,7 +27,6 @@ impl Construct for Confirm {
         commands
             .entity(context.id)
             .insert(Focusable::default())
-            .insert(NodeBundle::default())
             .insert(NeedsView)
             .insert(Prompt(props.clone()));
 
@@ -37,7 +36,7 @@ impl Construct for Confirm {
 }
 
 fn confirm_controller(
-    mut query: Query<(Entity, &mut Confirm)>, // &mut AskyState)>,
+    mut query: Query<(Entity, &mut Confirm)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
     mut focus: FocusParam,
@@ -65,18 +64,13 @@ fn confirm_controller(
                 commands.trigger_targets(AskyChange(false), id);
             }
             if input.just_pressed(KeyCode::Enter) {
-                // *state = AskyState::Complete;
                 // Make this not focusable again.
                 // I had tried using triggers in bevy_ui_navigation to fix my issues.
                 // commands.trigger(NavRequest::Move(NavDirection::South));
                 commands.trigger_targets(AskyEvent::<bool>(Ok(confirm.yes)), id);
                 focus.block_and_move(id);
-                // commands
-                //     .entity(id)
-                //     .insert(Feedback::info(if yes { "Yes" } else { "No" }));
             }
             if input.just_pressed(KeyCode::Escape) {
-                // *state = AskyState::Error;
                 commands.trigger_targets(AskyEvent::<bool>(Err(Error::Cancel)), id);
                 commands.entity(id).insert(Feedback::error("canceled"));
             }

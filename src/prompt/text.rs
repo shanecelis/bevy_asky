@@ -60,7 +60,6 @@ impl Construct for TextField {
         commands
             .entity(context.id)
             .insert(Prompt(props))
-            .insert(NodeBundle::default())
             .insert(input_state)
             .insert(NeedsView)
             .insert(Focusable::default());
@@ -99,12 +98,12 @@ fn text_controller(
                 Key::ArrowRight => text_state.move_cursor(CursorDirection::Right),
                 Key::Enter => {
                     commands.trigger_targets(AskyEvent(Ok(text_state.value.clone())), id);
-                    focus.block_and_move(id);
+                    // focus.block_and_move(id);
                 }
                 Key::Escape => {
                     commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
-                    commands.entity(id).insert(Feedback::error("canceled"));
-                    focus.block(id);
+                    // commands.entity(id).insert(Feedback::error("canceled"));
+                    // focus.block(id);
                 }
                 x => info!("Unhandled key {x:?}"),
             }

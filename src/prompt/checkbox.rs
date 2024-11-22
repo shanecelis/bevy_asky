@@ -1,4 +1,4 @@
-use crate::{construct::*, prelude::*, Part};
+use crate::{construct::*, prelude::*, Part, view::widget::Widgets};
 use bevy::prelude::*;
 
 use std::borrow::Cow;
@@ -7,10 +7,6 @@ use std::borrow::Cow;
 pub struct Checkbox {
     /// Initial checkbox of the prompt.
     pub checked: bool,
-}
-
-unsafe impl Submitter for Checkbox {
-    type Out = bool;
 }
 
 // impl From<Cow<'static, str>> for Checkbox {
@@ -41,7 +37,6 @@ impl Construct for Checkbox {
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
-            // .insert(NodeBundle::default())
             .insert(Focusable::default())
             .insert(NeedsView)
             .insert(Prompt(props.clone()));
@@ -120,13 +115,7 @@ impl Construct for CheckboxGroup {
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
-            .insert(NodeBundle {
-                style: Style {
-                    flex_direction: FlexDirection::Column,
-                    ..default()
-                },
-                ..default()
-            })
+            .column()
             .with_children(|parent| {
                 parent.spawn(TextBundle::from_section(props, TextStyle::default()));
             });
@@ -142,24 +131,23 @@ fn checkbox_group_controller(
     mut commands: Commands,
     mut focus: FocusParam,
 ) {
-    if input.any_just_pressed([KeyCode::Escape, KeyCode::Enter]) {
-        for (id, children) in query.iter_mut() {
-            if checkboxes
-                .iter_many(children)
-                .any(|(id, _)| focus.is_focused(id))
-            {
-                if input.just_pressed(KeyCode::Enter) {
-                    let result: Vec<bool> = checkboxes
-                        .iter_many(children)
-                        .map(|(_, checkbox)| checkbox.checked)
-                        .collect();
-                    commands.trigger_targets(AskyEvent(Ok(result)), id);
-                }
+    if !input.any_just_pressed([KeyCode::Escape, KeyCode::Enter]) {
+        return;
+    }
+    for (id, children) in query.iter_mut() {
+        if children.iter()
+            .any(|id| focus.is_focused(*id))
+        {
+            if input.just_pressed(KeyCode::Enter) {
+                let result: Vec<bool> = checkboxes
+                    .iter_many(children)
+                    .map(|(_, checkbox)| checkbox.checked)
+                    .collect();
+                commands.trigger_targets(AskyEvent(Ok(result)), id);
+            }
 
-                if input.just_pressed(KeyCode::Escape) {
-                    commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
-                    commands.entity(id).insert(Feedback::error("canceled"));
-                }
+            if input.just_pressed(KeyCode::Escape) {
+                commands.trigger_targets(AskyEvent::<Vec<bool>>(Err(Error::Cancel)), id);
             }
         }
     }

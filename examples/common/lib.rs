@@ -2,11 +2,12 @@ use bevy::prelude::*;
 use bevy_asky::view;
 
 pub fn views(app: &mut App) {
-    app
-        .add_plugins(view::ascii::plugin)
-        .add_plugins(view::color::plugin)
-        .add_systems(Update, view::color::replace_view);
-
+    #[cfg(feature = "ascii")]
+    app.add_plugins(view::ascii::plugin);
+    #[cfg(feature = "color")]
+    app.add_plugins(view::color::plugin);
     #[cfg(feature = "button")]
     app.add_plugins(view::button::plugin);
+    app
+        .add_systems(Update, view::color::replace_view);
 }

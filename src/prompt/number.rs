@@ -81,7 +81,6 @@ impl<T: NumLike> Construct for Number<T> {
             .entity(context.id)
             .insert(Prompt(props))
             .insert(input_state)
-            // .insert(NodeBundle::default())
             .insert(NeedsView)
             .insert(Focusable::default());
 

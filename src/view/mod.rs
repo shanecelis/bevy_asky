@@ -8,9 +8,11 @@ use bevy::{
     }
 };
 
+#[cfg(feature = "ascii")]
 pub mod ascii;
 // pub mod button;
 pub mod click;
+#[cfg(feature = "color")]
 pub mod color;
 // pub(crate) mod interaction;
 pub mod widget;
