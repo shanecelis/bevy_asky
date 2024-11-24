@@ -10,7 +10,7 @@ use std::borrow::Cow;
 
 pub(crate) fn plugin(app: &mut App) {
     app.add_systems(
-        PreUpdate,
+        Update,
         (
             number_controller::<f32>,
             number_controller::<f64>,
@@ -24,7 +24,7 @@ pub(crate) fn plugin(app: &mut App) {
             number_controller::<u32>,
             number_controller::<u64>,
             number_controller::<usize>,
-        ),
+        ).in_set(AskySet::Controller),
     );
 }
 

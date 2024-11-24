@@ -25,7 +25,7 @@ impl Toggle {
 }
 
 pub(crate) fn plugin(app: &mut App) {
-    app.add_systems(PreUpdate, toggle_controller);
+    app.add_systems(Update, toggle_controller.in_set(AskySet::Controller));
 }
 
 impl Construct for Toggle {

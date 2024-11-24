@@ -58,8 +58,10 @@ pub(crate) fn plugin(app: &mut App) {
 fn compass_dir(dir: CompassQuadrant) -> Dir3 {
     use CompassQuadrant::*;
     match dir {
-        North => Dir3::Y,
-        South => Dir3::NEG_Y,
+        // NOTE: I think the Y axis is inverted for UI coordinates.
+        North => Dir3::NEG_Y,
+        South => Dir3::Y,
+
         East => Dir3::X,
         West => Dir3::NEG_X,
     }
@@ -93,22 +95,23 @@ impl<'w, 's> FocusParam<'w, 's> {
             return;
         };
         let dir: Dir3 = compass_dir(dir);
-        dbg!(old_id, old_pos, dir);
+        // dbg!(old_id, old_pos, dir);
         if let Some((min_id, min_dist)) = self.query.iter().filter_map(|(id, focusable, transform)| {
             if id == old_id {
                 None
             } else {
-                let delta = old_pos - transform.translation();
+                // let delta = old_pos - transform.translation();
+                let delta = transform.translation() - old_pos;
                 let dirdist = delta.dot(*dir);
-                dbg!(id, dirdist);
+                // dbg!(id, transform.translation(), delta, dirdist);
                 (dirdist > 0.0).then_some((id, dirdist))
             }
         // }).min_by_key(|x| x.1) {
         }).min_by(|a, b| a.1.total_cmp(&b.1)) {
-            info!("focus to {min_id}");
+            // info!("focus to {min_id}");
             self.move_focus_to(min_id);
         } else {
-            warn!("no focus found");
+            // warn!("no focus found");
             // self.move_focus_from(old_id);
         }
         // let mut mindist = f32::MAX;

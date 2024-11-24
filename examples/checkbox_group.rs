@@ -23,16 +23,18 @@ fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
     commands.column().with_children(|parent| {
         parent.spawn(TextBundle::from("checkbox group 0"));
-
         parent
-            .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
+            // .column()
+            .spawn(NodeBundle::default())
+            .construct_children::<Checkbox>(["Money", "Time", "Power"])
             .observe(move |trigger: Trigger<AskyEvent<Vec<bool>>>| {
                 eprintln!("trigger {:?}", trigger.event());
             });
 
         parent.spawn(TextBundle::from("checkbox group 1"));
         parent
-            .construct::<CheckboxGroup>(vec!["Money".into(), "Time".into(), "Power".into()])
+            .column()
+            .construct_children::<Checkbox>(["Money", "Time", "Power"])
             .observe(move |trigger: Trigger<AskyEvent<Vec<bool>>>| {
                 eprintln!("trigger {:?}", trigger.event());
             });

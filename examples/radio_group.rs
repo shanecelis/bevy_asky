@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_asky::{
     construct::*,
     prompt::*,
-    view::{widget::Widgets, *},
+    view::widget::Widgets,
     *,
 };
 

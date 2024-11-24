@@ -10,7 +10,7 @@ use std::borrow::Cow;
 
 pub(crate) fn plugin(app: &mut App) {
     app.register_type::<StringCursor>()
-        .add_systems(PreUpdate, text_controller);
+        .add_systems(Update, text_controller.in_set(AskySet::Controller));
 }
 
 /// Prompt to get one-line user input.

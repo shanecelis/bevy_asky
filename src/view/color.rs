@@ -41,11 +41,10 @@ impl Construct for View {
     }
 }
 
-// pub fn add_view(trigger: Trigger<AddView>, mut commands: Commands) {
-//     commands.entity(trigger.event().0)
-//         .construct::<View>(());
-// }
-
+/// This system replaces [NeedsView] with this module's [View].
+///
+/// If multiple View providers are present, this system ought to be scheduled by
+/// the user.
 pub fn replace_view(query: Query<Entity, Added<NeedsView>>,
                     mut commands: Commands) {
     for id in &query {
@@ -186,10 +185,12 @@ pub fn plugin(app: &mut App) {
         //         // super::add_view_to_radio::<View>,
         //     ),
         // )
+        .add_systems(PreUpdate, replace_view.in_set(AskySet::ReplaceView))
         .add_systems(
-            Update,
+            PreUpdate,
             (
                 (
+                    // replace_view,
                     focus_view,
                     radio_view,
                     checkbox_view,
@@ -204,7 +205,7 @@ pub fn plugin(app: &mut App) {
                 clear_feedback::<StringCursor>,
                 clear_feedback::<Toggle>,
                 blink_cursor,
-            ),
+            ).in_set(AskySet::View),
         )
         .insert_resource(CursorBlink(Timer::from_seconds(
             1.0 / 3.0,
@@ -258,8 +259,8 @@ pub(crate) fn focus_view(
             .insert_or_get_mut(id, ViewPart::Focus as usize, |text| {
                 replace_or_insert(text, 0, if focus.is_focused(id) { "> " } else { "  " });
                 text.sections[0].style.color = palette.highlight.into();
-            })
-            .expect("focus");
+            });
+            //.expect("focus");
     }
 }
 
@@ -450,13 +451,9 @@ pub(crate) fn password_view(
                         } else {
                             glyph
                         },
-                        TextStyle {
-                            color: Color::BLACK,
-                            ..default()
-                        },
-                    )
-                    .with_background_color(Color::WHITE),
-                );
+                        TextStyle::default()
+                    ))
+                      .insert(Cursor);
                 // post cursor
                 parent.spawn(TextBundle::from_section(
                     glyph.repeat(text_state.value.len().saturating_sub(text_state.index)),

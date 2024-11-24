@@ -19,7 +19,7 @@ pub struct Checkbox {
 // }
 
 pub(crate) fn plugin(app: &mut App) {
-    app.add_systems(PreUpdate, (checkbox_controller, checkbox_group_controller));
+    app.add_systems(PreUpdate, (checkbox_controller, checkbox_group_controller).in_set(AskySet::Controller));
 }
 
 impl Part for Checkbox {
@@ -38,8 +38,10 @@ impl Construct for Checkbox {
         commands
             .entity(context.id)
             .insert(Focusable::default())
-            .insert(NeedsView)
+            // .insert(NeedsView)
             .insert(Prompt(props.clone()));
+        // commands.construct::<NeedsView>(());
+        commands.trigger(AddView(context.id));
         context.world.flush();
         Ok(Checkbox { checked: false })
     }
@@ -50,33 +52,35 @@ fn checkbox_controller(
     mut query: Query<(Entity, &mut Checkbox)>,
     input: Res<ButtonInput<KeyCode>>,
     // mut requests: EventWriter<NavRequest>,
-    mut commands: Commands,
+    commands: Commands,
 ) {
-    for (id, mut checkbox) in query.iter_mut() {
-        if !focus.is_focused(id) {
-            continue;
-        }
-        if input.any_just_pressed([KeyCode::Space, KeyCode::KeyH, KeyCode::KeyL, KeyCode::Enter]) {
-            if input.just_pressed(KeyCode::Space) {
+    use KeyCode::*;
+
+    if input.any_just_pressed([Space, KeyY, KeyN]) {
+        for (id, mut checkbox) in query.iter_mut() {
+            if !focus.is_focused(id) {
+                continue;
+            }
+            if input.just_pressed(Space) {
                 checkbox.checked = !checkbox.checked;
             }
-            if input.any_just_pressed([KeyCode::KeyL]) {
+            if input.any_just_pressed([KeyY]) {
                 checkbox.checked = true;
             }
-            if input.any_just_pressed([KeyCode::KeyH]) {
+            if input.any_just_pressed([KeyN]) {
                 checkbox.checked = false;
             }
 
-            if input.just_pressed(KeyCode::Enter) {
-                let yes = checkbox.checked;
-                // requests.send(NavRequest::Move(NavDirection::South));
-                // I had tried using triggers in bevy_ui_navigation to fix my issues.
-                // commands.trigger(NavRequest::Move(NavDirection::South));
-                commands.trigger_targets(AskyEvent::<bool>(Ok(yes)), id);
-                // commands
-                //     .entity(id)
-                //     .insert(Feedback::info(if yes { "Yes" } else { "No" }));
-            }
+            // if input.just_pressed(Enter) {
+            //     let yes = checkbox.checked;
+            //     // requests.send(NavRequest::Move(NavDirection::South));
+            //     // I had tried using triggers in bevy_ui_navigation to fix my issues.
+            //     // commands.trigger(NavRequest::Move(NavDirection::South));
+            //     commands.trigger_targets(AskyEvent::<bool>(Ok(yes)), id);
+            //     // commands
+            //     //     .entity(id)
+            //     //     .insert(Feedback::info(if yes { "Yes" } else { "No" }));
+            // }
         }
     }
 }
@@ -129,7 +133,7 @@ fn checkbox_group_controller(
     checkboxes: Query<(Entity, &Checkbox)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
-    mut focus: FocusParam,
+    focus: FocusParam,
 ) {
     if !input.any_just_pressed([KeyCode::Escape, KeyCode::Enter]) {
         return;

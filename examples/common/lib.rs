@@ -8,6 +8,4 @@ pub fn views(app: &mut App) {
     app.add_plugins(view::color::plugin);
     #[cfg(feature = "button")]
     app.add_plugins(view::button::plugin);
-    app
-        .add_systems(Update, view::color::replace_view);
 }

@@ -12,7 +12,7 @@ unsafe impl Submitter for Confirm {
 }
 
 pub(crate) fn plugin(app: &mut App) {
-    app.add_systems(PreUpdate, confirm_controller);
+    app.add_systems(Update, confirm_controller.in_set(AskySet::Controller));
 }
 
 impl Construct for Confirm {
@@ -57,11 +57,9 @@ fn confirm_controller(
         ]) {
             if input.any_just_pressed([KeyCode::KeyY, KeyCode::KeyL, KeyCode::ArrowRight]) {
                 confirm.yes = true;
-                commands.trigger_targets(AskyChange(true), id);
             }
             if input.any_just_pressed([KeyCode::KeyN, KeyCode::KeyH, KeyCode::ArrowLeft]) {
                 confirm.yes = false;
-                commands.trigger_targets(AskyChange(false), id);
             }
             if input.just_pressed(KeyCode::Enter) {
                 // Make this not focusable again.

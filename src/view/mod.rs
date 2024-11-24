@@ -1,12 +1,6 @@
 use crate::construct::*;
 use crate::prelude::*;
-use bevy::{
-    prelude::*,
-    ecs::{
-        world::Command,
-        system::{SystemParam, SystemId},
-    }
-};
+use bevy::prelude::*;
 
 #[cfg(feature = "ascii")]
 pub mod ascii;
@@ -23,14 +17,23 @@ pub(crate) fn plugin(app: &mut App) {
 #[derive(Debug, Component, Reflect)]
 pub struct NeedsView;
 
-#[derive(Component)]
-pub struct Question;
 
-#[derive(Component)]
-// pub struct Answer<T>(T);
-pub enum Answer<T> {
-    Selection(T),
-    Final, //(Option<T>)
+impl Construct for NeedsView {
+    type Props = ();
+
+    fn construct(
+        context: &mut ConstructContext,
+        props: Self::Props,
+    ) -> Result<Self, ConstructError> {
+        // Our requirements.
+        let mut commands = context.world.commands();
+        commands
+            .entity(context.id)
+            .insert(SpatialBundle::default());
+
+        context.world.flush();
+        Ok(NeedsView)
+    }
 }
 
 pub fn add_view_to_checkbox<V>(

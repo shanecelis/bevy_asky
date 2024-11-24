@@ -1,9 +1,8 @@
 // #![feature(round_char_boundary)]
 #![allow(clippy::type_complexity)]
-use bevy::{ecs::system::SystemId, prelude::*};
+use bevy::prelude::*;
 
 pub mod focus;
-use std::borrow::Cow;
 
 #[cfg(feature = "async")]
 mod r#async;
@@ -19,24 +18,52 @@ pub use r#async::*;
 mod dest;
 pub mod sync;
 pub use dest::Dest;
-
 pub mod prelude {
     #[cfg(feature = "async")]
     pub use super::r#async::*;
     pub use super::{
-        construct::*, focus::*, num_like::NumLike, prompt::*, view::*, AskyChange, AskyEvent,
-        AskyPlugin, Error, Submitter,
+        construct::*, focus::*, num_like::NumLike, prompt::*, view::*, AskyEvent,
+        AskyPlugin, Error, Submitter, AskySet, AddView,
     };
 }
 
+/// The Asky plugin. If using "async" features, [bevy_defer]'s `AsyncPlugin` is
+/// also required.
 pub struct AskyPlugin;
+
+/// Asky runs in the Update schedule of sets in this order where
+/// necessary:
+///
+/// - Controller, process inputs and modify models.
+/// - PreReplaceView, empty, can be used to pre-empt default replace view.
+/// - ReplaceView, look for `NeedsView` components and add current ones.
+/// - View, construct or update associated view components.
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+pub enum AskySet {
+    Controller,
+    PreReplaceView,
+    ReplaceView,
+    View,
+}
 
 impl Plugin for AskyPlugin {
     fn build(&self, app: &mut App) {
+        use crate::construct::ConstructExt;
         app
             .add_plugins(prompt::plugin)
-            .add_plugins(view::plugin)
-            .add_plugins(focus::plugin);
+            // .add_plugins(view::plugin)
+            .add_plugins(focus::plugin)
+            .configure_sets(PreUpdate, (
+                (AskySet::Controller, AskySet::PreReplaceView, AskySet::ReplaceView, AskySet::View).chain(),
+            ))
+            .observe(|trigger: Trigger<AddView>, mut commands: Commands| {
+                commands.entity(trigger.event().0)
+                        .construct::<crate::view::color::View>(());
+            })
+            ;
+        // This often requires a special configuration, so we're not including
+        // it ourselves.
+
         // #[cfg(feature = "async")]
         // app
         //     .add_plugins(bevy_defer::AsyncPlugin::default_settings());
@@ -46,26 +73,18 @@ impl Plugin for AskyPlugin {
 #[derive(Event, Deref, DerefMut, Debug, Clone)]
 pub struct AskyEvent<T>(pub Result<T, Error>);
 
-#[derive(Event, Deref, Debug)]
-pub struct AskyChange<T>(T);
-
-// #[derive(Event, Debug)]
-// pub enum AskyEvent<T> {
-//     Change(T),
-//     Submit(T)
+#[derive(Event, Debug, Clone)]
+pub struct AddView(pub Entity);
+// /// Should we have a policy on submission?
+// #[derive(Debug, Component, Default, Clone)]
+// pub enum Submit {
+//     #[default]
+//     Repeat,
+//     Once,
 // }
 
-// #[derive(Event, Deref, Debug)]
-// pub struct SubmitEvent<T>(pub T);
-
-#[derive(Debug, Component, Default, Clone)]
-pub enum Submit {
-    #[default]
-    Repeat,
-    Once,
-}
-
-/// This is a commitment to fire a `Trigger<Result<Self::Out, Error>>`.
+/// This trait represents a commitment to fire a `Trigger<Result<Self::Out,
+/// Error>>`.
 ///
 /// # Safety
 ///
@@ -74,7 +93,6 @@ pub enum Submit {
 pub unsafe trait Submitter {
     /// Output of submitter.
     type Out;
-    // fn submit(&self) -> Result<Self::Out, Error>;
 }
 
 /// A part of a group.
@@ -91,43 +109,13 @@ pub enum Error {
     /// Input was invalid.
     #[error("invalid input")]
     InvalidInput,
+    /// Invalid number.
     #[error("invalid number")]
     InvalidNumber,
-    /// Invalid count with expected and actual.
-    // #[error("invalid count, expected {expected} actual {actual}")]
-    // InvalidCount {
-    //     /// Expected count
-    //     expected: usize,
-    //     /// Actual count
-    //     actual: usize,
-    // },
     /// Validation failed.
     #[error("validation fail")]
     ValidationFail,
-    /// Message
-    #[error("{0}")]
-    Message(Cow<'static, str>),
-    /// There was an [std::io::Error].
-    // #[error("io error {0}")]
-    // Io(#[from] std::io::Error),
     #[cfg(feature = "async")]
     #[error("channel cancel {0}")]
     Channel(#[from] oneshot::Canceled),
-    // Async error
-    // #[error("async error {0}")]
-    // Async(#[from] bevy_defer::AccessError),
-    // Promise error
-    // #[error("promise error {0}")]
-    // Promise(#[from] promise_out::Error),
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-
-//     #[test]
-//     fn it_works() {
-//         let result = add(2, 2);
-//         assert_eq!(result, 4);
-//     }
-// }

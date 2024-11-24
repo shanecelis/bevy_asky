@@ -82,7 +82,9 @@ pub trait ConstructExt {
     fn construct<T: Construct + Component>(&mut self, props: impl Into<T::Props>) -> EntityCommands
     where
         <T as Construct>::Props: Send;
+}
 
+pub trait ConstructChildrenExt: ConstructExt {
     fn construct_children<T: Construct + Component>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
     where
         <T as Construct>::Props: Send,
@@ -114,20 +116,20 @@ impl<'w> ConstructExt for Commands<'w, '_> {
         s
     }
 
-    fn construct_children<T: Construct + Component>(&mut self,
-                                                    props: impl IntoIterator<Item = impl Into<T::Props>>)
-                                                    -> EntityCommands
-    where
-        <T as Construct>::Props: Send,
-    {
-        let mut s = self.spawn_empty();
-        s.with_children(|parent| {
-            for prop in props.into_iter() {
-                parent.construct::<T>(prop);
-            }
-        });
-        s
-    }
+    // fn construct_children<T: Construct + Component>(&mut self,
+    //                                                 props: impl IntoIterator<Item = impl Into<T::Props>>)
+    //                                                 -> EntityCommands
+    // where
+    //     <T as Construct>::Props: Send,
+    // {
+    //     let mut s = self.spawn_empty();
+    //     s.with_children(|parent| {
+    //         for prop in props.into_iter() {
+    //             parent.construct::<T>(prop);
+    //         }
+    //     });
+    //     s
+    // }
 
 }
 
@@ -142,21 +144,21 @@ impl<'w> ConstructExt for ChildBuilder<'w> {
         s
     }
 
-    fn construct_children<T: Construct + Component>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
-    where
-        <T as Construct>::Props: Send,
-    {
-        let mut s = self.spawn_empty();
-        s.with_children(|parent| {
-            for prop in props.into_iter() {
-                parent.construct::<T>(prop);
-            }
-        });
-        s
-    }
+    // fn construct_children<T: Construct + Component>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
+    // where
+    //     <T as Construct>::Props: Send,
+    // {
+    //     let mut s = self.spawn_empty();
+    //     s.with_children(|parent| {
+    //         for prop in props.into_iter() {
+    //             parent.construct::<T>(prop);
+    //         }
+    //     });
+    //     s
+    // }
 }
 
-impl<'w> ConstructExt for bevy::ecs::system::EntityCommands<'w> {
+impl<'w> ConstructExt for EntityCommands<'w> {
     // type Out = EntityCommands;
     fn construct<T: Construct + Component>(&mut self, props: impl Into<T::Props>) -> EntityCommands
     where
@@ -165,7 +167,9 @@ impl<'w> ConstructExt for bevy::ecs::system::EntityCommands<'w> {
         self.add(ConstructCommand::<T>(props.into()));
         self.reborrow()
     }
+}
 
+impl<'w> ConstructChildrenExt for EntityCommands<'w> {
     fn construct_children<T: Construct + Component>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
     where
         <T as Construct>::Props: Send,
