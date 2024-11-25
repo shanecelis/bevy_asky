@@ -14,28 +14,6 @@ pub mod widget;
 pub(crate) fn plugin(app: &mut App) {
 }
 
-#[derive(Debug, Component, Reflect)]
-pub struct NeedsView;
-
-
-impl Construct for NeedsView {
-    type Props = ();
-
-    fn construct(
-        context: &mut ConstructContext,
-        props: Self::Props,
-    ) -> Result<Self, ConstructError> {
-        // Our requirements.
-        let mut commands = context.world.commands();
-        commands
-            .entity(context.id)
-            .insert(SpatialBundle::default());
-
-        context.world.flush();
-        Ok(NeedsView)
-    }
-}
-
 pub fn add_view_to_checkbox<V>(
     checkboxes: Query<(Entity, &Parent), Added<Checkbox>>,
     group: Query<&CheckboxGroup, With<V>>,

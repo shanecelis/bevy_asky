@@ -25,10 +25,11 @@ fn setup(mut commands: Commands) {
         })
         .with_children(|parent| {
             parent
-                .construct::<TextField>("Name? ")
-                .construct::<Placeholder>("John Smith")
-                .observe(move |trigger: Trigger<AskyEvent<String>>| {
-                    eprintln!("trigger {:?}", trigger.event());
-                });
+                // .construct::<TextField>("Name? ")
+                // .construct::<Placeholder>("John Smith")
+                // .observe(move |trigger: Trigger<AskyEvent<String>>| {
+                //     eprintln!("trigger {:?}", trigger.event());
+                // })
+                ;
         });
 }

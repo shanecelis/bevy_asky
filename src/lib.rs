@@ -1,6 +1,6 @@
 // #![feature(round_char_boundary)]
 #![allow(clippy::type_complexity)]
-use bevy::prelude::*;
+use bevy::{ecs::system::SystemId, prelude::*};
 
 pub mod focus;
 
@@ -41,8 +41,6 @@ pub struct AskyPlugin;
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AskySet {
     Controller,
-    PreReplaceView,
-    ReplaceView,
     View,
 }
 
@@ -50,16 +48,14 @@ impl Plugin for AskyPlugin {
     fn build(&self, app: &mut App) {
         use crate::construct::ConstructExt;
         app
+            .init_resource::<AddViews>()
             .add_plugins(prompt::plugin)
-            // .add_plugins(view::plugin)
+            .add_plugins(view::plugin)
             .add_plugins(focus::plugin)
-            .configure_sets(PreUpdate, (
-                (AskySet::Controller, AskySet::PreReplaceView, AskySet::ReplaceView, AskySet::View).chain(),
+            .configure_sets(Update, (
+                (AskySet::Controller, AskySet::View).chain(),
             ))
-            .observe(|trigger: Trigger<AddView>, mut commands: Commands| {
-                commands.entity(trigger.event().0)
-                        .construct::<crate::view::color::View>(());
-            })
+            .observe(add_views)
             ;
         // This often requires a special configuration, so we're not including
         // it ourselves.
@@ -69,6 +65,25 @@ impl Plugin for AskyPlugin {
         //     .add_plugins(bevy_defer::AsyncPlugin::default_settings());
     }
 }
+
+#[derive(Resource, Deref, DerefMut, Default, Clone)]
+struct AddViews(Vec<SystemId<Entity, bool>>);
+
+fn add_views(trigger: Trigger<AddView>, mut commands: Commands) {
+    let id: Entity = trigger.event().0;
+    commands.add(move |world: &mut World| {
+        let add_views: AddViews = world.resource::<AddViews>().clone();
+        for add_view in add_views.iter().rev() {
+            info!("Calling {:?}", add_view);
+            if world.run_system_with_input(*add_view, id).expect("run add_view") {
+                // Returns true when it has applied its view.
+                return;
+            }
+        }
+        // panic!("No view added to {id}. Had {} handlers.", add_views.len());
+    });
+}
+
 
 #[derive(Event, Deref, DerefMut, Debug, Clone)]
 pub struct AskyEvent<T>(pub Result<T, Error>);
@@ -115,6 +130,7 @@ pub enum Error {
     /// Validation failed.
     #[error("validation fail")]
     ValidationFail,
+
     #[cfg(feature = "async")]
     #[error("channel cancel {0}")]
     Channel(#[from] oneshot::Canceled),

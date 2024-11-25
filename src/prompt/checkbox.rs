@@ -38,9 +38,7 @@ impl Construct for Checkbox {
         commands
             .entity(context.id)
             .insert(Focusable::default())
-            // .insert(NeedsView)
             .insert(Prompt(props.clone()));
-        // commands.construct::<NeedsView>(());
         commands.trigger(AddView(context.id));
         context.world.flush();
         Ok(Checkbox { checked: false })
@@ -123,6 +121,7 @@ impl Construct for CheckboxGroup {
             .with_children(|parent| {
                 parent.spawn(TextBundle::from_section(props, TextStyle::default()));
             });
+        commands.trigger(AddView(context.id));
         context.world.flush();
         Ok(CheckboxGroup)
     }

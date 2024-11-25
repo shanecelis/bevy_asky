@@ -31,12 +31,12 @@ fn setup(mut commands: Commands) {
                 eprintln!("trigger {:?}", trigger.event());
             });
 
-        parent.spawn(TextBundle::from("checkbox group 1"));
-        parent
-            .column()
-            .construct_children::<Checkbox>(["Money", "Time", "Power"])
-            .observe(move |trigger: Trigger<AskyEvent<Vec<bool>>>| {
-                eprintln!("trigger {:?}", trigger.event());
-            });
+        // parent.spawn(TextBundle::from("checkbox group 1"));
+        // parent
+        //     .column()
+        //     .construct_children::<Checkbox>(["Money", "Time", "Power"])
+        //     .observe(move |trigger: Trigger<AskyEvent<Vec<bool>>>| {
+        //         eprintln!("trigger {:?}", trigger.event());
+        //     });
     });
 }

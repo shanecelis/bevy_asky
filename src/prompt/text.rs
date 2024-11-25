@@ -61,9 +61,8 @@ impl Construct for TextField {
             .entity(context.id)
             .insert(Prompt(props))
             .insert(input_state)
-            .insert(NeedsView)
             .insert(Focusable::default());
-        // commands.trigger(AddView(context.id));
+        commands.trigger(AddView(context.id));
         context.world.flush();
         Ok(TextField)
     }

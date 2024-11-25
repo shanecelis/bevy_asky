@@ -1,4 +1,4 @@
-use crate::{construct::*, prelude::*, string_cursor::*};
+use crate::{construct::*, prelude::*, string_cursor::*, AddViews};
 use bevy::{
     ecs::{query::QueryEntityError, system::SystemParam},
     prelude::*,
@@ -41,20 +41,29 @@ impl Construct for View {
     }
 }
 
-/// This system replaces [NeedsView] with this module's [View].
-///
-/// If multiple View providers are present, this system ought to be scheduled by
-/// the user.
-pub fn replace_view(query: Query<Entity, Added<NeedsView>>,
-                    mut commands: Commands) {
-    for id in &query {
-        commands
-            .entity(id)
-            .remove::<NeedsView>()
-            .construct::<View>(());
-    }
-}
+// /// This system replaces [NeedsView] with this module's [View].
+// ///
+// /// If multiple View providers are present, this system ought to be scheduled by
+// /// the user.
+// pub fn replace_view(query: Query<Entity, Added<NeedsView>>,
+//                     mut commands: Commands) {
+//     for id in &query {
+//         commands
+//             .entity(id)
+//             .remove::<NeedsView>()
+//             .construct::<View>(());
+//     }
+// }
 
+fn add_color_view(In(id): In<Entity>, mut commands: Commands) -> bool {
+    info!("add_color_view {id}");
+    // commands
+    //     .entity(id)
+    //     .insert(View)
+        // .construct::<View>(())
+        ;
+    true
+}
 #[derive(SystemParam)]
 pub(crate) struct Inserter<'w, 's, C: Component> {
     roots: Query<'w, 's, &'static mut C>,
@@ -177,20 +186,21 @@ pub fn plugin(app: &mut App) {
         .register_type::<Cursor>()
         .register_type::<CursorBlink>()
         .register_type::<Palette>()
-        // .observe(add_view)
-        // .add_systems(
-        //     PreUpdate,
-        //     (
-        //         // super::add_view_to_checkbox::<View>,
-        //         // super::add_view_to_radio::<View>,
-        //     ),
-        // )
-        .add_systems(PreUpdate, replace_view.in_set(AskySet::ReplaceView))
+        .add_systems(Startup,
+                     |mut add_views: ResMut<AddViews>, mut commands: Commands| {
+                         let system_id = commands.register_one_shot_system(add_color_view);
+                         info!("add_system_color {system_id:?}");
+                         add_views.0.push(system_id);
+                     })
+        .add_systems(PostStartup,
+                     |world: &mut World| {
+                     let id = world.resource::<AddViews>()[0];
+                     world.run_system_with_input(id, Entity::PLACEHOLDER).expect("run");
+                     })
         .add_systems(
             PreUpdate,
             (
                 (
-                    // replace_view,
                     focus_view,
                     radio_view,
                     checkbox_view,
@@ -255,7 +265,7 @@ pub(crate) fn focus_view(
     palette: Res<Palette>,
 ) {
     for id in query.iter_mut() {
-        writer
+        let _ = writer
             .insert_or_get_mut(id, ViewPart::Focus as usize, |text| {
                 replace_or_insert(text, 0, if focus.is_focused(id) { "> " } else { "  " });
                 text.sections[0].style.color = palette.highlight.into();

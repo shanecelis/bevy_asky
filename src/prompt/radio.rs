@@ -29,9 +29,8 @@ impl Construct for Radio {
             .entity(context.id)
             .insert(Focusable::default())
             .insert(Prompt(props.clone()))
-            .insert(NeedsView)
             .insert(AccessibilityNode(NodeBuilder::new(Role::RadioButton)));
-        // commands.trigger(AddView(context.id));
+        commands.trigger(AddView(context.id));
         context.world.flush();
         Ok(Radio { checked: false })
     }
@@ -54,8 +53,6 @@ fn radio_controller(
             KeyCode::Space,
             KeyCode::KeyH,
             KeyCode::KeyL,
-            // KeyCode::Enter,
-            // KeyCode::Escape,
         ]) {
             let was_checked = radio.checked;
 
@@ -115,7 +112,7 @@ impl Construct for RadioGroup {
                 parent.spawn(TextBundle::from_section(props, TextStyle::default()));
 
             });
-        // commands.trigger(AddView(context.id));
+        commands.trigger(AddView(context.id));
 
         context.world.flush();
         Ok(RadioGroup)
