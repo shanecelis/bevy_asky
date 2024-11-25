@@ -1,8 +1,9 @@
 use bevy::prelude::*;
-use bevy_asky::{construct::*, prompt::*, *};
+use bevy_asky::prelude::*;
 
 #[path = "common/lib.rs"]
 mod common;
+use common::View;
 
 fn main() {
     App::new()
@@ -16,24 +17,21 @@ fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
     commands
-        .spawn(NodeBundle {
-            style: Style {
-                flex_direction: FlexDirection::Column,
-                ..default()
-            },
-            ..default()
-        })
+        .column()
         .with_children(|parent| {
             parent
-                .construct::<Checkbox>("Money?")
-                .observe(move |trigger: Trigger<AskyEvent<bool>>| {
-                    eprintln!("trigger {:?}", trigger.event());
-                });
+                .construct::<View>(())
+                .construct::<Checkbox>("Money?");
+            // Checkboxes themselves don't trigger on enter.
+                // .observe(move |trigger: Trigger<AskyEvent<bool>>| {
+                //     eprintln!("trigger {:?}", trigger.event());
+                // });
 
             parent
-                .construct::<Checkbox>("Time?")
-                .observe(move |trigger: Trigger<AskyEvent<bool>>| {
-                    eprintln!("trigger {:?}", trigger.event());
-                });
+                .construct::<View>(())
+                .construct::<Checkbox>("Time?");
+                // .observe(move |trigger: Trigger<AskyEvent<bool>>| {
+                //     eprintln!("trigger {:?}", trigger.event());
+                // });
         });
 }

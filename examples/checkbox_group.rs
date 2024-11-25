@@ -8,6 +8,7 @@ use bevy_asky::{
 
 #[path = "common/lib.rs"]
 mod common;
+use common::View;
 
 fn main() {
     App::new()
@@ -22,21 +23,21 @@ fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
     commands.column().with_children(|parent| {
-        parent.spawn(TextBundle::from("checkbox group 0"));
         parent
-            // .column()
             .spawn(NodeBundle::default())
-            .construct_children::<Checkbox>(["Money", "Time", "Power"])
+            .construct::<CheckboxGroup>("checkbox group 0")
+            .construct_children_with::<Checkbox, View>(["Money", "Time", "Power"])
             .observe(move |trigger: Trigger<AskyEvent<Vec<bool>>>| {
                 eprintln!("trigger {:?}", trigger.event());
             });
 
         // parent.spawn(TextBundle::from("checkbox group 1"));
-        // parent
-        //     .column()
-        //     .construct_children::<Checkbox>(["Money", "Time", "Power"])
-        //     .observe(move |trigger: Trigger<AskyEvent<Vec<bool>>>| {
-        //         eprintln!("trigger {:?}", trigger.event());
-        //     });
+        parent
+            .column()
+            .construct::<CheckboxGroup>("checkbox group 1")
+            .construct_children_with::<Checkbox, View>(["Money", "Time", "Power"])
+            .observe(move |trigger: Trigger<AskyEvent<Vec<bool>>>| {
+                eprintln!("trigger {:?}", trigger.event());
+            });
     });
 }

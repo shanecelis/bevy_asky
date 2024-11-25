@@ -32,6 +32,7 @@ pub trait Widgets {
     /// Spawn a simple button with text.
     fn button(&mut self, text: impl Into<String>, palette: &Palette) -> EntityCommands;
     fn column(&mut self) -> EntityCommands;
+    fn column_wrap(&mut self) -> EntityCommands;
 
     // Spawn a simple header label. Bigger than [`Widgets::label`].
     // fn header(&mut self, text: impl Into<String>, palette: &Palette) -> EntityCommands;
@@ -85,6 +86,16 @@ impl<T: Spawn> Widgets for T {
     }
 
     fn column(&mut self) -> EntityCommands {
+        self.spawn(NodeBundle {
+            style: Style {
+                flex_direction: FlexDirection::Column,
+                ..default()
+            },
+            ..default()
+        })
+    }
+
+    fn column_wrap(&mut self) -> EntityCommands {
         self.spawn(NodeBundle {
             style: Style {
                 flex_direction: FlexDirection::Column,

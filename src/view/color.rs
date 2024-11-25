@@ -1,4 +1,4 @@
-use crate::{construct::*, prelude::*, string_cursor::*, AddViews};
+use crate::{construct::*, prelude::*, string_cursor::*};
 use bevy::{
     ecs::{query::QueryEntityError, system::SystemParam},
     prelude::*,
@@ -31,39 +31,23 @@ impl Construct for View {
         context: &mut ConstructContext,
         _props: Self::Props,
     ) -> Result<Self, ConstructError> {
-        let has_node = context.world.get_entity(context.id).map(|eref| eref.contains::<Node>()).unwrap_or(false);
-        let mut commands = context.world.commands();
-        if ! has_node {
-            commands.entity(context.id).insert(NodeBundle::default());
+
+        if let Some(mut eref) = context.world.get_entity_mut(context.id) {
+            if !eref.contains::<Node>() {
+                eref.insert(NodeBundle {
+                    style: Style {
+                        // flex_wrap: FlexWrap::Wrap,
+                        ..default()
+                    },
+                    ..default()
+                }
+                );
+            }
         }
-        context.world.flush();
         Ok(View)
     }
 }
 
-// /// This system replaces [NeedsView] with this module's [View].
-// ///
-// /// If multiple View providers are present, this system ought to be scheduled by
-// /// the user.
-// pub fn replace_view(query: Query<Entity, Added<NeedsView>>,
-//                     mut commands: Commands) {
-//     for id in &query {
-//         commands
-//             .entity(id)
-//             .remove::<NeedsView>()
-//             .construct::<View>(());
-//     }
-// }
-
-fn add_color_view(In(id): In<Entity>, mut commands: Commands) -> bool {
-    info!("add_color_view {id}");
-    // commands
-    //     .entity(id)
-    //     .insert(View)
-        // .construct::<View>(())
-        ;
-    true
-}
 #[derive(SystemParam)]
 pub(crate) struct Inserter<'w, 's, C: Component> {
     roots: Query<'w, 's, &'static mut C>,
@@ -186,17 +170,6 @@ pub fn plugin(app: &mut App) {
         .register_type::<Cursor>()
         .register_type::<CursorBlink>()
         .register_type::<Palette>()
-        .add_systems(Startup,
-                     |mut add_views: ResMut<AddViews>, mut commands: Commands| {
-                         let system_id = commands.register_one_shot_system(add_color_view);
-                         info!("add_system_color {system_id:?}");
-                         add_views.0.push(system_id);
-                     })
-        .add_systems(PostStartup,
-                     |world: &mut World| {
-                     let id = world.resource::<AddViews>()[0];
-                     world.run_system_with_input(id, Entity::PLACEHOLDER).expect("run");
-                     })
         .add_systems(
             PreUpdate,
             (
@@ -291,7 +264,6 @@ pub fn text_view<F: bevy::ecs::query::QueryFilter>(
     focus: Focus,
 ) {
     for (root, text_state, children, placeholder) in query.iter() {
-        warn!("textview");
         let index = ViewPart::Answer as usize;
         let id = if index < children.len() {
             children[index]

@@ -28,7 +28,6 @@ impl Construct for Confirm {
             .entity(context.id)
             .insert(Focusable::default())
             .insert(Prompt(props.clone()));
-        commands.trigger(AddView(context.id));
         context.world.flush();
         Ok(Confirm { yes: false })
     }
@@ -65,11 +64,11 @@ fn confirm_controller(
                 // I had tried using triggers in bevy_ui_navigation to fix my issues.
                 // commands.trigger(NavRequest::Move(NavDirection::South));
                 commands.trigger_targets(AskyEvent::<bool>(Ok(confirm.yes)), id);
-                focus.block_and_move(id);
+                // focus.block_and_move(id);
             }
             if input.just_pressed(KeyCode::Escape) {
                 commands.trigger_targets(AskyEvent::<bool>(Err(Error::Cancel)), id);
-                commands.entity(id).insert(Feedback::error("canceled"));
+                // commands.entity(id).insert(Feedback::error("canceled"));
             }
         }
     }

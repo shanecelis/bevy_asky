@@ -1,8 +1,9 @@
 use bevy::prelude::*;
-use bevy_asky::{construct::*, prompt::*, *};
+use bevy_asky::prelude::*;
 
 #[path = "common/lib.rs"]
 mod common;
+use common::View;
 
 fn main() {
     App::new()
@@ -17,15 +18,10 @@ fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 
     commands
-        .spawn(NodeBundle {
-            style: Style {
-                flex_direction: FlexDirection::Column,
-                ..default()
-            },
-            ..default()
-        })
+        .column()
         .with_children(|parent| {
             parent
+                .construct::<View>(())
                 .construct::<Password>("Password: ")
                 .observe(move |trigger: Trigger<AskyEvent<String>>| {
                     eprintln!("trigger {:?}", trigger.event());

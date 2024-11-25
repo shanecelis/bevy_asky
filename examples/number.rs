@@ -3,6 +3,7 @@ use bevy_asky::{construct::*, prompt::*, *};
 
 #[path = "common/lib.rs"]
 mod common;
+use common::View;
 
 fn main() {
     App::new()
@@ -25,6 +26,7 @@ fn setup(mut commands: Commands) {
         })
         .with_children(|parent| {
             parent
+                .construct::<View>(())
                 .construct::<Number<i8>>("Age? ")
                 .construct::<Placeholder>("333")
                 .observe(move |trigger: Trigger<AskyEvent<i8>>| {
@@ -32,6 +34,7 @@ fn setup(mut commands: Commands) {
                 });
 
             parent
+                .construct::<View>(())
                 .construct::<Number<i32>>("Phone number ? ")
                 .construct::<Placeholder>("123-4567")
                 .observe(move |trigger: Trigger<AskyEvent<i8>>| {

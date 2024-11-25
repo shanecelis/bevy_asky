@@ -30,7 +30,7 @@ impl Construct for Radio {
             .insert(Focusable::default())
             .insert(Prompt(props.clone()))
             .insert(AccessibilityNode(NodeBuilder::new(Role::RadioButton)));
-        commands.trigger(AddView(context.id));
+        // commands.trigger(AddView(context.id));
         context.world.flush();
         Ok(Radio { checked: false })
     }
@@ -107,12 +107,10 @@ impl Construct for RadioGroup {
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
-            .column()
             .with_children(|parent| {
                 parent.spawn(TextBundle::from_section(props, TextStyle::default()));
 
             });
-        commands.trigger(AddView(context.id));
 
         context.world.flush();
         Ok(RadioGroup)

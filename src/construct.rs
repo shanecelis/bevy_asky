@@ -35,6 +35,18 @@ pub trait Construct: Sized {
     }
 }
 
+impl<A,B> Construct for (A, B) where A: Construct, B: Construct {
+    type Props = (A::Props, B::Props);
+    fn construct(
+        context: &mut ConstructContext,
+        props: Self::Props,
+        ) -> Result<Self, ConstructError> {
+        let a = A::construct(context, props.0)?;
+        let b = B::construct(context, props.1)?;
+        Ok((a, b))
+    }
+}
+
 #[derive(Debug)]
 pub struct ConstructContext<'a> {
     pub id: Entity,
@@ -79,22 +91,28 @@ impl<'a> ConstructContext<'a> {
 // }
 
 pub trait ConstructExt {
-    fn construct<T: Construct + Component>(&mut self, props: impl Into<T::Props>) -> EntityCommands
+    fn construct<T: Construct + Bundle>(&mut self, props: impl Into<T::Props>) -> EntityCommands
     where
         <T as Construct>::Props: Send;
 }
 
 pub trait ConstructChildrenExt: ConstructExt {
-    fn construct_children<T: Construct + Component>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
+    fn construct_children<T: Construct + Bundle>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
     where
-        <T as Construct>::Props: Send,
-        // X: Into<T::Props>
-        ;
+        <T as Construct>::Props: Send;
+
+    /// Construct children with a silent construct partner.
+    ///
+    /// If the partner is not "silent", you can use `construct::<(T1,
+    /// T2)>(t1_props, t2_props)`.
+    fn construct_children_with<T: Construct + Bundle, V: Construct<Props = ()> + Bundle>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
+    where
+        <T as Construct>::Props: Send;
 }
 
 struct ConstructCommand<T: Construct>(T::Props);
 
-impl<T: Construct + Component> bevy::ecs::system::EntityCommand for ConstructCommand<T>
+impl<T: Construct + Bundle> bevy::ecs::system::EntityCommand for ConstructCommand<T>
 where
     <T as Construct>::Props: Send,
 {
@@ -107,7 +125,7 @@ where
 
 impl<'w> ConstructExt for Commands<'w, '_> {
     // type Out = EntityCommands;
-    fn construct<T: Construct + Component>(&mut self, props: impl Into<T::Props>) -> EntityCommands
+    fn construct<T: Construct + Bundle>(&mut self, props: impl Into<T::Props>) -> EntityCommands
     where
         <T as Construct>::Props: Send,
     {
@@ -135,7 +153,7 @@ impl<'w> ConstructExt for Commands<'w, '_> {
 
 impl<'w> ConstructExt for ChildBuilder<'w> {
     // type Out = EntityCommands;
-    fn construct<T: Construct + Component>(&mut self, props: impl Into<T::Props>) -> EntityCommands
+    fn construct<T: Construct + Bundle>(&mut self, props: impl Into<T::Props>) -> EntityCommands
     where
         <T as Construct>::Props: Send,
     {
@@ -160,7 +178,7 @@ impl<'w> ConstructExt for ChildBuilder<'w> {
 
 impl<'w> ConstructExt for EntityCommands<'w> {
     // type Out = EntityCommands;
-    fn construct<T: Construct + Component>(&mut self, props: impl Into<T::Props>) -> EntityCommands
+    fn construct<T: Construct + Bundle>(&mut self, props: impl Into<T::Props>) -> EntityCommands
     where
         <T as Construct>::Props: Send,
     {
@@ -170,7 +188,7 @@ impl<'w> ConstructExt for EntityCommands<'w> {
 }
 
 impl<'w> ConstructChildrenExt for EntityCommands<'w> {
-    fn construct_children<T: Construct + Component>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
+    fn construct_children<T: Construct + Bundle>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
     where
         <T as Construct>::Props: Send,
     {
@@ -181,18 +199,33 @@ impl<'w> ConstructChildrenExt for EntityCommands<'w> {
         });
         self.reborrow()
     }
-}
 
-impl<T: Default + Clone> Construct for T {
-    type Props = T;
-    #[inline]
-    fn construct(
-        _context: &mut ConstructContext,
-        props: Self::Props,
-    ) -> Result<Self, ConstructError> {
-        Ok(props)
+    fn construct_children_with<T: Construct + Bundle, V: Construct<Props = ()> + Bundle>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
+    where
+        <T as Construct>::Props: Send,
+    {
+        self.with_children(|parent| {
+            for prop in props.into_iter() {
+                parent
+                    .construct::<V>(())
+                    .construct::<T>(prop);
+            }
+        });
+        self.reborrow()
     }
 }
+
+// I couldn't have this an the tuple construct.
+// impl<T: Default + Clone> Construct for T {
+//     type Props = T;
+//     #[inline]
+//     fn construct(
+//         _context: &mut ConstructContext,
+//         props: Self::Props,
+//     ) -> Result<Self, ConstructError> {
+//         Ok(props)
+//     }
+// }
 
 pub trait Patch: Send + Sync + 'static {
     type Construct: Construct + Bundle;

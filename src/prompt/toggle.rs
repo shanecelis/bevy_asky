@@ -41,7 +41,6 @@ impl Construct for Toggle {
             .entity(context.id)
             .insert(Prompt(props.message.clone()))
             .insert(Focusable::default());
-        commands.trigger(AddView(context.id));
         context.world.flush();
         Ok(props)
     }

@@ -53,7 +53,6 @@ impl Construct for Password {
             .insert(Prompt(props))
             .insert(input_state)
             .insert(Focusable::default());
-        commands.trigger(AddView(context.id));
         context.world.flush();
         Ok(Password)
     }

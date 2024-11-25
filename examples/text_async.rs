@@ -1,9 +1,10 @@
 use bevy::prelude::*;
-use bevy_asky::{prompt::*, *};
+use bevy_asky::prelude::*;
 use bevy_defer::{AsyncCommandsExtension, AsyncPlugin};
 
 #[path = "common/lib.rs"]
 mod common;
+use common::View;
 
 fn main() {
     App::new()
@@ -17,33 +18,20 @@ fn setup(mut commands: Commands, mut asky: Asky) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
 
+    // TODO: This one is still not right. Focus doesn't move down.
     let id = commands
-        .spawn(NodeBundle {
-            style: Style {
-                flex_direction: FlexDirection::Column,
-                ..default()
-            },
-            ..default()
-        })
+        .column()
         .id();
     commands.spawn_task(move || async move {
         let response: Result<String, Error> = asky
-            .prompt::<TextField>("What up? ", Dest::Append(id))
+            .prompt::<TextField, View>("What up? ", Dest::Append(id))
             .await;
         dbg!(response);
 
         let response: Result<String, Error> = asky
-            .prompt::<TextField>("Really? ", Dest::Append(id))
+            .prompt::<TextField, View>("Really? ", Dest::Append(id))
             .await;
         dbg!(response);
         Ok(())
     });
 }
-
-// fn read_keys(input: Res<ButtonInput<KeyCode>>, mut query: Query<&mut AskyState>) {
-//     if input.just_pressed(KeyCode::KeyR) {
-//         for mut state in query.iter_mut() {
-//             *state = AskyState::Reading;
-//         }
-//     }
-// }

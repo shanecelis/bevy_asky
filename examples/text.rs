@@ -1,8 +1,10 @@
 use bevy::prelude::*;
-use bevy_asky::{construct::*, prompt::*, *};
+use bevy_asky::prelude::*;
 
 #[path = "common/lib.rs"]
 mod common;
+use common::View;
+
 fn main() {
     App::new()
         .add_plugins((DefaultPlugins, AskyPlugin))
@@ -16,20 +18,14 @@ fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 
     commands
-        .spawn(NodeBundle {
-            style: Style {
-                flex_direction: FlexDirection::Column,
-                ..default()
-            },
-            ..default()
-        })
+        .column()
         .with_children(|parent| {
             parent
-                // .construct::<TextField>("Name? ")
-                // .construct::<Placeholder>("John Smith")
-                // .observe(move |trigger: Trigger<AskyEvent<String>>| {
-                //     eprintln!("trigger {:?}", trigger.event());
-                // })
-                ;
+                .construct::<View>(())
+                .construct::<TextField>("Name? ")
+                .construct::<Placeholder>("John Smith")
+                .observe(move |trigger: Trigger<AskyEvent<String>>| {
+                    eprintln!("trigger {:?}", trigger.event());
+                });
         });
 }

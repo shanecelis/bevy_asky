@@ -3,6 +3,7 @@ use bevy_asky::{construct::*, prompt::*, *};
 
 #[path = "common/lib.rs"]
 mod common;
+use common::View;
 
 fn main() {
     App::new()
@@ -27,6 +28,7 @@ fn setup(mut commands: Commands) {
         .id();
     commands.entity(column).with_children(|parent| {
         parent
+            .construct::<View>(())
             .construct::<Confirm>("Do you like ascii?")
             .observe(
                 move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {

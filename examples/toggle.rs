@@ -1,8 +1,9 @@
 use bevy::prelude::*;
-use bevy_asky::{construct::*, prompt::*, *};
+use bevy_asky::prelude::*;
 
 #[path = "common/lib.rs"]
 mod common;
+use common::View;
 
 fn main() {
     App::new()
@@ -16,15 +17,10 @@ fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
     commands
-        .spawn(NodeBundle {
-            style: Style {
-                flex_direction: FlexDirection::Column,
-                ..default()
-            },
-            ..default()
-        })
+        .column()
         .with_children(|parent| {
             parent
+                .construct::<View>(())
                 .construct::<Toggle>(Toggle::new("Graphics?", ["high poly", "low poly"]))
                 .observe(move |trigger: Trigger<AskyEvent<usize>>| {
                     eprintln!("trigger {:?}", trigger.event());

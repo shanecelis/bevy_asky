@@ -35,7 +35,7 @@ impl Construct for View {
             ]),
             ..default()
         });
-        context.world.flush();
+        // context.world.flush();
         Ok(View)
     }
 }
