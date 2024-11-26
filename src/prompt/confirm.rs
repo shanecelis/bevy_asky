@@ -37,7 +37,7 @@ fn confirm_controller(
     mut query: Query<(Entity, &mut Confirm)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
-    mut focus: FocusParam,
+    focus: FocusParam,
 ) {
     for (id, mut confirm) in query.iter_mut() {
         if !focus.is_focused(id) {

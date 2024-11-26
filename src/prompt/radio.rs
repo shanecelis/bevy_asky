@@ -1,4 +1,4 @@
-use crate::{construct::*, prelude::*, Part, view::widget::Widgets};
+use crate::{construct::*, prelude::*, Part};
 use bevy::{
     a11y::{accesskit::*, AccessibilityNode},
     prelude::*,
@@ -43,33 +43,35 @@ fn radio_controller(
     input: Res<ButtonInput<KeyCode>>,
     mut toggled: Local<Vec<(Entity, Entity)>>,
 ) {
+
+    if ! input.any_just_pressed([
+        KeyCode::Space,
+        KeyCode::KeyH,
+        KeyCode::KeyL,
+    ]) {
+        return;
+    }
     toggled.clear();
     let changed = false;
     for (id, mut radio, parent) in query.iter_mut() {
         if !focus.is_focused(id) {
             continue;
         }
-        if input.any_just_pressed([
-            KeyCode::Space,
-            KeyCode::KeyH,
-            KeyCode::KeyL,
-        ]) {
-            let was_checked = radio.checked;
+        let was_checked = radio.checked;
 
-            if input.just_pressed(KeyCode::Space) {
-                radio.checked = !radio.checked;
-            }
-            if input.any_just_pressed([KeyCode::KeyL]) {
-                radio.checked = true;
-            }
-            if input.any_just_pressed([KeyCode::KeyH]) {
-                radio.checked = false;
-            }
-            if radio.checked && !was_checked {
-                // We've been checked and weren't checked before.
-                if let Some(p) = parent {
-                    toggled.push((id, **p));
-                }
+        if input.just_pressed(KeyCode::Space) {
+            radio.checked = !radio.checked;
+        }
+        if input.any_just_pressed([KeyCode::KeyL]) {
+            radio.checked = true;
+        }
+        if input.any_just_pressed([KeyCode::KeyH]) {
+            radio.checked = false;
+        }
+        if radio.checked && !was_checked {
+            // We've been checked and weren't checked before.
+            if let Some(p) = parent {
+                toggled.push((id, **p));
             }
         }
     }

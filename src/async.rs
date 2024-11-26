@@ -1,7 +1,7 @@
 #![allow(clippy::type_complexity)]
 use super::*;
 use crate::prelude::*;
-use bevy::{ecs::system::{EntityCommands, SystemParam}, prelude::*};
+use bevy::ecs::system::{EntityCommands, SystemParam};
 use bevy_defer::AsyncWorld;
 use futures::{channel::oneshot, Future};
 use std::fmt::Debug;
@@ -34,7 +34,7 @@ impl AskyAsync {
                 f(&mut ecommands);
                 let mut send_once = Some(sender);
                 ecommands.observe(
-                    move |trigger: Trigger<AskyEvent<T::Out>>, mut commands: Commands| {
+                    move |trigger: Trigger<AskyEvent<T::Out>>| {
                         if let Some(sender) = send_once.take() {
                             sender.send(trigger.event().0.clone()).expect("send");
                         }
@@ -56,7 +56,7 @@ impl AskyAsync {
         <T as Construct>::Props: Send + Sync,
         <T as Submitter>::Out: Clone + Debug + Send + Sync,
     {
-        self.prompt_with::<T>(props, dest, |commands| {})
+        self.prompt_with::<T>(props, dest, |_commands| {})
     }
 
     // pub fn prompt_group<T: Construct + Bundle + Part, V: Construct<Props = ()> + Bundle>(

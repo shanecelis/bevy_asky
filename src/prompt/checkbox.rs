@@ -1,4 +1,4 @@
-use crate::{construct::*, prelude::*, Part, view::widget::Widgets};
+use crate::{construct::*, prelude::*, Part};
 use bevy::prelude::*;
 
 use std::borrow::Cow;
@@ -49,7 +49,6 @@ fn checkbox_controller(
     mut query: Query<(Entity, &mut Checkbox)>,
     input: Res<ButtonInput<KeyCode>>,
     // mut requests: EventWriter<NavRequest>,
-    commands: Commands,
 ) {
     use KeyCode::*;
 

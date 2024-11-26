@@ -2,9 +2,7 @@
 use super::*;
 use crate::construct::*;
 use bevy::ecs::system::EntityCommands;
-use std::{marker::PhantomData, fmt::Debug};
-#[cfg(feature = "async")]
-use futures::{channel::oneshot, Future, TryFutureExt};
+use std::fmt::Debug;
 
 // #[derive(Deref, DerefMut)]
 // pub struct Asyncable<'w,R> {
