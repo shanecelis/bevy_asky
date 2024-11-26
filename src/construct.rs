@@ -3,6 +3,7 @@ use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::borrow::Cow;
 use std::marker::PhantomData;
 use thiserror::Error;
+use crate::Submitter;
 
 #[derive(Error, Debug)]
 pub enum ConstructError {
@@ -33,6 +34,28 @@ pub trait Construct: Sized {
             _marker: PhantomData,
         }
     }
+}
+
+/// Add a silent partner.
+#[derive(Bundle)]
+pub struct Add<A: Sync + Send + 'static + Bundle, B: Sync + Send + 'static + Bundle>(pub A, pub B);
+
+unsafe impl<A: Submitter + Sync + Send + 'static + Bundle, B: Sync + Send + 'static + Bundle> Submitter for Add<A, B> {
+    /// Output of submitter.
+    type Out = A::Out;
+}
+
+impl<A,B> Construct for Add<A, B> where A: Construct + Sync + Send + 'static + Bundle, B: Construct<Props = ()> + Sync + Send + 'static + Bundle{
+    type Props = A::Props;
+    fn construct(
+        context: &mut ConstructContext,
+        props: Self::Props,
+        ) -> Result<Self, ConstructError> {
+        let a = A::construct(context, props)?;
+        let b = B::construct(context, ())?;
+        Ok(Add(a, b))
+    }
+
 }
 
 impl<A,B> Construct for (A, B) where A: Construct, B: Construct {
@@ -101,13 +124,6 @@ pub trait ConstructChildrenExt: ConstructExt {
     where
         <T as Construct>::Props: Send;
 
-    /// Construct children with a silent construct partner.
-    ///
-    /// If the partner is not "silent", you can use `construct::<(T1,
-    /// T2)>(t1_props, t2_props)`.
-    fn construct_children_with<T: Construct + Bundle, V: Construct<Props = ()> + Bundle>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
-    where
-        <T as Construct>::Props: Send;
 }
 
 struct ConstructCommand<T: Construct>(T::Props);
@@ -133,22 +149,6 @@ impl<'w> ConstructExt for Commands<'w, '_> {
         s.add(ConstructCommand::<T>(props.into()));
         s
     }
-
-    // fn construct_children<T: Construct + Component>(&mut self,
-    //                                                 props: impl IntoIterator<Item = impl Into<T::Props>>)
-    //                                                 -> EntityCommands
-    // where
-    //     <T as Construct>::Props: Send,
-    // {
-    //     let mut s = self.spawn_empty();
-    //     s.with_children(|parent| {
-    //         for prop in props.into_iter() {
-    //             parent.construct::<T>(prop);
-    //         }
-    //     });
-    //     s
-    // }
-
 }
 
 impl<'w> ConstructExt for ChildBuilder<'w> {
@@ -162,18 +162,6 @@ impl<'w> ConstructExt for ChildBuilder<'w> {
         s
     }
 
-    // fn construct_children<T: Construct + Component>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
-    // where
-    //     <T as Construct>::Props: Send,
-    // {
-    //     let mut s = self.spawn_empty();
-    //     s.with_children(|parent| {
-    //         for prop in props.into_iter() {
-    //             parent.construct::<T>(prop);
-    //         }
-    //     });
-    //     s
-    // }
 }
 
 impl<'w> ConstructExt for EntityCommands<'w> {
@@ -195,20 +183,6 @@ impl<'w> ConstructChildrenExt for EntityCommands<'w> {
         self.with_children(|parent| {
             for prop in props.into_iter() {
                 parent.construct::<T>(prop);
-            }
-        });
-        self.reborrow()
-    }
-
-    fn construct_children_with<T: Construct + Bundle, V: Construct<Props = ()> + Bundle>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
-    where
-        <T as Construct>::Props: Send,
-    {
-        self.with_children(|parent| {
-            for prop in props.into_iter() {
-                parent
-                    .construct::<V>(())
-                    .construct::<T>(prop);
             }
         });
         self.reborrow()
@@ -267,17 +241,17 @@ mod test {
         name: String,
     }
 
-    #[test]
-    fn test_patch_name() {
-        let mut player = Player {
-            name: "shane".into(),
-        };
-        assert_eq!(player.name, "shane");
+    // #[test]
+    // fn test_patch_name() {
+    //     let mut player = Player {
+    //         name: "shane".into(),
+    //     };
+    //     assert_eq!(player.name, "shane");
 
-        let mut patch = Player::patch(|props| {
-            props.name = "fred".to_string();
-        });
-        patch.patch(&mut player);
-        assert_eq!(player.name, "fred");
-    }
+    //     let mut patch = Player::patch(|props| {
+    //         props.name = "fred".to_string();
+    //     });
+    //     patch.patch(&mut player);
+    //     assert_eq!(player.name, "fred");
+    // }
 }

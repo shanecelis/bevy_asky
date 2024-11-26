@@ -23,7 +23,7 @@ pub mod prelude {
     pub use super::r#async::*;
     pub use super::{
         construct::*, focus::*, num_like::NumLike, prompt::*, view::{*, widget::Widgets}, AskyEvent,
-        AskyPlugin, Error, Submitter, AskySet, Dest};
+        AskyPlugin, Error, Submitter, AskySet, Dest, sync::{AskyCommands, AskyEntityCommands}};
 }
 
 /// The Asky plugin. If using "async" features, [bevy_defer]'s `AsyncPlugin` is

@@ -27,5 +27,11 @@ bevy-inspector-egui = "0.27.0"
 # bevy-ui-navigation = { git = "https://github.com/shanecelis/ui-navigation.git", branch = "bevy-0.14" }
 
 [[example]]
-name = "text_async"
+name = "text-async"
+path = "examples/text_async.rs"
+required-features = ["async"]
+
+[[example]]
+name = "checkbox-group-async"
+path = "examples/async/checkbox_group.rs"
 required-features = ["async"]

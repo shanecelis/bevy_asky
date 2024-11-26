@@ -22,7 +22,7 @@ fn setup(mut commands: Commands) {
         parent
             .column()
             .construct::<RadioGroup>("radio group 0")
-            .construct_children_with::<Radio,View>(["Money", "Time", "Power"])
+            .construct_children::<Add<Radio,View>>(["Money", "Time", "Power"])
             .observe(move |trigger: Trigger<AskyEvent<usize>>| {
                 eprintln!("trigger {:?}", trigger.event());
             });

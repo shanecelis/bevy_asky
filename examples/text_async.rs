@@ -14,7 +14,7 @@ fn main() {
         .run();
 }
 
-fn setup(mut commands: Commands, mut asky: Asky) {
+fn setup(mut commands: Commands, mut asky: AskyAsync) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
 
@@ -24,12 +24,12 @@ fn setup(mut commands: Commands, mut asky: Asky) {
         .id();
     commands.spawn_task(move || async move {
         let response: Result<String, Error> = asky
-            .prompt::<TextField, View>("What up? ", Dest::Append(id))
+            .prompt::<Add<TextField, View>>("What up? ", Dest::ReplaceChildren(id))
             .await;
         dbg!(response);
 
         let response: Result<String, Error> = asky
-            .prompt::<TextField, View>("Really? ", Dest::Append(id))
+            .prompt::<Add<TextField, View>>("Really? ", Dest::ReplaceChildren(id))
             .await;
         dbg!(response);
         Ok(())

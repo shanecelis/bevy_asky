@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_asky::{construct::*, prompt::*, *};
+use bevy_asky::prelude::*;
 
 #[path = "common/lib.rs"]
 mod common;

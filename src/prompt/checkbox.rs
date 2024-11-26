@@ -116,6 +116,7 @@ impl Construct for CheckboxGroup {
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
+            // .column()
             .with_children(|parent| {
                 parent.spawn(TextBundle::from_section(props, TextStyle::default()));
             });
