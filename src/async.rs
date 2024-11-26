@@ -20,27 +20,53 @@ impl Asky {
         <T as Construct>::Props: Send,
         <T as Submitter>::Out: Clone + Debug + Send + Sync,
     {
+        // use Dest::*;
+        // let (sender, receiver) = oneshot::channel::<Result<T::Out, Error>>();
+        // let p = props.into();
+        // let d = dest.into();
+
+        // let mut send_once = Some(sender);
+        // async move {
+        //     let async_world = AsyncWorld::new();
+        //     async_world.apply_command(move |world: &mut World| {
+        //         let mut commands = world.commands();
+        //         commands
+        //             .prompt::<T, V>(p, d)
+        //             .observe(
+        //                 move |trigger: Trigger<AskyEvent<T::Out>>, mut commands: Commands| {
+        //                     if let Some(sender) = send_once.take() {
+        //                         sender.send(trigger.event().0.clone()).expect("send");
+        //                     }
+        //                     // TODO: This should be the result of some policy not de facto.
+        //                     // commands.entity(trigger.entity()).despawn_recursive();
+        //                 },
+        //             );
+        //     });
+        //     receiver.await?
+        // }
         use Dest::*;
-        let (sender, receiver) = oneshot::channel::<Result<T::Out, Error>>();
         let p = props.into();
         let d = dest.into();
 
-        let mut send_once = Some(sender);
+        let (sender, receiver) = oneshot::channel::<Result<T::Out, Error>>();
         async move {
             let async_world = AsyncWorld::new();
             async_world.apply_command(move |world: &mut World| {
                 let mut commands = world.commands();
                 commands
+                    // .construct::<V>(())
                     .prompt::<T, V>(p, d)
-                    .observe(
-                        move |trigger: Trigger<AskyEvent<T::Out>>, mut commands: Commands| {
-                            if let Some(sender) = send_once.take() {
-                                sender.send(trigger.event().0.clone()).expect("send");
-                            }
-                            // TODO: This should be the result of some policy not de facto.
-                            // commands.entity(trigger.entity()).despawn_recursive();
-                        },
-                    );
+                    .as_future(sender);
+                    // .prompt::<T, V>(p, d)
+                    // .observe(
+                    //     move |trigger: Trigger<AskyEvent<T::Out>>, mut commands: Commands| {
+                    //         if let Some(sender) = send_once.take() {
+                    //             sender.send(trigger.event().0.clone()).expect("send");
+                    //         }
+                    //         // TODO: This should be the result of some policy not de facto.
+                    //         // commands.entity(trigger.entity()).despawn_recursive();
+                    //     },
+                    // );
             });
             receiver.await?
         }
