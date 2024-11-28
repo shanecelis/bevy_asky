@@ -31,7 +31,6 @@ impl Construct for View {
         context: &mut ConstructContext,
         _props: Self::Props,
     ) -> Result<Self, ConstructError> {
-
         if let Some(mut eref) = context.world.get_entity_mut(context.id) {
             if !eref.contains::<Node>() {
                 eref.insert(NodeBundle {
@@ -40,8 +39,7 @@ impl Construct for View {
                         ..default()
                     },
                     ..default()
-                }
-                );
+                });
             }
         }
         Ok(View)
@@ -188,7 +186,8 @@ pub fn plugin(app: &mut App) {
                 clear_feedback::<StringCursor>,
                 clear_feedback::<Toggle>,
                 blink_cursor,
-            ).in_set(AskySet::View),
+            )
+                .in_set(AskySet::View),
         )
         .insert_resource(CursorBlink(Timer::from_seconds(
             1.0 / 3.0,
@@ -238,12 +237,11 @@ pub(crate) fn focus_view(
     palette: Res<Palette>,
 ) {
     for id in query.iter_mut() {
-        let _ = writer
-            .insert_or_get_mut(id, ViewPart::Focus as usize, |text| {
-                replace_or_insert(text, 0, if focus.is_focused(id) { "> " } else { "  " });
-                text.sections[0].style.color = palette.highlight.into();
-            });
-            //.expect("focus");
+        let _ = writer.insert_or_get_mut(id, ViewPart::Focus as usize, |text| {
+            replace_or_insert(text, 0, if focus.is_focused(id) { "> " } else { "  " });
+            text.sections[0].style.color = palette.highlight.into();
+        });
+        //.expect("focus");
     }
 }
 
@@ -426,16 +424,16 @@ pub(crate) fn password_view(
                     TextStyle::default(),
                 ));
                 // cursor
-                parent.spawn(
-                    TextBundle::from_section(
+                parent
+                    .spawn(TextBundle::from_section(
                         if text_state.index >= text_state.value.len() {
                             " "
                         } else {
                             glyph
                         },
-                        TextStyle::default()
+                        TextStyle::default(),
                     ))
-                      .insert(Cursor);
+                    .insert(Cursor);
                 // post cursor
                 parent.spawn(TextBundle::from_section(
                     glyph.repeat(text_state.value.len().saturating_sub(text_state.index)),
@@ -613,11 +611,13 @@ fn blink_cursor(
     mut count: Local<u8>,
     focus: Focus,
     palette: Res<Palette>,
-    parent: Query<&Parent>) {
+    parent: Query<&Parent>,
+) {
     if timer.tick(time.delta()).just_finished() {
         *count = count.checked_add(1).unwrap_or(0);
         for (root, mut color, mut text) in &mut query {
-            if focus.is_focused(root) || parent.iter_ancestors(root).any(|id| focus.is_focused(id)) {
+            if focus.is_focused(root) || parent.iter_ancestors(root).any(|id| focus.is_focused(id))
+            {
                 color.0 = if *count % 2 == 0 {
                     Color::WHITE
                 } else {

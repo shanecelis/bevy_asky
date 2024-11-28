@@ -17,15 +17,13 @@ fn main() {
 fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
-    commands.column()
-            .with_children(|parent| {
+    commands.column().with_children(|parent| {
         parent
             .column()
             .construct::<RadioGroup>("radio group 0")
-            .construct_children::<Add<Radio,View>>(["Money", "Time", "Power"])
+            .construct_children::<Add<Radio, View>>(["Money", "Time", "Power"])
             .observe(move |trigger: Trigger<AskyEvent<usize>>| {
                 eprintln!("trigger {:?}", trigger.event());
             });
-
     });
 }

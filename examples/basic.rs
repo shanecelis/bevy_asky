@@ -44,8 +44,7 @@ fn setup(mut commands: Commands) {
                             TextStyle::default(),
                         ));
 
-                        parent
-                            .construct::<Confirm>("Do you prefer color?");
+                        parent.construct::<Confirm>("Do you prefer color?");
                     });
                 },
             );

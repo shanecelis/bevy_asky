@@ -12,8 +12,8 @@ pub fn views(app: &mut App) {
     panic!("Please use a view feature: ascii, color, or button.");
 }
 
+#[cfg(all(not(feature = "color"), feature = "ascii"))]
+pub use view::ascii::View;
 /// This is the view that the examples will use.
 #[cfg(feature = "color")]
 pub use view::color::View;
-#[cfg(all(not(feature = "color"), feature = "ascii"))]
-pub use view::ascii::View;

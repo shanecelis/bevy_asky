@@ -18,27 +18,25 @@ fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
 
-    commands
-        .column()
-        .with_children(|parent| {
-            parent
-                .construct::<View>(())
-                .construct::<Confirm>("Do you like soda?")
-                .observe(move |trigger: Trigger<AskyEvent<bool>>| {
-                    eprintln!("trigger {:?}", trigger.event());
-                });
+    commands.column().with_children(|parent| {
+        parent
+            .construct::<View>(())
+            .construct::<Confirm>("Do you like soda?")
+            .observe(move |trigger: Trigger<AskyEvent<bool>>| {
+                eprintln!("trigger {:?}", trigger.event());
+            });
 
-            parent
-                .construct::<View>(())
-                .construct::<Confirm>("Do you like coke?")
-                .observe(move |trigger: Trigger<AskyEvent<bool>>| {
-                    eprintln!("trigger {:?}", trigger.event());
-                });
-            parent
-                .construct::<View>(())
-                .construct::<Confirm>("Do you like pepsi?")
-                .observe(move |trigger: Trigger<AskyEvent<bool>>| {
-                    eprintln!("trigger {:?}", trigger.event());
-                });
-        });
+        parent
+            .construct::<View>(())
+            .construct::<Confirm>("Do you like coke?")
+            .observe(move |trigger: Trigger<AskyEvent<bool>>| {
+                eprintln!("trigger {:?}", trigger.event());
+            });
+        parent
+            .construct::<View>(())
+            .construct::<Confirm>("Do you like pepsi?")
+            .observe(move |trigger: Trigger<AskyEvent<bool>>| {
+                eprintln!("trigger {:?}", trigger.event());
+            });
+    });
 }

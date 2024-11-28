@@ -10,7 +10,6 @@ use std::fmt::Debug;
 pub struct AskyAsync;
 
 impl AskyAsync {
-
     /// Prompt the user with `T`, rendering in element `dest`.
     pub fn prompt_with<T: Submitter + Construct + Bundle>(
         &mut self,
@@ -33,15 +32,13 @@ impl AskyAsync {
                 let mut ecommands = commands.prompt::<T>(p, d);
                 f(&mut ecommands);
                 let mut send_once = Some(sender);
-                ecommands.observe(
-                    move |trigger: Trigger<AskyEvent<T::Out>>| {
-                        if let Some(sender) = send_once.take() {
-                            sender.send(trigger.event().0.clone()).expect("send");
-                        }
-                        // TODO: This should be the result of some policy not de facto.
-                        // commands.entity(trigger.entity()).despawn_recursive();
-                    },
-                );
+                ecommands.observe(move |trigger: Trigger<AskyEvent<T::Out>>| {
+                    if let Some(sender) = send_once.take() {
+                        sender.send(trigger.event().0.clone()).expect("send");
+                    }
+                    // TODO: This should be the result of some policy not de facto.
+                    // commands.entity(trigger.entity()).despawn_recursive();
+                });
             });
             receiver.await?
         }
@@ -98,6 +95,4 @@ impl AskyAsync {
     //     //     receiver.await?
     //     // }
     // }
-
-
 }

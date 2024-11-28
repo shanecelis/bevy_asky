@@ -16,14 +16,12 @@ fn main() {
 fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
-    commands
-        .column()
-        .with_children(|parent| {
-            parent
-                .construct::<View>(())
-                .construct::<Toggle>(Toggle::new("Graphics?", ["high poly", "low poly"]))
-                .observe(move |trigger: Trigger<AskyEvent<usize>>| {
-                    eprintln!("trigger {:?}", trigger.event());
-                });
-        });
+    commands.column().with_children(|parent| {
+        parent
+            .construct::<View>(())
+            .construct::<Toggle>(Toggle::new("Graphics?", ["high poly", "low poly"]))
+            .observe(move |trigger: Trigger<AskyEvent<usize>>| {
+                eprintln!("trigger {:?}", trigger.event());
+            });
+    });
 }

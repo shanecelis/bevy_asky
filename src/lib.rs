@@ -22,8 +22,14 @@ pub mod prelude {
     #[cfg(feature = "async")]
     pub use super::r#async::*;
     pub use super::{
-        construct::*, focus::*, num_like::NumLike, prompt::*, view::{*, widget::Widgets}, AskyEvent,
-        AskyPlugin, Error, Submitter, AskySet, Dest, sync::{AskyCommands, AskyEntityCommands}};
+        construct::*,
+        focus::*,
+        num_like::NumLike,
+        prompt::*,
+        sync::{AskyCommands, AskyEntityCommands},
+        view::{widget::Widgets, *},
+        AskyEvent, AskyPlugin, AskySet, Dest, Error, Submitter,
+    };
 }
 
 /// The Asky plugin. If using "async" features, [bevy_defer]'s `AsyncPlugin` is
@@ -45,8 +51,7 @@ pub enum AskySet {
 
 impl Plugin for AskyPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_plugins(prompt::plugin)
+        app.add_plugins(prompt::plugin)
             .add_plugins(view::plugin)
             .add_plugins(focus::plugin)
             .configure_sets(Update, (AskySet::Controller, AskySet::View).chain());
@@ -58,7 +63,6 @@ impl Plugin for AskyPlugin {
         //     .add_plugins(bevy_defer::AsyncPlugin::default_settings());
     }
 }
-
 
 #[derive(Event, Deref, DerefMut, Debug, Clone)]
 pub struct AskyEvent<T>(pub Result<T, Error>);

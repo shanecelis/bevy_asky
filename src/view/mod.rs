@@ -11,8 +11,7 @@ pub mod color;
 // pub(crate) mod interaction;
 pub mod widget;
 
-pub(crate) fn plugin(_app: &mut App) {
-}
+pub(crate) fn plugin(_app: &mut App) {}
 
 pub fn add_view_to_checkbox<V>(
     checkboxes: Query<(Entity, &Parent), Added<Checkbox>>,
@@ -68,12 +67,7 @@ pub fn replace_or_insert(text: &mut Text, index: usize, replacement: &str) {
     }
 }
 
-pub fn replace_or_insert_rep(
-    text: &mut Text,
-    index: usize,
-    replacement: &str,
-    repetition: usize,
-) {
+pub fn replace_or_insert_rep(text: &mut Text, index: usize, replacement: &str, repetition: usize) {
     let len = text.sections.len();
     if len <= index {
         for _ in len.saturating_sub(1)..index {

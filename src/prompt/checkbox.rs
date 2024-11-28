@@ -19,7 +19,10 @@ pub struct Checkbox {
 // }
 
 pub(crate) fn plugin(app: &mut App) {
-    app.add_systems(PreUpdate, (checkbox_controller, checkbox_group_controller).in_set(AskySet::Controller));
+    app.add_systems(
+        PreUpdate,
+        (checkbox_controller, checkbox_group_controller).in_set(AskySet::Controller),
+    );
 }
 
 impl Part for Checkbox {
@@ -135,9 +138,7 @@ fn checkbox_group_controller(
         return;
     }
     for (id, children) in query.iter_mut() {
-        if children.iter()
-            .any(|id| focus.is_focused(*id))
-        {
+        if children.iter().any(|id| focus.is_focused(*id)) {
             if input.just_pressed(KeyCode::Enter) {
                 let result: Vec<bool> = checkboxes
                     .iter_many(children)

@@ -24,7 +24,8 @@ pub(crate) fn plugin(app: &mut App) {
             number_controller::<u32>,
             number_controller::<u64>,
             number_controller::<usize>,
-        ).in_set(AskySet::Controller),
+        )
+            .in_set(AskySet::Controller),
     );
 }
 

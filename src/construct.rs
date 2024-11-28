@@ -1,9 +1,9 @@
 //! Playing around with [Cart's proposal](https://github.com/bevyengine/bevy/discussions/14437).
+use crate::Submitter;
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::borrow::Cow;
 use std::marker::PhantomData;
 use thiserror::Error;
-use crate::Submitter;
 
 #[derive(Error, Debug)]
 pub enum ConstructError {
@@ -40,30 +40,39 @@ pub trait Construct: Sized {
 #[derive(Bundle)]
 pub struct Add<A: Sync + Send + 'static + Bundle, B: Sync + Send + 'static + Bundle>(pub A, pub B);
 
-unsafe impl<A: Submitter + Sync + Send + 'static + Bundle, B: Sync + Send + 'static + Bundle> Submitter for Add<A, B> {
+unsafe impl<A: Submitter + Sync + Send + 'static + Bundle, B: Sync + Send + 'static + Bundle>
+    Submitter for Add<A, B>
+{
     /// Output of submitter.
     type Out = A::Out;
 }
 
-impl<A,B> Construct for Add<A, B> where A: Construct + Sync + Send + 'static + Bundle, B: Construct<Props = ()> + Sync + Send + 'static + Bundle{
+impl<A, B> Construct for Add<A, B>
+where
+    A: Construct + Sync + Send + 'static + Bundle,
+    B: Construct<Props = ()> + Sync + Send + 'static + Bundle,
+{
     type Props = A::Props;
     fn construct(
         context: &mut ConstructContext,
         props: Self::Props,
-        ) -> Result<Self, ConstructError> {
+    ) -> Result<Self, ConstructError> {
         let a = A::construct(context, props)?;
         let b = B::construct(context, ())?;
         Ok(Add(a, b))
     }
-
 }
 
-impl<A,B> Construct for (A, B) where A: Construct, B: Construct {
+impl<A, B> Construct for (A, B)
+where
+    A: Construct,
+    B: Construct,
+{
     type Props = (A::Props, B::Props);
     fn construct(
         context: &mut ConstructContext,
         props: Self::Props,
-        ) -> Result<Self, ConstructError> {
+    ) -> Result<Self, ConstructError> {
         let a = A::construct(context, props.0)?;
         let b = B::construct(context, props.1)?;
         Ok((a, b))
@@ -120,10 +129,12 @@ pub trait ConstructExt {
 }
 
 pub trait ConstructChildrenExt: ConstructExt {
-    fn construct_children<T: Construct + Bundle>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
+    fn construct_children<T: Construct + Bundle>(
+        &mut self,
+        props: impl IntoIterator<Item = impl Into<T::Props>>,
+    ) -> EntityCommands
     where
         <T as Construct>::Props: Send;
-
 }
 
 struct ConstructCommand<T: Construct>(T::Props);
@@ -161,7 +172,6 @@ impl<'w> ConstructExt for ChildBuilder<'w> {
         s.add(ConstructCommand::<T>(props.into()));
         s
     }
-
 }
 
 impl<'w> ConstructExt for EntityCommands<'w> {
@@ -176,7 +186,10 @@ impl<'w> ConstructExt for EntityCommands<'w> {
 }
 
 impl<'w> ConstructChildrenExt for EntityCommands<'w> {
-    fn construct_children<T: Construct + Bundle>(&mut self, props: impl IntoIterator<Item = impl Into<T::Props>>) -> EntityCommands
+    fn construct_children<T: Construct + Bundle>(
+        &mut self,
+        props: impl IntoIterator<Item = impl Into<T::Props>>,
+    ) -> EntityCommands
     where
         <T as Construct>::Props: Send,
     {
@@ -246,7 +259,7 @@ mod test {
         fn construct(
             _context: &mut ConstructContext,
             props: Self::Props,
-            ) -> Result<Self, ConstructError> {
+        ) -> Result<Self, ConstructError> {
             Ok(props)
         }
     }

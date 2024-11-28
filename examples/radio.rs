@@ -17,17 +17,9 @@ fn main() {
 fn setup(mut commands: Commands) {
     // UI camera
     commands.spawn(Camera2dBundle::default());
-    commands
-        .column()
-        .with_children(|parent| {
-            parent
-                .construct::<View>(())
-                .construct::<Radio>("Money");
-            parent
-                .construct::<View>(())
-                .construct::<Radio>("Time");
-            parent
-                .construct::<View>(())
-                .construct::<Radio>("Power");
-        });
+    commands.column().with_children(|parent| {
+        parent.construct::<View>(()).construct::<Radio>("Money");
+        parent.construct::<View>(()).construct::<Radio>("Time");
+        parent.construct::<View>(()).construct::<Radio>("Power");
+    });
 }

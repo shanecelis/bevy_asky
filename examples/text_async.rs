@@ -19,9 +19,7 @@ fn setup(mut commands: Commands, mut asky: AskyAsync) {
     commands.spawn(Camera2dBundle::default());
 
     // TODO: This one is still not right. Focus doesn't move down.
-    let id = commands
-        .column()
-        .id();
+    let id = commands.column().id();
     commands.spawn_task(move || async move {
         let response: Result<String, Error> = asky
             .prompt::<Add<TextField, View>>("What up? ", Dest::ReplaceChildren(id))

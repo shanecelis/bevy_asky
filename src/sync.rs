@@ -53,8 +53,7 @@ impl<'w> AskyEntityCommands<'w> for EntityCommands<'w> {
         <T as Submitter>::Out: Clone + Debug + Send + Sync,
     {
         let p = props.into();
-        self
-            .construct::<T>(p);
+        self.construct::<T>(p);
         self
     }
 }
@@ -73,9 +72,7 @@ impl<'w, 's> AskyCommands for Commands<'w, 's> {
         let d = dest.into();
 
         let mut commands = d.entity(self);
-        commands
-            .construct::<T>(p);
+        commands.construct::<T>(p);
         commands
     }
-
 }

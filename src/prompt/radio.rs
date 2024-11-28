@@ -12,7 +12,10 @@ pub struct Radio {
 }
 
 pub(crate) fn plugin(app: &mut App) {
-    app.add_systems(Update, (radio_controller, radio_group_controller).in_set(AskySet::Controller));
+    app.add_systems(
+        Update,
+        (radio_controller, radio_group_controller).in_set(AskySet::Controller),
+    );
 }
 
 impl Construct for Radio {
@@ -43,12 +46,7 @@ fn radio_controller(
     input: Res<ButtonInput<KeyCode>>,
     mut toggled: Local<Vec<(Entity, Entity)>>,
 ) {
-
-    if ! input.any_just_pressed([
-        KeyCode::Space,
-        KeyCode::KeyH,
-        KeyCode::KeyL,
-    ]) {
+    if !input.any_just_pressed([KeyCode::Space, KeyCode::KeyH, KeyCode::KeyL]) {
         return;
     }
     toggled.clear();
@@ -106,12 +104,9 @@ impl Construct for RadioGroup {
     ) -> Result<Self, ConstructError> {
         // Our requirements.
         let mut commands = context.world.commands();
-        commands
-            .entity(context.id)
-            .with_children(|parent| {
-                parent.spawn(TextBundle::from_section(props, TextStyle::default()));
-
-            });
+        commands.entity(context.id).with_children(|parent| {
+            parent.spawn(TextBundle::from_section(props, TextStyle::default()));
+        });
 
         context.world.flush();
         Ok(RadioGroup)
@@ -125,7 +120,12 @@ fn radio_group_controller(
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
 ) {
-    if !input.any_just_pressed([KeyCode::Escape, KeyCode::Enter, KeyCode::ArrowDown, KeyCode::ArrowUp]) {
+    if !input.any_just_pressed([
+        KeyCode::Escape,
+        KeyCode::Enter,
+        KeyCode::ArrowDown,
+        KeyCode::ArrowUp,
+    ]) {
         return;
     }
     for (id, children) in query.iter_mut() {
@@ -136,12 +136,15 @@ fn radio_group_controller(
             if input.just_pressed(KeyCode::Enter) {
                 if let Some(selection) = radios
                     .iter_many(children)
-                    .position(|(_, radio)| radio.checked) {
-                        // commands.trigger_targets(AskyEvent(selection.ok_or(Error::InvalidInput)), id);
-                        commands.trigger_targets(AskyEvent(Ok(selection)), id);
-                    } else {
-                        commands.entity(id).insert(Feedback::warn("must select one"));
-                    }
+                    .position(|(_, radio)| radio.checked)
+                {
+                    // commands.trigger_targets(AskyEvent(selection.ok_or(Error::InvalidInput)), id);
+                    commands.trigger_targets(AskyEvent(Ok(selection)), id);
+                } else {
+                    commands
+                        .entity(id)
+                        .insert(Feedback::warn("must select one"));
+                }
             }
 
             if input.just_pressed(KeyCode::Escape) {
