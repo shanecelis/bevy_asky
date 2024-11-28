@@ -11,7 +11,7 @@ pub mod color;
 // pub(crate) mod interaction;
 pub mod widget;
 
-pub(crate) fn plugin(app: &mut App) {
+pub(crate) fn plugin(_app: &mut App) {
 }
 
 pub fn add_view_to_checkbox<V>(

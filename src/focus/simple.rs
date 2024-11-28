@@ -1,4 +1,5 @@
 use bevy::{ecs::system::SystemParam, prelude::*, math::CompassQuadrant};
+use std::fmt::Debug;
 
 pub mod private {
     use bevy::prelude::*;
@@ -55,30 +56,31 @@ pub(crate) fn plugin(app: &mut App) {
         .add_systems(Update, reset_focus);
 }
 
-fn compass_dir(dir: CompassQuadrant) -> Dir3 {
+fn to_dir(dir: CompassQuadrant) -> Dir2 {
     use CompassQuadrant::*;
     match dir {
         // NOTE: I think the Y axis is inverted for UI coordinates.
-        North => Dir3::NEG_Y,
-        South => Dir3::Y,
+        North => Dir2::NEG_Y,
+        South => Dir2::Y,
 
-        East => Dir3::X,
-        West => Dir3::NEG_X,
+        East => Dir2::X,
+        West => Dir2::NEG_X,
     }
 }
+
 
 // pub type Focusable = AskyState;
 
 #[derive(SystemParam)]
 pub struct FocusParam<'w, 's> {
     query: Query<'w, 's, (Entity, &'static mut Focusable, &'static GlobalTransform)>,
+    // nodes: Query<'w, 's, (Entity, &'static Node)>,
     focus: ResMut<'w, private::Focus>,
     keyboard_nav: ResMut<'w, KeyboardNav>,
 }
 
 impl<'w, 's> FocusParam<'w, 's> {
     pub fn is_focused(&self, id: Entity) -> bool {
-        // self.focus_maybe.and_then(|focus| focus.0.map(|f| f == id)).unwrap_or(false)
         self.focus.is_focused(id)
     }
 
@@ -94,60 +96,15 @@ impl<'w, 's> FocusParam<'w, 's> {
             self.move_focus_from(None);
             return;
         };
-        let dir: Dir3 = compass_dir(dir);
-        // dbg!(old_id, old_pos, dir);
-        if let Some((min_id, min_dist)) = self.query.iter().filter_map(|(id, focusable, transform)| {
-            if id == old_id {
-                None
-            } else {
-                // let delta = old_pos - transform.translation();
-                let delta = transform.translation() - old_pos;
-                let dirdist = delta.dot(*dir);
-                // dbg!(id, transform.translation(), delta, dirdist);
-                (dirdist > 0.0).then_some((id, dirdist))
-            }
-        // }).min_by_key(|x| x.1) {
-        }).min_by(|a, b| a.1.total_cmp(&b.1)) {
-            // info!("focus to {min_id}");
+        let dir: Dir2 = to_dir(dir);
+        if let Some((min_id, _min_dist)) = focus_next_wrap(dir, (old_id, old_pos.xy()), || self.query.iter().map(|(id, _, transform)| (id, transform.translation().xy()))) {
+            info!("focus to {min_id}");
             self.move_focus_to(min_id);
         } else {
-            // warn!("no focus found");
-            // self.move_focus_from(old_id);
+            warn!("no focus found");
         }
-        // let mut mindist = f32::MAX;
-        // let mut mindirdist = f32::MAX;
-        // let mut min_id = None;
-        // for (id, mut focusable, transform) in &mut self.query {
-        //     if id == old_id {
-        //         continue;
-        //     }
-        //     let delta = transform.translation() - old_pos;
-        //     let dirdist = delta.dot(*dir);
-        //     let dist = delta.length();
-        //     if dirdist > 0. && mindirdist > dirdist {
-        //         mindirdist = dbg!(dirdist);
-        //         mindist = dbg!(dist);
-        //         min_id = dbg!(Some(id));
-        //     } else if dirdist > 0. && mindist > dist {
-        //         mindist = dist;
-        //         min_id = Some(id);
-        //     }
-        // }
-        // if let Some(min_id) = min_id {
-        //     self.move_focus_to(min_id);
-        // } else {
-        //     self.move_focus_from(old_id);
-        // }
     }
 
-    // pub fn unfocus(&mut self, id: Entity, is_complete: bool)  {
-    //     self.query.get_mut(id).map(|mut asky_state| *asky_state = if is_complete {
-    //         AskyState::Complete
-    //     } else {
-    //         AskyState::Error
-    //     });
-    // }
-    // 
     pub fn move_focus_to(&mut self, id: Entity) {
         if let Some(old_focus) = self.focus.0.take() {
             if let Ok((_, mut focusable, _)) = self.query.get_mut(old_focus) {
@@ -195,40 +152,6 @@ impl<'w, 's> FocusParam<'w, 's> {
                     id
                 });
         }
-        // There is a focus resource.
-        // if let Some(focus_id) = self.focus.0 {
-        //     if let Ok((_, mut focusable)) = self.query.get_mut(focus_id) {
-        //         focusable.version += 1;
-        //     }
-        //     dbg!(focus_id);
-        //     if let Some(index) = self.foci.iter().position(|&x| x == focus_id) {
-        //         let mut unblocked = self.query.iter_many(self.foci.iter());
-        //         let mut first_unblocked = None;
-        //         let mut take_next = false;
-        //         while let Some((id, focusable)) = unblocked.fetch_next() {
-        //             if focus_id == id {
-        //                 take_next = true;
-        //             }
-        //             if !focusable.block {
-        //                 if first_unblocked.is_none() {
-        //                     first_unblocked = Some(id);
-        //                 }
-        //                 if take_next {
-
-        //                 }
-        //             }
-        //         }
-        //         self.focus.0 = self.foci.get(index + 1).or(self.foci.first()).cloned();
-        //     }
-        // } else {
-        //     self.focus.0 = self.foci.first().cloned();
-        // }
-        // if let Some(focus_id) = self.focus.0 {
-        //     if let Ok((_, mut focusable)) = self.query.get_mut(focus_id) {
-        //         focusable.version += 1;
-        //     }
-        // }
-        // self.query.get_mut(id).map(|mut asky_state| *asky_state = AskyState::Complete);
     }
 
     pub fn keyboard_nav(&self) -> bool {
@@ -313,5 +236,117 @@ fn reset_focus(mut focus: FocusParam) {
                 focus.move_focus_from(None)
             }
         }
+    }
+}
+
+fn focus_next_rev<T>(dir: Dir2,
+                     curr: (T, Vec2),
+                     elements: impl Iterator<Item = (T, Vec2)>) -> Option<(T, f32)>
+    where T: PartialEq + Copy + Debug {
+
+    let (curr_id, curr_pos) = curr;
+    elements.filter_map(|(id, pos)| {
+        if id == curr_id {
+            None
+        } else {
+            let delta = pos - curr_pos;
+            let dirdist = delta.dot(*dir);
+            (dirdist > 0.0).then_some((id, dirdist))
+        }
+    }).max_by(|a, b| a.1.total_cmp(&b.1))
+}
+
+fn focus_next_wrap<T, I>(dir: Dir2,
+                         curr: (T, Vec2),
+                         elements: impl Fn() -> I) -> Option<(T, f32)>
+    where T: PartialEq + Copy + Debug,
+          I: Iterator<Item = (T, Vec2)> {
+    focus_next(dir, curr, elements())
+        .or_else(|| focus_next_rev(-dir, curr, elements()))
+}
+
+fn focus_next<T>(dir: Dir2,
+                 curr: (T, Vec2),
+                 elements: impl Iterator<Item = (T, Vec2)>) -> Option<(T, f32)>
+    where T: PartialEq + Copy + Debug {
+
+    let (curr_id, curr_pos) = curr;
+    elements.filter_map(|(id, pos)| {
+        // dbg!(id, pos);
+        if id == curr_id {
+            None
+        } else {
+            let delta = pos - curr_pos;
+            let dirdist = delta.dot(*dir);
+            (dirdist > 0.0).then_some((id, dirdist))
+        }
+    }).min_by(|a, b| a.1.total_cmp(&b.1))
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn next_right() {
+        let elements = [(0, Vec2::ZERO), (1, Vec2::X)];
+        assert_eq!(focus_next(to_dir(CompassQuadrant::East),
+                   elements[0],
+                   elements.into_iter()),
+                   Some((1, 1.0)));
+    }
+
+    #[test]
+    fn two_right() {
+        let elements = [(0, Vec2::ZERO), (1, Vec2::X), (2, 2.0 * Vec2::X)];
+        assert_eq!(focus_next(to_dir(CompassQuadrant::East),
+                   elements[0],
+                   elements.into_iter()),
+                   Some((1, 1.0)));
+    }
+
+    #[test]
+    fn none_right() {
+        let elements = [(0, Vec2::ZERO), (1, Vec2::NEG_X)];
+        assert_eq!(focus_next(to_dir(CompassQuadrant::East),
+                   elements[0],
+                   elements.into_iter()),
+                   None);
+    }
+
+    #[test]
+    fn none_right_wrap() {
+        let elements = [(0, Vec2::ZERO), (1, Vec2::NEG_X)];
+        assert_eq!(focus_next_wrap(to_dir(CompassQuadrant::East),
+                   elements[0],
+                   || elements.clone().into_iter()).map(|x| x.0),
+                   Some(1));
+    }
+
+    #[test]
+    fn two_left_wrap() {
+        let elements = [(0, Vec2::ZERO), (1, Vec2::NEG_X), (2, 2.0 * Vec2::NEG_X)];
+        assert_eq!(focus_next_wrap(to_dir(CompassQuadrant::East),
+                   elements[0],
+                   || elements.clone().into_iter()).map(|x| x.0),
+                   Some(2));
+    }
+
+    #[test]
+    fn checkbox_group() {
+        let elements = [
+            (4, Vec2::new(258.0, 12.0)),
+            (5, Vec2::new(384.0, 12.0)),
+            (6, Vec2::new(510.0, 12.0)),
+            (8, Vec2::new(288.0, 60.0)),
+            (9, Vec2::new(288.0, 84.0)),
+            (10, Vec2::new(288.0, 108.0)),
+        ];
+
+        assert_eq!(focus_next_wrap(to_dir(CompassQuadrant::East),
+                   elements[0],
+                   || elements.clone().into_iter()).map(|x| x.0),
+                   Some(8));
+
     }
 }

@@ -241,17 +241,27 @@ mod test {
         name: String,
     }
 
-    // #[test]
-    // fn test_patch_name() {
-    //     let mut player = Player {
-    //         name: "shane".into(),
-    //     };
-    //     assert_eq!(player.name, "shane");
+    impl Construct for Player {
+        type Props = Player;
+        fn construct(
+            _context: &mut ConstructContext,
+            props: Self::Props,
+            ) -> Result<Self, ConstructError> {
+            Ok(props)
+        }
+    }
 
-    //     let mut patch = Player::patch(|props| {
-    //         props.name = "fred".to_string();
-    //     });
-    //     patch.patch(&mut player);
-    //     assert_eq!(player.name, "fred");
-    // }
+    #[test]
+    fn test_patch_name() {
+        let mut player = Player {
+            name: "shane".into(),
+        };
+        assert_eq!(player.name, "shane");
+
+        let mut patch = Player::patch(|props| {
+            props.name = "fred".to_string();
+        });
+        patch.patch(&mut player);
+        assert_eq!(player.name, "fred");
+    }
 }

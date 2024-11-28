@@ -52,7 +52,6 @@ fn radio_controller(
         return;
     }
     toggled.clear();
-    let changed = false;
     for (id, mut radio, parent) in query.iter_mut() {
         if !focus.is_focused(id) {
             continue;
@@ -130,7 +129,7 @@ fn radio_group_controller(
         return;
     }
     for (id, children) in query.iter_mut() {
-        if let Some(index) = radios
+        if let Some(_index) = radios
             .iter_many(children)
             .position(|(id, _)| focus.is_focused(id))
         {

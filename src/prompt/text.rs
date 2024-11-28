@@ -25,21 +25,6 @@ pub(crate) fn plugin(app: &mut App) {
 /// | `Left`      | Move cursor left             |
 /// | `Right`     | Move cursor right            |
 ///
-/// # Examples
-///
-/// ```no_run
-/// use asky::prelude::*;
-///
-/// # fn main() -> Result<(), Error> {
-/// # #[cfg(feature = "terminal")]
-/// let name = Input::new("What is your name?").prompt()?;
-///
-/// # #[cfg(feature = "terminal")]
-/// println!("Hello, {}!", name);
-///
-/// # Ok(())
-/// # }
-/// ```
 #[derive(Debug, Clone, Component, Reflect)]
 pub struct TextField;
 
