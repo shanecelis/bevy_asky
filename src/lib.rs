@@ -1,4 +1,6 @@
-// #![feature(round_char_boundary)]
+#![doc(html_root_url = "https://docs.rs/bevy_asky/0.1.0")]
+#![doc = include_str!("../README.md")]
+#![forbid(missing_docs)]
 #![allow(clippy::type_complexity)]
 use bevy::prelude::*;
 
@@ -18,6 +20,8 @@ pub use r#async::*;
 mod dest;
 pub mod sync;
 pub use dest::Dest;
+
+/// Splat import, e.g., `use bevy_asky::prelude::*`.
 pub mod prelude {
     #[cfg(feature = "async")]
     pub use super::r#async::*;
@@ -36,16 +40,12 @@ pub mod prelude {
 /// also required.
 pub struct AskyPlugin;
 
-/// Asky runs in the Update schedule of sets in this order where
-/// necessary:
-///
-/// - Controller, process inputs and modify models.
-/// - PreReplaceView, empty, can be used to pre-empt default replace view.
-/// - ReplaceView, look for `NeedsView` components and add current ones.
-/// - View, construct or update associated view components.
+/// In the Update schedule, AskySet runs the controllers then the views.
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AskySet {
+    /// Process inputs and modify models
     Controller,
+    /// Construct or update view components
     View,
 }
 
@@ -64,6 +64,9 @@ impl Plugin for AskyPlugin {
     }
 }
 
+/// Prompts trigger an AskyEvent
+///
+/// [Submitter] trait on prompt defines what output type to expect.
 #[derive(Event, Deref, DerefMut, Debug, Clone)]
 pub struct AskyEvent<T>(pub Result<T, Error>);
 
@@ -87,27 +90,28 @@ pub unsafe trait Submitter {
     type Out;
 }
 
-/// A part of a group.
+/// A part of a group
 pub trait Part {
+    /// The type of the group
     type Group: Default + Component;
 }
 
 /// Asky errors
 #[derive(Debug, thiserror::Error, Clone)]
 pub enum Error {
-    /// User cancelled.
+    /// User cancelled
     #[error("cancelled")]
     Cancel,
-    /// Input was invalid.
+    /// Input was invalid
     #[error("invalid input")]
     InvalidInput,
-    /// Invalid number.
+    /// Invalid number
     #[error("invalid number")]
     InvalidNumber,
-    /// Validation failed.
+    /// Validation failed
     #[error("validation fail")]
     ValidationFail,
-
+    /// Channel canceled
     #[cfg(feature = "async")]
     #[error("channel cancel {0}")]
     Channel(#[from] oneshot::Canceled),

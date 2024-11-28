@@ -2,8 +2,10 @@ use crate::{construct::*, prelude::*};
 use bevy::prelude::*;
 use std::borrow::Cow;
 
+/// Confirm query
 #[derive(Debug, Component, Reflect)]
 pub struct Confirm {
+    /// Yes or no
     pub yes: bool,
 }
 

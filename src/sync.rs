@@ -1,28 +1,13 @@
+//! Uses triggers to communicate results
 #![allow(clippy::type_complexity)]
 use super::*;
 use crate::construct::*;
 use bevy::ecs::system::EntityCommands;
 use std::fmt::Debug;
 
-// #[derive(Deref, DerefMut)]
-// pub struct Asyncable<'w,R> {
-//     #[deref]
-//     pub commands: EntityCommands<'w>,
-//     output: PhantomData<R>,
-// }
-
-// impl<'w, R> Asyncable<'w, R> {
-//     // pub fn prompt_children<
-//     //     T: Construct + Bundle + Part,
-//     //     V: Construct<Props = ()> + Bundle>(mut self, props:impl IntoIterator<Item = impl Into<T::Props>>) -> Self
-//     //     where <T as Construct>::Props: Send + Sync + 'static
-//     // {
-//     //     self.commands.construct_children::<Add<T, V>>(props);
-//     //     self
-//     // }
-// }
-
+/// EntityCommands extension for constructing prompts.
 pub trait AskyEntityCommands<'w> {
+    /// Construct prompt that will issue a trigger.
     fn prompt<T: Construct + Bundle + Submitter>(
         self,
         props: impl Into<T::Props>,
@@ -32,7 +17,9 @@ pub trait AskyEntityCommands<'w> {
         <T as Submitter>::Out: Clone + Debug + Send + Sync;
 }
 
+/// Commands extension for constructing prompts.
 pub trait AskyCommands {
+    /// Construct prompt that will issue a trigger.
     fn prompt<T: Construct + Bundle + Submitter>(
         &mut self,
         props: impl Into<T::Props>,

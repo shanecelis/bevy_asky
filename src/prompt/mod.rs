@@ -1,3 +1,4 @@
+//! Checkbox, Confirm, Number, Password, Radio, TextField, Toggle
 use crate::construct::*;
 use bevy::prelude::*;
 use std::borrow::Cow;
@@ -18,11 +19,13 @@ pub use radio::*;
 pub use text::*;
 pub use toggle::*;
 
+/// Prompt new type
 #[derive(Component, Deref, DerefMut, Reflect)]
 pub struct Prompt(pub Cow<'static, str>);
+/// Placeholder new type
 #[derive(Component, Deref, DerefMut, Reflect)]
 pub struct Placeholder(pub Cow<'static, str>);
-
+/// DefaultValue new type
 #[derive(Component, Reflect)]
 pub struct DefaultValue<T>(pub T);
 // pub struct DefaultValue<T: std::fmt::Display>(pub T);
@@ -67,18 +70,23 @@ impl Construct for Feedback {
     }
 }
 
+/// Feedback component
 #[derive(Component, Clone, Reflect)]
 pub struct Feedback {
+    /// What kind of feedback?
     pub kind: FeedbackKind,
+    /// Message
     pub message: Cow<'static, str>,
 }
 
 impl Feedback {
+    /// Clear feedback.
     pub fn clear(&mut self) {
         self.kind = FeedbackKind::None;
         self.message = "".into();
     }
 
+    /// Informational
     pub fn info(message: impl Into<Cow<'static, str>>) -> Self {
         Feedback {
             kind: FeedbackKind::Info,
@@ -86,6 +94,7 @@ impl Feedback {
         }
     }
 
+    /// Warning
     pub fn warn(message: impl Into<Cow<'static, str>>) -> Self {
         Feedback {
             kind: FeedbackKind::Warn,
@@ -93,6 +102,7 @@ impl Feedback {
         }
     }
 
+    /// Error
     pub fn error(message: impl Into<Cow<'static, str>>) -> Self {
         Feedback {
             kind: FeedbackKind::Error,
@@ -126,11 +136,16 @@ impl fmt::Display for FeedbackKind {
     }
 }
 
+/// Kind of feedback
 #[derive(Clone, Reflect)]
 pub enum FeedbackKind {
+    /// None
     None,
+    /// Informational
     Info,
+    /// Warning
     Warn,
+    /// Error
     Error,
 }
 

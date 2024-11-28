@@ -1,3 +1,4 @@
+//! ascii, color, or button views
 use crate::construct::*;
 use crate::prelude::*;
 use bevy::prelude::*;
@@ -13,48 +14,7 @@ pub mod widget;
 
 pub(crate) fn plugin(_app: &mut App) {}
 
-pub fn add_view_to_checkbox<V>(
-    checkboxes: Query<(Entity, &Parent), Added<Checkbox>>,
-    group: Query<&CheckboxGroup, With<V>>,
-    mut commands: Commands,
-) where
-    V: Construct<Props = ()> + Component + Send,
-{
-    for (id, parent) in &checkboxes {
-        if group.get(parent.get()).is_ok() {
-            commands.entity(id).construct::<V>(());
-        }
-    }
-}
-
-// pub(crate) fn add_view_to_checkbox<V>(
-//     group: Query<&Children, (Added<CheckboxGroup>, With<V>)>,
-//     checkboxes: Query<Entity, With<Checkbox>>,
-//     mut commands: Commands,
-// ) where
-//     V: Construct<Props = ()> + Component + Send,
-// {
-//     for children in &group {
-//         for id in checkboxes.iter_many(children) {
-//             commands.entity(id).construct::<V>(());
-//         }
-//     }
-// }
-
-pub fn add_view_to_radio<V>(
-    radios: Query<(Entity, &Parent), Added<Radio>>,
-    group: Query<&RadioGroup, With<V>>,
-    mut commands: Commands,
-) where
-    V: Construct<Props = ()> + Component + Send,
-{
-    for (id, parent) in &radios {
-        if group.get(parent.get()).is_ok() {
-            commands.entity(id).construct::<V>(());
-        }
-    }
-}
-
+/// Replace or insert a [TextSection] at a particular index.
 pub fn replace_or_insert(text: &mut Text, index: usize, replacement: &str) {
     let len = text.sections.len();
     if len <= index {
@@ -67,6 +27,7 @@ pub fn replace_or_insert(text: &mut Text, index: usize, replacement: &str) {
     }
 }
 
+/// Replace or insert a [TextSection] at a particular index with a repeating string.
 pub fn replace_or_insert_rep(text: &mut Text, index: usize, replacement: &str, repetition: usize) {
     let len = text.sections.len();
     if len <= index {

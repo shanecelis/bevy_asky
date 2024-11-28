@@ -1,9 +1,11 @@
+//! Use colored text
 use crate::{construct::*, prelude::*, string_cursor::*};
 use bevy::{
     ecs::{query::QueryEntityError, system::SystemParam},
     prelude::*,
 };
 
+/// Marker for color views
 #[derive(Component, Reflect, Default)]
 pub struct View;
 
@@ -139,13 +141,20 @@ impl<'w, 's, C: Component> Inserter<'w, 's, C> {
     }
 }
 
+/// The color palette
 #[derive(Debug, Resource, Component, Reflect)]
 pub struct Palette {
+    /// Text color
     pub text_color: Srgba,
+    /// Background color
     pub background: Option<Srgba>,
+    /// Highlight color
     pub highlight: Srgba,
+    /// Complete color
     pub complete: Srgba,
+    /// Answered color
     pub answer: Srgba,
+    /// Lowlight color
     pub lowlight: Srgba,
 }
 
@@ -162,6 +171,7 @@ impl Default for Palette {
     }
 }
 
+/// Plugin for color view
 pub fn plugin(app: &mut App) {
     app.register_type::<View>()
         .register_type::<ViewPart>()
@@ -245,7 +255,8 @@ pub(crate) fn focus_view(
     }
 }
 
-pub fn text_view<F: bevy::ecs::query::QueryFilter>(
+/// Displays a [StringCursor] matching a query filter.
+pub(crate) fn text_view<F: bevy::ecs::query::QueryFilter>(
     query: Query<
         (Entity, &StringCursor, &Children, Option<&Placeholder>),
         (

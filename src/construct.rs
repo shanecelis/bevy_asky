@@ -5,29 +5,46 @@ use std::borrow::Cow;
 use std::marker::PhantomData;
 use thiserror::Error;
 
+/// Construction error
 #[derive(Error, Debug)]
 pub enum ConstructError {
+    /// Invalid properties
     #[error("invalid properties {message:?}")]
-    InvalidProps { message: Cow<'static, str> },
+    InvalidProps {
+        /// Message
+        message: Cow<'static, str>
+    },
+    /// Missing resource
     #[error("missing resource {message:?}")]
-    MissingResource { message: Cow<'static, str> },
+    MissingResource {
+        /// Message
+        message: Cow<'static, str>
+    },
 }
 
-pub struct Requirements {}
-
+/// Construct property
 pub enum ConstructProp<T: Construct> {
+    /// Direct Value
     Value(T),
+    /// Properties
     Prop(T::Props),
 }
 
+/// Construct driver trait
 pub trait Construct: Sized {
-    // type Props: Default + Clone;
+    /// Properties must be Clone.
+    ///
+    /// NOTE: Cart's proposal states they must also be Default,
+    /// but I had trouble making that work.
     type Props: Clone;
+
+    /// Construct an item.
     fn construct(
         context: &mut ConstructContext,
         props: Self::Props,
     ) -> Result<Self, ConstructError>;
 
+    /// Make a patch.
     fn patch<F: FnMut(&mut Self::Props)>(func: F) -> ConstructPatch<Self, F> {
         ConstructPatch {
             func,
@@ -79,13 +96,17 @@ where
     }
 }
 
+/// An entity and a mutable world
 #[derive(Debug)]
 pub struct ConstructContext<'a> {
+    /// Entity to use for construction
     pub id: Entity,
+    /// World
     pub world: &'a mut World,
 }
 
 impl<'a> ConstructContext<'a> {
+    /// Construct helper function
     pub fn construct<T: Construct>(
         &mut self,
         props: impl Into<T::Props>,
@@ -93,6 +114,7 @@ impl<'a> ConstructContext<'a> {
         T::construct(self, props.into())
     }
 
+    /// Construct from patch
     pub fn construct_from_patch<P: Patch>(
         &mut self,
         patch: &mut P,
@@ -122,13 +144,19 @@ impl<'a> ConstructContext<'a> {
 //     }
 // }
 
+/// Construct extension
+///
+/// The main touch point for the user.
 pub trait ConstructExt {
+    /// Construct a type using the given properties.
     fn construct<T: Construct + Bundle>(&mut self, props: impl Into<T::Props>) -> EntityCommands
     where
         <T as Construct>::Props: Send;
 }
 
+/// Construct children extension
 pub trait ConstructChildrenExt: ConstructExt {
+    /// Construct a series of children using the given properties.
     fn construct_children<T: Construct + Bundle>(
         &mut self,
         props: impl IntoIterator<Item = impl Into<T::Props>>,
@@ -214,20 +242,23 @@ impl<'w> ConstructChildrenExt for EntityCommands<'w> {
 //     }
 // }
 
+/// Modifies properties
 pub trait Patch: Send + Sync + 'static {
+    /// Of what type
     type Construct: Construct + Bundle;
+    /// Modify properties
     fn patch(&mut self, props: &mut <Self::Construct as Construct>::Props);
 }
 
+/// Generic patch based on closure
 pub struct ConstructPatch<C: Construct, F> {
     func: F,
     _marker: PhantomData<C>,
 }
 
-impl<
-        C: Construct + Sync + Send + 'static + Bundle,
-        F: FnMut(&mut C::Props) + Sync + Send + 'static,
-    > Patch for ConstructPatch<C, F>
+impl<C: Construct + Sync + Send + 'static + Bundle,
+     F: FnMut(&mut C::Props) + Sync + Send + 'static>
+    Patch for ConstructPatch<C, F>
 {
     type Construct = C;
     fn patch(&mut self, props: &mut <Self::Construct as Construct>::Props) {

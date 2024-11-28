@@ -6,14 +6,15 @@ use bevy::{
     // ui::Val::*
 };
 
+/// Color palette for widgets
 #[derive(Debug, Clone, Resource)]
 pub struct Palette {
-    // pub interaction: InteractionPalette,
+    /// Border color
     pub border: Color,
+    /// Background color
     pub background: Color,
+    /// Text color
     pub text: Color,
-    // header: Color,
-    // label: Color,
 }
 
 impl Default for Palette {
@@ -31,7 +32,9 @@ impl Default for Palette {
 pub trait Widgets {
     /// Spawn a simple button with text.
     fn button(&mut self, text: impl Into<String>, palette: &Palette) -> EntityCommands;
+    /// Spawn a column.
     fn column(&mut self) -> EntityCommands;
+    /// Spawn a column whose elements can wrap around.
     fn column_wrap(&mut self) -> EntityCommands;
 
     // Spawn a simple header label. Bigger than [`Widgets::label`].
@@ -40,9 +43,6 @@ pub trait Widgets {
     // Spawn a simple text label.
     // fn label(&mut self, text: impl Into<String>, palette: &Palette) -> EntityCommands;
 }
-
-#[derive(Component)]
-pub struct AskyElement;
 
 impl<T: Spawn> Widgets for T {
     fn button(&mut self, text: impl Into<String>, palette: &Palette) -> EntityCommands {
@@ -66,7 +66,6 @@ impl<T: Spawn> Widgets for T {
                 background_color: palette.background.into(),
                 ..default()
             },
-            AskyElement,
             // palette.interaction.clone(),
         ));
         entity.with_children(|children| {

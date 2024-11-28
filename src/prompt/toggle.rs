@@ -2,15 +2,19 @@ use crate::{construct::*, prelude::*};
 use bevy::prelude::*;
 use std::borrow::Cow;
 
+/// Toggles between two named options
 #[derive(Component, Clone, Reflect)]
 pub struct Toggle {
+    /// Prompt
     pub message: Cow<'static, str>,
+    /// Options
     pub options: [Cow<'static, str>; 2],
-    /// Initial toggle of the prompt.
+    /// Initial toggle of the prompt
     pub index: usize,
 }
 
 impl Toggle {
+    /// Make a new toggle
     pub fn new<T: Into<Cow<'static, str>>>(
         message: impl Into<Cow<'static, str>>,
         options: [T; 2],

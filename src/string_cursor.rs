@@ -1,8 +1,12 @@
+//! Keep track of string insertion point
 use bevy::prelude::*;
 
+/// Move cursor in direction
 #[derive(Debug)]
 pub enum CursorDirection {
+    /// Move cursor left
     Left,
+    /// Move cursor right
     Right,
 }
 
@@ -18,17 +22,20 @@ pub struct StringCursor {
 }
 
 impl StringCursor {
+    /// Set the value at place cursor at the end.
     #[allow(dead_code)]
     pub fn set_value(&mut self, value: &str) {
         self.value.replace_range(.., value);
         self.index = self.value.len();
     }
 
+    /// Insert a character.
     pub fn insert(&mut self, ch: char) {
         self.value.insert(self.index, ch);
         self.index += ch.len_utf8();
     }
 
+    /// Backspace over previous character if possible.
     pub fn backspace(&mut self) {
         if self.index >= self.value.len() {
             self.value.pop();
@@ -40,20 +47,24 @@ impl StringCursor {
         }
     }
 
+    /// Return the index of the next character boundary from current position.
     pub fn next_index(&self) -> usize {
         ceil_char_boundary(&self.value, self.index + 1)
     }
 
+    /// Return the index of the previous character boundary from current position.
     pub fn prev_index(&self) -> usize {
         floor_char_boundary(&self.value, self.index.saturating_sub(1))
     }
 
+    /// Delete character at current position.
     pub fn delete(&mut self) {
         if !self.value.is_empty() && self.index < self.value.len() {
             self.value.remove(self.index);
         }
     }
 
+    /// Move cursor.
     pub fn move_cursor(&mut self, position: CursorDirection) {
         self.index = match position {
             // TODO: When round_char_boundary is stabilized, use std's impl.
@@ -65,6 +76,7 @@ impl StringCursor {
     }
 }
 
+/// Return the current or prior character boundary.
 pub fn floor_char_boundary(s: &str, mut i: usize) -> usize {
     if i > s.len() {
         s.len()
@@ -76,6 +88,7 @@ pub fn floor_char_boundary(s: &str, mut i: usize) -> usize {
     }
 }
 
+/// Return the current or next character boundary.
 pub fn ceil_char_boundary(s: &str, mut i: usize) -> usize {
     if i > s.len() {
         s.len()

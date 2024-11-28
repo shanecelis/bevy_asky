@@ -1,3 +1,4 @@
+//! Use ascii text
 use super::replace_or_insert_rep;
 use crate::{prelude::*, string_cursor::*};
 use bevy::prelude::*;
@@ -13,6 +14,7 @@ enum ViewPart {
     Feedback = 5,
 }
 
+/// Marker for ascii views
 #[derive(Component, Default)]
 pub struct View;
 

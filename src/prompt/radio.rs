@@ -5,9 +5,12 @@ use bevy::{
 };
 use std::borrow::Cow;
 
+/// Radio element
+///
+/// Only one may be selected in a group of elements
 #[derive(Component, Reflect)]
 pub struct Radio {
-    /// Initial radio of the prompt.
+    /// Initial radio of the prompt
     pub checked: bool,
 }
 
@@ -84,6 +87,7 @@ fn radio_controller(
     }
 }
 
+/// Parent of entities with [Radio] component
 #[derive(Component, Reflect, Default)]
 pub struct RadioGroup;
 

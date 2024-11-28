@@ -1,11 +1,17 @@
 use super::*;
+use bevy::ecs::system::EntityCommands;
 use std::fmt::Debug;
 
+/// The destination for constructing new entities
 #[derive(Clone, Debug)]
 pub enum Dest {
+    /// A new new entity at the root
     Root,
+    /// Replace an existing entity
     Replace(Entity),
+    /// Replace an existing entity's children
     ReplaceChildren(Entity),
+    /// Add to an existing entity's children
     Append(Entity),
 }
 
@@ -16,7 +22,8 @@ impl From<Entity> for Dest {
 }
 
 impl Dest {
-    pub fn entity<'a>(&self, commands: &'a mut Commands) -> bevy::ecs::system::EntityCommands<'a> {
+    /// Return the appropriate [EntityCommands].
+    pub fn entity<'a>(&self, commands: &'a mut Commands) -> EntityCommands<'a> {
         use Dest::*;
         match self {
             Append(id) => {
@@ -39,10 +46,11 @@ impl Dest {
         }
     }
 
+    /// A fallible version of `entity()`.
     pub fn get_entity<'a>(
         &self,
         commands: &'a mut Commands,
-    ) -> Option<bevy::ecs::system::EntityCommands<'a>> {
+    ) -> Option<EntityCommands<'a>> {
         use Dest::*;
         match self {
             Append(id) => {

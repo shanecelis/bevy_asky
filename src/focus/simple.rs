@@ -1,37 +1,50 @@
 use bevy::{ecs::system::SystemParam, math::CompassQuadrant, prelude::*};
 use std::fmt::Debug;
 
-pub mod private {
+mod private {
     use bevy::prelude::*;
 
+    /// A substitute for [bevy::a11y::Focus]
+    ///
+    /// [bevy::a11y::Focus] caused panics for reasons I didn't understand so I
+    /// used my own instead, but I'd like to switch to Bevy's eventually.
     #[derive(Resource, Default, Debug, Reflect)]
     #[reflect(Resource)]
     pub struct Focus(pub Option<Entity>);
 
     impl Focus {
+        /// Is entity focused?
         pub fn is_focused(&self, id: Entity) -> bool {
             self.0.map(|f| f == id).unwrap_or(false)
         }
     }
 }
 
+/// A rudimentary focus parameter
+///
+/// This is only used to test whether an entity is focused.
 #[derive(SystemParam)]
 pub struct Focus<'w> {
     focus: ResMut<'w, private::Focus>,
 }
 
 impl<'w> Focus<'w> {
+    /// Is entity focused?
     pub fn is_focused(&self, id: Entity) -> bool {
         self.focus.is_focused(id)
     }
+
+    /// Focus on given entity.
     pub fn focus_on(&mut self, id: Entity) {
         self.focus.0 = Some(id);
     }
 }
 
+/// Turn on or off keyboard navigation for focus.
 #[derive(Resource, Default, Debug)]
 pub struct KeyboardNav(bool);
 
+/// Marker for Focusable components.
 #[derive(Component, Clone, Default, Reflect)]
 pub struct Focusable {
     version: usize,
@@ -39,6 +52,9 @@ pub struct Focusable {
 }
 
 impl Focusable {
+    /// Modify the focusable.
+    ///
+    /// Useful for view that can filter by `Changed<Focusable>`.
     fn touch(&mut self) {
         self.version += 1;
     }
@@ -70,6 +86,7 @@ fn to_dir(dir: CompassQuadrant) -> Dir2 {
 
 // pub type Focusable = AskyState;
 
+/// A rich focus parameter
 #[derive(SystemParam)]
 pub struct FocusParam<'w, 's> {
     query: Query<'w, 's, (Entity, &'static mut Focusable, &'static GlobalTransform)>,
@@ -79,10 +96,12 @@ pub struct FocusParam<'w, 's> {
 }
 
 impl<'w, 's> FocusParam<'w, 's> {
+    /// Is entity focused?
     pub fn is_focused(&self, id: Entity) -> bool {
         self.focus.is_focused(id)
     }
 
+    /// Move the focus in a direction if possible.
     pub fn move_focus(&mut self, dir: CompassQuadrant) {
         let (old_id, old_pos) = if let Some(old_focus) = self.focus.0 {
             if let Ok((id, _, transform)) = self.query.get_mut(old_focus) {
@@ -101,13 +120,14 @@ impl<'w, 's> FocusParam<'w, 's> {
                 .iter()
                 .map(|(id, _, transform)| (id, transform.translation().xy()))
         }) {
-            info!("focus to {min_id}");
+            // info!("focus to {min_id}");
             self.move_focus_to(min_id);
         } else {
-            warn!("no focus found");
+            // warn!("no focus found");
         }
     }
 
+    /// Move focus to an entity.
     pub fn move_focus_to(&mut self, id: Entity) {
         if let Some(old_focus) = self.focus.0.take() {
             if let Ok((_, mut focusable, _)) = self.query.get_mut(old_focus) {
@@ -123,6 +143,7 @@ impl<'w, 's> FocusParam<'w, 's> {
         }
     }
 
+    /// Move focus away from an entity.
     pub fn move_focus_from(&mut self, id_maybe: impl Into<Option<Entity>>) {
         if let Some(focus_id) = id_maybe.into().or(self.focus.0) {
             // We're moving from a definite id.
@@ -157,20 +178,24 @@ impl<'w, 's> FocusParam<'w, 's> {
         }
     }
 
+    /// Is keyboard navigation on?
     pub fn keyboard_nav(&self) -> bool {
         self.keyboard_nav.0
     }
 
+    /// Set keyboard navigation.
     pub fn set_keyboard_nav(&mut self, on: bool) {
         self.keyboard_nav.0 = on;
     }
 
+    /// Block focus and move to.
     pub fn block_and_move(&mut self, id_maybe: impl Into<Option<Entity>>) {
         let id = id_maybe.into();
         self.block(id);
         self.move_focus_from(id);
     }
 
+    /// Is entity blocked?
     pub fn is_blocked(&self, id: Entity) -> bool {
         self.query
             .get(id)
@@ -178,9 +203,9 @@ impl<'w, 's> FocusParam<'w, 's> {
             .unwrap_or(true)
     }
 
+    /// Block focus on current or given entity.
     pub fn block(&mut self, id_maybe: impl Into<Option<Entity>>) {
         if let Some(id) = id_maybe.into().or(self.focus.0) {
-            // self.commands.entity(id).insert(Blocked);
             self.query
                 .get_mut(id)
                 .map(|(_, mut focus, _)| focus.block = true)
@@ -190,6 +215,7 @@ impl<'w, 's> FocusParam<'w, 's> {
         }
     }
 
+    /// Unblock focus on current or given entity.
     pub fn unblock(&mut self, id_maybe: impl Into<Option<Entity>>) {
         if let Some(id) = id_maybe.into().or(self.focus.0) {
             // self.commands.entity(id).remove::<Blocked>();

@@ -17,6 +17,7 @@ pub trait NumLike: Default + Display + FromStr + Send + Copy {
         false
     }
 
+    /// Is valid number?
     fn is_valid(ch: char, input: &StringCursor) -> bool {
         match ch {
             '-' | '+' => Self::is_signed() && input.index == 0,

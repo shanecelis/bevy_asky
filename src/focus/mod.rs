@@ -1,3 +1,4 @@
+//! Handles focus between UI elements
 #[cfg(feature = "focus")]
 mod advanced;
 #[cfg(feature = "focus")]

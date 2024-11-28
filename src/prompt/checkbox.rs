@@ -3,9 +3,10 @@ use bevy::prelude::*;
 
 use std::borrow::Cow;
 
+/// Checkbox
 #[derive(Component, Reflect)]
 pub struct Checkbox {
-    /// Initial checkbox of the prompt.
+    /// Initial checkbox of the prompt
     pub checked: bool,
 }
 
@@ -100,6 +101,9 @@ fn checkbox_controller(
 //     }
 // }
 
+/// Checkbox Group
+///
+/// Given to parent of checkbox group that handles submission.
 #[derive(Component, Reflect, Default)]
 pub struct CheckboxGroup;
 
