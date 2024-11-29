@@ -20,11 +20,11 @@ fn setup(mut commands: Commands) {
         .construct::<View>(())
         .construct::<Confirm>("Do you like cats?")
         .observe(
-            move |trigger: Trigger<Submit<bool>>, mut commands: Commands| {
-                if let Submit(Ok(yes)) = trigger.event() {
+            move |mut trigger: Trigger<Submit<bool>>, mut commands: Commands| {
+                if let Ok(yes) = trigger.event_mut().take().unwrap() {
                     commands
                         .entity(trigger.entity())
-                        .construct::<Feedback>(Feedback::info(if *yes {
+                        .construct::<Feedback>(Feedback::info(if yes {
                             "Me too!"
                         } else {
                             "Ok."

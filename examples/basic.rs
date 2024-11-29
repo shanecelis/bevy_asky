@@ -31,12 +31,12 @@ fn setup(mut commands: Commands) {
             .construct::<View>(())
             .construct::<Confirm>("Do you like ascii?")
             .observe(
-                move |trigger: Trigger<Submit<bool>>, mut commands: Commands| {
+                move |mut trigger: Trigger<Submit<bool>>, mut commands: Commands| {
                     eprintln!("trigger {:?}", trigger.event());
-                    let answer = trigger.event().as_ref().unwrap_or(&false);
+                    let answer = trigger.event_mut().take().unwrap().unwrap_or(false);
                     commands.entity(column).with_children(|parent| {
                         parent.spawn(TextBundle::from_section(
-                            if *answer {
+                            if answer {
                                 "Me too."
                             } else {
                                 "We have other options."

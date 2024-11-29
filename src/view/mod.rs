@@ -1,6 +1,4 @@
 //! ascii, color, or button views
-use crate::construct::*;
-use crate::prelude::*;
 use bevy::prelude::*;
 
 #[cfg(feature = "ascii")]

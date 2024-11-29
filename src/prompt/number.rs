@@ -114,7 +114,7 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                 Key::Enter => {
                     match T::from_str(&text_state.value) {
                         Ok(number) => {
-                            commands.trigger_targets(Submit(Ok(number)), id);
+                            commands.trigger_targets(Submit::new(Ok(number)), id);
                             focus.block(id);
                             // focus.unfocus(id, true);
                             focus.move_focus_from(id);
@@ -131,7 +131,7 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                     }
                 }
                 Key::Escape => {
-                    commands.trigger_targets(Submit::<String>(Err(Error::Cancel)), id);
+                    commands.trigger_targets(Submit::<String>::new(Err(Error::Cancel)), id);
                     commands.entity(id).insert(Feedback::error("canceled"));
                     focus.block(id);
                     focus.move_focus_from(id);

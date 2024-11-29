@@ -68,7 +68,20 @@ impl Plugin for AskyPlugin {
 ///
 /// [Submitter] trait on prompt defines what output type to expect.
 #[derive(Event, Deref, DerefMut, Debug, Clone)]
-pub struct Submit<T>(pub Result<T, Error>);
+pub struct Submit<T>(pub Option<Result<T, Error>>);
+
+impl<T> Submit<T> {
+    /// Create a new submission event.
+    pub fn new(r: Result<T, Error>) -> Self {
+        Self(Some(r))
+    }
+
+    /// Unwrap the result assuming it hasn't been taken already.
+    pub fn take_result(&mut self) -> Result<T, Error> {
+        self.0.take().expect("submit has been taken already")
+    }
+}
+
 
 // /// Should we have a policy on submission?
 // #[derive(Debug, Component, Default, Clone)]
