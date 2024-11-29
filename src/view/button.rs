@@ -6,7 +6,7 @@ use super::{
 use crate::construct::*;
 use crate::{
     prompt::{Confirm, Prompt},
-    AskyEvent, };
+    Submit, };
 use bevy::color::palettes::basic::*;
 use std::collections::HashMap;
 
@@ -69,7 +69,7 @@ fn button_interaction(
             }
             Interaction::Hovered => {
                 // if matches!(last, Some(Interaction::Pressed)) {
-                //     commands.trigger_targets(AskyEvent(Ok(confirm.yes.unwrap())), confirm_ref.0);
+                //     commands.trigger_targets(Submit(Ok(confirm.yes.unwrap())), confirm_ref.0);
                 //     *asky_state = AskyState::Complete;
                 // }
                 *color = HOVERED_BUTTON.into();
@@ -239,7 +239,7 @@ impl Construct for View {
                             let (mut asky_state, mut confirm) = query.get_mut(id).unwrap();
                             *asky_state = AskyState::Complete;
                             confirm.yes = false;
-                            commands.trigger_targets(AskyEvent(Ok(false)), id);
+                            commands.trigger_targets(Submit(Ok(false)), id);
                         },
                     );
                 parent.spawn(TextBundle::from_section(" ", TextStyle::default()));
@@ -254,7 +254,7 @@ impl Construct for View {
                             let (mut asky_state, mut confirm) = query.get_mut(id).unwrap();
                             *asky_state = AskyState::Complete;
                             confirm.yes = true;
-                            commands.trigger_targets(AskyEvent(Ok(true)), id);
+                            commands.trigger_targets(Submit(Ok(true)), id);
                         },
                     );
             });

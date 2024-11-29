@@ -13,8 +13,8 @@ commands
     .construct::<Confirm>("Do you like cats?")
     .construct::<ascii::View>(())
     .observe(
-        move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
-            if let AskyEvent(Ok(yes)) = trigger.event() {
+        move |trigger: Trigger<Submit<bool>>, mut commands: Commands| {
+            if let Submit(Ok(yes)) = trigger.event() {
                 commands.entity(trigger.entity())
                         .construct::<Feedback>(Feedback::info(if *yes {
                             "\nMe too!"

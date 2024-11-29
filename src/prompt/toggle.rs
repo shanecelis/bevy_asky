@@ -75,12 +75,12 @@ fn toggle_controller(
                 toggle.index = 1;
             }
             if input.just_pressed(KeyCode::Enter) {
-                commands.trigger_targets(AskyEvent(Ok(toggle.index)), id);
+                commands.trigger_targets(Submit(Ok(toggle.index)), id);
                 focus.block_and_move(id);
             }
 
             if input.just_pressed(KeyCode::Escape) {
-                commands.trigger_targets(AskyEvent::<bool>(Err(Error::Cancel)), id);
+                commands.trigger_targets(Submit::<bool>(Err(Error::Cancel)), id);
                 focus.move_focus_from(id);
                 // focus.unfocus(id, false);
                 commands.entity(id).insert(Feedback::error("canceled"));

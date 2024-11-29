@@ -21,7 +21,7 @@ fn setup(mut commands: Commands) {
         parent
             .construct::<View>(())
             .construct::<Password>("Password: ")
-            .observe(move |trigger: Trigger<AskyEvent<String>>| {
+            .observe(move |trigger: Trigger<Submit<String>>| {
                 eprintln!("trigger {:?}", trigger.event());
             });
     });

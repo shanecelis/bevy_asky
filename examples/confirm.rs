@@ -22,20 +22,20 @@ fn setup(mut commands: Commands) {
         parent
             .construct::<View>(())
             .construct::<Confirm>("Do you like soda?")
-            .observe(move |trigger: Trigger<AskyEvent<bool>>| {
+            .observe(move |trigger: Trigger<Submit<bool>>| {
                 eprintln!("trigger {:?}", trigger.event());
             });
 
         parent
             .construct::<View>(())
             .construct::<Confirm>("Do you like coke?")
-            .observe(move |trigger: Trigger<AskyEvent<bool>>| {
+            .observe(move |trigger: Trigger<Submit<bool>>| {
                 eprintln!("trigger {:?}", trigger.event());
             });
         parent
             .construct::<View>(())
             .construct::<Confirm>("Do you like pepsi?")
-            .observe(move |trigger: Trigger<AskyEvent<bool>>| {
+            .observe(move |trigger: Trigger<Submit<bool>>| {
                 eprintln!("trigger {:?}", trigger.event());
             });
     });

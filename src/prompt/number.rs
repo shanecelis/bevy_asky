@@ -114,14 +114,14 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                 Key::Enter => {
                     match T::from_str(&text_state.value) {
                         Ok(number) => {
-                            commands.trigger_targets(AskyEvent(Ok(number)), id);
+                            commands.trigger_targets(Submit(Ok(number)), id);
                             focus.block(id);
                             // focus.unfocus(id, true);
                             focus.move_focus_from(id);
                         }
                         Err(_) => {
                             // commands
-                            //     .trigger_targets(AskyEvent::<T>(Err(Error::InvalidNumber)), id);
+                            //     .trigger_targets(Submit::<T>(Err(Error::InvalidNumber)), id);
                             // focus.block(id);
                             commands.entity(id).insert(Feedback::warn(format!(
                                 "invalid number for {}",
@@ -131,7 +131,7 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                     }
                 }
                 Key::Escape => {
-                    commands.trigger_targets(AskyEvent::<String>(Err(Error::Cancel)), id);
+                    commands.trigger_targets(Submit::<String>(Err(Error::Cancel)), id);
                     commands.entity(id).insert(Feedback::error("canceled"));
                     focus.block(id);
                     focus.move_focus_from(id);

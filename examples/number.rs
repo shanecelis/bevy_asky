@@ -29,7 +29,7 @@ fn setup(mut commands: Commands) {
                 .construct::<View>(())
                 .construct::<Number<i8>>("Age? ")
                 .construct::<Placeholder>("333")
-                .observe(move |trigger: Trigger<AskyEvent<i8>>| {
+                .observe(move |trigger: Trigger<Submit<i8>>| {
                     eprintln!("trigger {:?}", trigger.event());
                 });
 
@@ -37,7 +37,7 @@ fn setup(mut commands: Commands) {
                 .construct::<View>(())
                 .construct::<Number<i32>>("Phone number ? ")
                 .construct::<Placeholder>("123-4567")
-                .observe(move |trigger: Trigger<AskyEvent<i8>>| {
+                .observe(move |trigger: Trigger<Submit<i8>>| {
                     eprintln!("trigger {:?}", trigger.event());
                 });
         });

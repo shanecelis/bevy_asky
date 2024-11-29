@@ -6,6 +6,7 @@ use bevy_defer::AsyncWorld;
 use futures::{channel::oneshot, Future};
 use std::fmt::Debug;
 
+/// Uses promises
 #[derive(Clone, SystemParam, Default)]
 pub struct AskyAsync;
 
@@ -32,7 +33,7 @@ impl AskyAsync {
                 let mut ecommands = commands.prompt::<T>(p, d);
                 f(&mut ecommands);
                 let mut send_once = Some(sender);
-                ecommands.observe(move |trigger: Trigger<AskyEvent<T::Out>>| {
+                ecommands.observe(move |trigger: Trigger<Submit<T::Out>>| {
                     if let Some(sender) = send_once.take() {
                         sender.send(trigger.event().0.clone()).expect("send");
                     }
@@ -83,7 +84,7 @@ impl AskyAsync {
     //     //         commands
     //     //             .prompt_group::<T, V>(g, p, d)
     //     //             .observe(
-    //     //                 move |trigger: Trigger<AskyEvent<<<T as Part>::Group as Submitter>::Out>>, mut commands: Commands| {
+    //     //                 move |trigger: Trigger<Submit<<<T as Part>::Group as Submitter>::Out>>, mut commands: Commands| {
     //     //                     if let Some(sender) = send_once.take() {
     //     //                         sender.send(trigger.event().0.clone()).expect("send");
     //     //                     }

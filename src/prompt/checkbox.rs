@@ -76,7 +76,7 @@ fn checkbox_controller(
             //     // requests.send(NavRequest::Move(NavDirection::South));
             //     // I had tried using triggers in bevy_ui_navigation to fix my issues.
             //     // commands.trigger(NavRequest::Move(NavDirection::South));
-            //     commands.trigger_targets(AskyEvent::<bool>(Ok(yes)), id);
+            //     commands.trigger_targets(Submit::<bool>(Ok(yes)), id);
             //     // commands
             //     //     .entity(id)
             //     //     .insert(Feedback::info(if yes { "Yes" } else { "No" }));
@@ -148,11 +148,11 @@ fn checkbox_group_controller(
                     .iter_many(children)
                     .map(|(_, checkbox)| checkbox.checked)
                     .collect();
-                commands.trigger_targets(AskyEvent(Ok(result)), id);
+                commands.trigger_targets(Submit(Ok(result)), id);
             }
 
             if input.just_pressed(KeyCode::Escape) {
-                commands.trigger_targets(AskyEvent::<Vec<bool>>(Err(Error::Cancel)), id);
+                commands.trigger_targets(Submit::<Vec<bool>>(Err(Error::Cancel)), id);
             }
         }
     }

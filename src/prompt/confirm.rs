@@ -65,11 +65,11 @@ fn confirm_controller(
                 // Make this not focusable again.
                 // I had tried using triggers in bevy_ui_navigation to fix my issues.
                 // commands.trigger(NavRequest::Move(NavDirection::South));
-                commands.trigger_targets(AskyEvent::<bool>(Ok(confirm.yes)), id);
+                commands.trigger_targets(Submit::<bool>(Ok(confirm.yes)), id);
                 // focus.block_and_move(id);
             }
             if input.just_pressed(KeyCode::Escape) {
-                commands.trigger_targets(AskyEvent::<bool>(Err(Error::Cancel)), id);
+                commands.trigger_targets(Submit::<bool>(Err(Error::Cancel)), id);
                 // commands.entity(id).insert(Feedback::error("canceled"));
             }
         }

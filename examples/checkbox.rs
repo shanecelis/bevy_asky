@@ -19,12 +19,12 @@ fn setup(mut commands: Commands) {
     commands.column().with_children(|parent| {
         parent.construct::<View>(()).construct::<Checkbox>("Money?");
         // Checkboxes themselves don't trigger on enter.
-        // .observe(move |trigger: Trigger<AskyEvent<bool>>| {
+        // .observe(move |trigger: Trigger<Submit<bool>>| {
         //     eprintln!("trigger {:?}", trigger.event());
         // });
 
         parent.construct::<View>(()).construct::<Checkbox>("Time?");
-        // .observe(move |trigger: Trigger<AskyEvent<bool>>| {
+        // .observe(move |trigger: Trigger<Submit<bool>>| {
         //     eprintln!("trigger {:?}", trigger.event());
         // });
     });

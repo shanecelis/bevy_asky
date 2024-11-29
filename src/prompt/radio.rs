@@ -142,8 +142,8 @@ fn radio_group_controller(
                     .iter_many(children)
                     .position(|(_, radio)| radio.checked)
                 {
-                    // commands.trigger_targets(AskyEvent(selection.ok_or(Error::InvalidInput)), id);
-                    commands.trigger_targets(AskyEvent(Ok(selection)), id);
+                    // commands.trigger_targets(Submit(selection.ok_or(Error::InvalidInput)), id);
+                    commands.trigger_targets(Submit(Ok(selection)), id);
                 } else {
                     commands
                         .entity(id)
@@ -152,7 +152,7 @@ fn radio_group_controller(
             }
 
             if input.just_pressed(KeyCode::Escape) {
-                commands.trigger_targets(AskyEvent::<usize>(Err(Error::Cancel)), id);
+                commands.trigger_targets(Submit::<usize>(Err(Error::Cancel)), id);
                 commands.entity(id).insert(Feedback::error("canceled"));
             }
         }

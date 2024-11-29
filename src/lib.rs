@@ -32,7 +32,7 @@ pub mod prelude {
         prompt::*,
         sync::{AskyCommands, AskyEntityCommands},
         view::{widget::Widgets, *},
-        AskyEvent, AskyPlugin, AskySet, Dest, Error, Submitter,
+        Submit, AskyPlugin, AskySet, Dest, Error, Submitter,
     };
 }
 
@@ -64,11 +64,11 @@ impl Plugin for AskyPlugin {
     }
 }
 
-/// Prompts trigger an AskyEvent
+/// Prompts trigger an Submit
 ///
 /// [Submitter] trait on prompt defines what output type to expect.
 #[derive(Event, Deref, DerefMut, Debug, Clone)]
-pub struct AskyEvent<T>(pub Result<T, Error>);
+pub struct Submit<T>(pub Result<T, Error>);
 
 // /// Should we have a policy on submission?
 // #[derive(Debug, Component, Default, Clone)]

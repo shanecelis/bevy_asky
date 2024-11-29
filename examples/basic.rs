@@ -31,7 +31,7 @@ fn setup(mut commands: Commands) {
             .construct::<View>(())
             .construct::<Confirm>("Do you like ascii?")
             .observe(
-                move |trigger: Trigger<AskyEvent<bool>>, mut commands: Commands| {
+                move |trigger: Trigger<Submit<bool>>, mut commands: Commands| {
                     eprintln!("trigger {:?}", trigger.event());
                     let answer = trigger.event().as_ref().unwrap_or(&false);
                     commands.entity(column).with_children(|parent| {
