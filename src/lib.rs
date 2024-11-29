@@ -32,7 +32,7 @@ pub mod prelude {
         prompt::*,
         sync::{AskyCommands, AskyEntityCommands},
         view::{widget::Widgets, *},
-        Submit, AskyPlugin, AskySet, Dest, Error, Submitter,
+        AskyPlugin, AskySet, Dest, Error, Submit, Submitter,
     };
 }
 
@@ -81,7 +81,6 @@ impl<T> Submit<T> {
         self.0.take().expect("submit has been taken already")
     }
 }
-
 
 // /// Should we have a policy on submission?
 // #[derive(Debug, Component, Default, Clone)]

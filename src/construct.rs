@@ -12,13 +12,13 @@ pub enum ConstructError {
     #[error("invalid properties {message:?}")]
     InvalidProps {
         /// Message
-        message: Cow<'static, str>
+        message: Cow<'static, str>,
     },
     /// Missing resource
     #[error("missing resource {message:?}")]
     MissingResource {
         /// Message
-        message: Cow<'static, str>
+        message: Cow<'static, str>,
     },
 }
 
@@ -256,9 +256,10 @@ pub struct ConstructPatch<C: Construct, F> {
     _marker: PhantomData<C>,
 }
 
-impl<C: Construct + Sync + Send + 'static + Bundle,
-     F: FnMut(&mut C::Props) + Sync + Send + 'static>
-    Patch for ConstructPatch<C, F>
+impl<
+        C: Construct + Sync + Send + 'static + Bundle,
+        F: FnMut(&mut C::Props) + Sync + Send + 'static,
+    > Patch for ConstructPatch<C, F>
 {
     type Construct = C;
     fn patch(&mut self, props: &mut <Self::Construct as Construct>::Props) {

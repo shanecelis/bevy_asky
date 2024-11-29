@@ -35,7 +35,9 @@ impl AskyAsync {
                 let mut send_once = Some(sender);
                 ecommands.observe(move |mut trigger: Trigger<Submit<T::Out>>| {
                     if let Some(sender) = send_once.take() {
-                        sender.send(trigger.event_mut().take().unwrap()).expect("send");
+                        sender
+                            .send(trigger.event_mut().take().unwrap())
+                            .expect("send");
                     }
                     // TODO: This should be the result of some policy not de facto.
                     // commands.entity(trigger.entity()).despawn_recursive();

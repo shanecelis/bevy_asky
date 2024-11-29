@@ -47,10 +47,7 @@ impl Dest {
     }
 
     /// A fallible version of `entity()`.
-    pub fn get_entity<'a>(
-        &self,
-        commands: &'a mut Commands,
-    ) -> Option<EntityCommands<'a>> {
+    pub fn get_entity<'a>(&self, commands: &'a mut Commands) -> Option<EntityCommands<'a>> {
         use Dest::*;
         match self {
             Append(id) => {
