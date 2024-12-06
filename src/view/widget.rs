@@ -1,4 +1,4 @@
-//! Helper traits for creating common widgets.
+//! Helper traits for creating common widgets
 
 use bevy::{
     ecs::system::EntityCommands,

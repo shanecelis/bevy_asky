@@ -44,7 +44,7 @@ impl<'w> Focus<'w> {
 #[derive(Resource, Default, Debug)]
 pub struct KeyboardNav(bool);
 
-/// Marker for Focusable components.
+/// Marker for Focusable components
 #[derive(Component, Clone, Default, Reflect)]
 pub struct Focusable {
     version: usize,
@@ -83,8 +83,6 @@ fn to_dir(dir: CompassQuadrant) -> Dir2 {
         West => Dir2::NEG_X,
     }
 }
-
-// pub type Focusable = AskyState;
 
 /// A rich focus parameter
 #[derive(SystemParam)]

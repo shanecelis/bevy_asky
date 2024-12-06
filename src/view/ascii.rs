@@ -42,14 +42,8 @@ impl Construct for View {
     }
 }
 
+/// Add ascii views handlers.
 pub fn plugin(app: &mut App) {
-    app.add_systems(
-        PreUpdate,
-        (
-            super::add_view_to_checkbox::<View>,
-            super::add_view_to_radio::<View>,
-        ),
-    );
     app.add_systems(
         Update,
         (

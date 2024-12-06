@@ -6,7 +6,7 @@
    [3]: https://www.apache.org/licenses/LICENSE-2.0
 */
 
-//! Click event for Bevy.
+//! Click event for Bevy
 //!
 //! [Interaction::Pressed] is not the same as a click. A click is a press and
 //! release of a mouse button on the same UI element. A press that leaves a UI

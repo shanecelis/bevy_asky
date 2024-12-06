@@ -2,7 +2,10 @@
 #![doc = include_str!("../README.md")]
 #![forbid(missing_docs)]
 #![allow(clippy::type_complexity)]
-use bevy::prelude::*;
+use bevy::{
+    app::PluginGroupBuilder,
+    prelude::*,
+};
 
 pub mod focus;
 
@@ -21,7 +24,7 @@ mod dest;
 pub mod sync;
 pub use dest::Dest;
 
-/// Splat import, e.g., `use bevy_asky::prelude::*`.
+/// Splat import, e.g., `use bevy_asky::prelude::*`
 pub mod prelude {
     #[cfg(feature = "async")]
     pub use super::r#async::*;
@@ -36,9 +39,27 @@ pub mod prelude {
     };
 }
 
-/// The Asky plugin. If using "async" features, [bevy_defer]'s `AsyncPlugin` is
-/// also required.
+/// Asky plugin
+///
+/// If using "async" features, [bevy_defer]'s `AsyncPlugin` is also required.
+/// Consider adding it or use [AskyPlugins] which will include it.
 pub struct AskyPlugin;
+
+
+/// Asky plugins
+///
+/// Includes [bevy_defer::AsyncPlugin] with default settings if "async" feature
+/// is present.
+pub struct AskyPlugins;
+
+impl PluginGroup for AskyPlugins {
+    fn build(self) -> PluginGroupBuilder {
+        let group = PluginGroupBuilder::start::<Self>().add(AskyPlugin);
+        #[cfg(feature = "async")]
+        let group = group.add(bevy_defer::AsyncPlugin::default_settings());
+        group
+    }
+}
 
 /// In the Update schedule, AskySet runs the controllers then the views.
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]

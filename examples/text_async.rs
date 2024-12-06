@@ -22,12 +22,12 @@ fn setup(mut commands: Commands, mut asky: AskyAsync) {
     let id = commands.column().id();
     commands.spawn_task(move || async move {
         let response: Result<String, Error> = asky
-            .prompt::<Add<TextField, View>>("What up? ", Dest::ReplaceChildren(id))
+            .prompt::<Add0<TextField, View>>("What up? ", Dest::ReplaceChildren(id))
             .await;
         dbg!(response);
 
         let response: Result<String, Error> = asky
-            .prompt::<Add<TextField, View>>("Really? ", Dest::ReplaceChildren(id))
+            .prompt::<Add0<TextField, View>>("Really? ", Dest::ReplaceChildren(id))
             .await;
         dbg!(response);
         Ok(())

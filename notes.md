@@ -14,7 +14,6 @@ might be helpful to point out.
     commands
         .spawn((
             NodeBundle { ..default() },
-            AskyState::default(),
             Confirm {
                 message: "Do you like ascii?".into(),
                 init: None,

@@ -21,7 +21,7 @@ fn setup(mut commands: Commands) {
         parent
             .spawn(NodeBundle::default())
             .construct::<CheckboxGroup>("checkbox group 0")
-            .construct_children::<Add<Checkbox, View>>(["Money", "Time", "Power"])
+            .construct_children::<Add0<Checkbox, View>>(["Money", "Time", "Power"])
             .observe(move |trigger: Trigger<Submit<Vec<bool>>>| {
                 eprintln!("trigger {:?}", trigger.event());
             });
@@ -29,7 +29,7 @@ fn setup(mut commands: Commands) {
         parent
             .column()
             .construct::<CheckboxGroup>("checkbox group 1")
-            .construct_children::<Add<Checkbox, View>>(["Money", "Time", "Power"])
+            .construct_children::<Add0<Checkbox, View>>(["Money", "Time", "Power"])
             .observe(move |trigger: Trigger<Submit<Vec<bool>>>| {
                 eprintln!("trigger {:?}", trigger.event());
             });

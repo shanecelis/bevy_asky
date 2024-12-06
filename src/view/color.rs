@@ -1,4 +1,4 @@
-//! Use colored text
+//! Uses colored text
 use crate::{construct::*, prelude::*, string_cursor::*};
 use bevy::{
     ecs::{query::QueryEntityError, system::SystemParam},
@@ -171,7 +171,7 @@ impl Default for Palette {
     }
 }
 
-/// Plugin for color view
+/// Add color views handlers.
 pub fn plugin(app: &mut App) {
     app.register_type::<View>()
         .register_type::<ViewPart>()

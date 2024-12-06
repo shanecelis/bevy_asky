@@ -1,4 +1,4 @@
-//! Playing around with [Cart's proposal](https://github.com/bevyengine/bevy/discussions/14437).
+//! Playing around with [Cart's proposal](https://github.com/bevyengine/bevy/discussions/14437)
 use crate::Submitter;
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::borrow::Cow;
@@ -53,18 +53,20 @@ pub trait Construct: Sized {
     }
 }
 
-/// Add a silent partner.
+/// Add a zero-tuple `()` property construct partner
+///
+/// Useful for adding a view to children for instance.
 #[derive(Bundle)]
-pub struct Add<A: Sync + Send + 'static + Bundle, B: Sync + Send + 'static + Bundle>(pub A, pub B);
+pub struct Add0<A: Sync + Send + 'static + Bundle, B: Sync + Send + 'static + Bundle>(pub A, pub B);
 
 unsafe impl<A: Submitter + Sync + Send + 'static + Bundle, B: Sync + Send + 'static + Bundle>
-    Submitter for Add<A, B>
+    Submitter for Add0<A, B>
 {
     /// Output of submitter.
     type Out = A::Out;
 }
 
-impl<A, B> Construct for Add<A, B>
+impl<A, B> Construct for Add0<A, B>
 where
     A: Construct + Sync + Send + 'static + Bundle,
     B: Construct<Props = ()> + Sync + Send + 'static + Bundle,
@@ -76,7 +78,7 @@ where
     ) -> Result<Self, ConstructError> {
         let a = A::construct(context, props)?;
         let b = B::construct(context, ())?;
-        Ok(Add(a, b))
+        Ok(Add0(a, b))
     }
 }
 
