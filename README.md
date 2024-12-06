@@ -14,7 +14,7 @@ as scaffolding for whatever one's eventual UI may become.
 
 # Architecture
 
-This crate uses a Model-View-Controller (MVC) architecture. Normally, I am not
+This crate uses a Model-View-Controller (MVC) architecture. Normally I am not
 too enthusiastic about MVC because there is a lot of ambiguity about what goes
 where especially when it comes to the controller aspect. However, I found that
 within Bevy's Entity-Component-Systems (ECS) architecture, MVC enjoys much
@@ -45,8 +45,9 @@ The view handles presentation. One chooses which view by using a marker
 component. There are two view modules in this crate: 'ascii' and 'color'. Their
 marker components are `ascii::View` and `color::View` respectively.
 
-It is expected, however, that one will perhaps copy-and-paste 'ascii' or 'color'
-to make their own.
+One can use a view of their own. The configurability of these particular views
+are limited. Its suggested to copy-and-paste [ascii.rs](/src/view/ascii.rs) or
+[color.rs](/src/view/colors.rs) for fine-grained control of the presentation.
 
 # Usage
 
