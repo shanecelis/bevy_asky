@@ -2,19 +2,25 @@
 
 This library is intended to make asking questions of the user easier using the
 [Bevy game engine](https://bevyengine.org). It is not intended to provide a
-comprehensive UI beyond question and answer, and may indeed be better thought of
+comprehensive UI beyond question-and-answer, and may indeed be better thought of
 as scaffolding for whatever one's eventual UI may become.
+
+Its principle consumer currently is
+[bevy_minibuffer](https://github.com/shanecelis/bevy_minibuffer), a gamedev
+console inspired by classic Unix text editors.
 
 # Architecture
 
 This crate uses a Model-View-Controller (MVC) architecture. Normally, I am not
 too enthusiastic about MVC because there is a lot of ambiguity about what goes
 where especially when it comes to the controller aspect. However, I found that
-within Bevy's Entity-Component-Systems (ECS) architecture, MVC has much clearer boundaries. 
+within Bevy's Entity-Component-Systems (ECS) architecture, MVC enjoys much
+clearer boundaries.
 
 ## Model
 
-The models are all found in the `bevy_asky::prompt` module.
+The models are all found in the `bevy_asky::prompt` module. They represent the
+data that is being manipulated.
 
 - checkbox
 - confirm 
@@ -26,7 +32,18 @@ The models are all found in the `bevy_asky::prompt` module.
 
 ## Controller
 
-The controllers are all implemented as systems and are not exposed to the user. If you prompt for a text field, and then hit 'a', the text field will append an 'a' character. It will not be shown though unless it has a view component.
+The controllers are all implemented as systems and are not exposed to the user.
+If you prompt for a text field, and then hit 'a', the text field will append an
+'a' character. It will not be shown though unless it has a view component.
+
+## View
+
+The view handles presentation. One chooses which view by using a marker
+component. There are two view modules in this crate: 'ascii' and 'color'. Their
+marker components are `ascii::View` and `color::View` respectively.
+
+It is expected, however, that one will perhaps copy-and-paste 'ascii' or 'color'
+to make their own.
 
 # Usage
 
@@ -52,7 +69,6 @@ commands
 
 ## TODO
 
-- [ ] Rename `AskyState` to ...?
 - [ ] Design a setting for what to do when input is submitted, possible options:
   - nothing
   - block focus (take no more input)
@@ -60,4 +76,11 @@ commands
 - [ ] Add a `button::View` that uses mouse-clickable elements.
 
 # Acknowledgments
-Thanks to [Axel Vasquez](https://github.com/axelvc) for his excellent and inspiring [asky](https://github.com/axelvc/asky) crate.
+Thanks to [Axel Vasquez](https://github.com/axelvc) for his excellent and
+inspiring [asky](https://github.com/axelvc/asky) crate. 
+
+> [!NOTE] I originally tried to extend Vasquez's work from its terminal origin
+> to work directly with Bevy. You can find that in [my
+> fork](https://github.com/shanecelis/asky), but it required a lot of
+> compromises and pull requests needed on dependencies where not being accepted.
+> So I decided to do a native-port of asky to bevy, and this crate is the result.
