@@ -5,9 +5,12 @@ This library is intended to make asking questions of the user easier using the
 comprehensive UI beyond question-and-answer, and may indeed be better thought of
 as scaffolding for whatever one's eventual UI may become.
 
-Its principle consumer currently is
-[bevy_minibuffer](https://github.com/shanecelis/bevy_minibuffer), a gamedev
-console inspired by classic Unix text editors.
+> [!WARNING]
+> `bevy_asky` is currently in the early stages of development and is subject to
+> breaking changes. The principle consumer of this crate is
+> [bevy_minibuffer](https://github.com/shanecelis/bevy_minibuffer), a gamedev
+> console. As such it is under-developed for usage independent of
+> `bevy_minibuffer` currently.
 
 # Architecture
 
@@ -79,8 +82,10 @@ commands
 Thanks to [Axel Vasquez](https://github.com/axelvc) for his excellent and
 inspiring [asky](https://github.com/axelvc/asky) crate. 
 
-> [!NOTE] I originally tried to extend Vasquez's work from its terminal origin
-> to work directly with Bevy. You can find that in [my
+> [!NOTE] 
+> I originally tried to extend Vasquez's work from its terminal origin to work
+> directly with Bevy. You can find that work in [my
 > fork](https://github.com/shanecelis/asky), but it required a lot of
-> compromises and pull requests needed on dependencies where not being accepted.
-> So I decided to do a native-port of asky to bevy, and this crate is the result.
+> compromises and pull requests needed on dependencies were not being accepted.
+> So I decided to do a native-port of asky to bevy; this crate is the
+> result.
