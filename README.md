@@ -47,7 +47,7 @@ component. There are two view modules in this crate: 'ascii' and 'color'. Their
 marker components are `ascii::View` and `color::View` respectively.
 
 One can use a view of their own. The configurability of these particular views
-are limited. Its suggested to copy-and-paste [ascii.rs](/src/view/ascii.rs) or
+are limited. It is suggested to copy-and-paste [ascii.rs](/src/view/ascii.rs) or
 [color.rs](/src/view/colors.rs) for fine-grained control of the presentation.
 
 # Usage
@@ -75,10 +75,13 @@ commands
 ## TODO
 
 - [ ] Design a setting for what to do when input is submitted, possible options:
-  - nothing
-  - block focus (take no more input)
-  - despawn
+  - do nothing,
+  - block focus (take no more input),
+  - or despawn.
 - [ ] Add a `button::View` that uses mouse-clickable elements.
+
+  There is old button code that used to do this, but it has rotted and no longer
+  compiles.
 
 # Compatibility
 
