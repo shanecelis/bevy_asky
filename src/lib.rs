@@ -88,18 +88,26 @@ impl Plugin for AskyPlugin {
 /// Prompts trigger an Submit
 ///
 /// [Submitter] trait on prompt defines what output type to expect.
-#[derive(Event, Deref, DerefMut, Debug, Clone)]
-pub struct Submit<T>(pub Option<Result<T, Error>>);
+#[derive(Event, Debug, Clone)]
+pub enum Submit<T> {
+    /// Submit has not been handled yet.
+    Unhandled(Result<T, Error>),
+    /// Submit has been handled.
+    Handled
+}
 
 impl<T> Submit<T> {
     /// Create a new submission event.
     pub fn new(r: Result<T, Error>) -> Self {
-        Self(Some(r))
+        Self::Unhandled(r)
     }
 
     /// Unwrap the result assuming it hasn't been taken already.
     pub fn take_result(&mut self) -> Result<T, Error> {
-        self.0.take().expect("submit has been taken already")
+        match std::mem::replace(self, Submit::Handled) {
+            Submit::Unhandled(res) => res,
+            Submit::Handled => Err(Error::SubmitHandled),
+        }
     }
 }
 
@@ -144,6 +152,9 @@ pub enum Error {
     /// Validation failed
     #[error("validation fail")]
     ValidationFail,
+    /// Submit handled already failure
+    #[error("submit handled")]
+    SubmitHandled,
     /// Channel canceled
     #[cfg(feature = "async")]
     #[error("channel cancel {0}")]

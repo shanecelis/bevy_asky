@@ -1,7 +1,19 @@
 [package]
 name = "bevy_asky"
+description = "A simple question-and-answer UI for Bevy"
 version = "0.1.0"
 edition = "2021"
+authors = ["Shane Celis <shane.celis@gmail.com>"]
+keywords = [
+    "bevy",
+    "gamedev",
+]
+categories = [
+    "game-development"
+]
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/shanecelis/bevy_asky"
 
 [dependencies]
 bevy = { version = "0.14.0", default-features = false, features = [ "bevy_text", "bevy_ui", "default_font" ] }

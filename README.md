@@ -1,9 +1,10 @@
 # bevy_asky
 
-This library is intended to make asking questions of the user easier using the
-[Bevy game engine](https://bevyengine.org). It is not intended to provide a
-comprehensive UI beyond question-and-answer, and may indeed be better thought of
-as scaffolding for whatever one's eventual UI may become.
+This library is intended to make asking questions of the user easier within an
+application built with [Bevy](https://bevyengine.org). It is not
+intended to provide a comprehensive UI beyond question-and-answer, and may
+indeed be better thought of as scaffolding for whatever one's eventual UI may
+become.
 
 > [!WARNING]
 > `bevy_asky` is currently in the early stages of development and is subject to
@@ -79,6 +80,12 @@ commands
   - despawn
 - [ ] Add a `button::View` that uses mouse-clickable elements.
 
+# Compatibility
+
+| bevy_asky | bevy |
+|-----------|------|
+| 0.1.0     | 0.14 |
+
 # Acknowledgments
 Thanks to [Axel Vasquez](https://github.com/axelvc) for his excellent and
 inspiring [asky](https://github.com/axelvc/asky) crate. 
@@ -90,3 +97,7 @@ inspiring [asky](https://github.com/axelvc/asky) crate.
 > compromises and pull requests needed on dependencies were not being accepted.
 > So I decided to do a native-port of asky to bevy; this crate is the
 > result.
+
+# License
+
+This crate is licensed under the MIT License or the Apache License 2.0.
