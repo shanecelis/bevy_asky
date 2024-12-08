@@ -78,6 +78,7 @@ commands
   - do nothing,
   - block focus (take no more input),
   - or despawn.
+- [ ] Make keys re-bindable.
 - [ ] Add a `button::View` that uses mouse-clickable elements.
 
   There is old button code that used to do this, but it has rotted and no longer
