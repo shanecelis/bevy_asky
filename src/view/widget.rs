@@ -50,28 +50,30 @@ impl<T: Spawn> Widgets for T {
             Name::new("Button"),
             Button,
             Node {
-                    margin: UiRect {
-                        // right: Val::Px(5.0),
-                        left: Val::Px(10.0),
-                        ..default()
-                    },
-                    // width: Px(200.0),
-                    // height: Px(65.0),
-                    border: UiRect::all(Val::Px(2.0)),
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
+                margin: UiRect {
+                    // right: Val::Px(5.0),
+                    left: Val::Px(10.0),
                     ..default()
                 },
-                BorderColor(palette.border),
-                BackgroundColor(palette.background),
+                // width: Px(200.0),
+                // height: Px(65.0),
+                border: UiRect::all(Val::Px(2.0)),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            BorderColor(palette.border),
+            BackgroundColor(palette.background),
         ));
         entity.with_children(|children| {
             ChildBuild::spawn(
                 children,
-                (Name::new("Button Text"),
-                 Text::new(text),
-                 TextColor(palette.text),
-                ));
+                (
+                    Name::new("Button Text"),
+                    Text::new(text),
+                    TextColor(palette.text),
+                ),
+            );
         });
         entity
     }

@@ -29,7 +29,6 @@ impl AskyAsync {
         async move {
             let async_world = AsyncWorld::new();
             async_world.apply_command(move |world: &mut World| {
-
                 let mut commands = world.commands();
                 let mut ecommands = commands.prompt::<T>(p, d);
                 f(&mut ecommands);

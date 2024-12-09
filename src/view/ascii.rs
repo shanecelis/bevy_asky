@@ -25,15 +25,17 @@ impl Construct for View {
         _props: Self::Props,
     ) -> Result<Self, ConstructError> {
         let mut commands = context.world.commands();
-        commands.entity(context.id).insert(Text::default())
-        .with_children(|parent| {
-            parent.spawn(TextSpan::default());
-            parent.spawn(TextSpan::default());
-            parent.spawn(TextSpan::default());
-            parent.spawn(TextSpan::default());
-            parent.spawn(TextSpan::default());
-            parent.spawn(TextSpan::default());
-        });
+        commands
+            .entity(context.id)
+            .insert(Text::default())
+            .with_children(|parent| {
+                parent.spawn(TextSpan::default());
+                parent.spawn(TextSpan::default());
+                parent.spawn(TextSpan::default());
+                parent.spawn(TextSpan::default());
+                parent.spawn(TextSpan::default());
+                parent.spawn(TextSpan::default());
+            });
         // context.world.flush();
         Ok(View)
     }
@@ -62,27 +64,30 @@ pub fn plugin(app: &mut App) {
 pub(crate) fn confirm_view(
     mut query: Query<
         (Entity, &Confirm),
-        (With<View>, With<Text>, Or<(Changed<Focusable>, Changed<Confirm>)>),
+        (
+            With<View>,
+            With<Text>,
+            Or<(Changed<Focusable>, Changed<Confirm>)>,
+        ),
     >,
     mut writer: TextUiWriter,
     focus: Focus,
 ) {
     for (id, confirm) in query.iter_mut() {
-        writer.text(id, ViewPart::Options as usize)
-            .replace_range(
-                ..,
-                if focus.is_focused(id) {
-                    if confirm.yes {
-                        " no/YES"
-                    } else {
-                        " NO/yes"
-                    }
-                } else if confirm.yes {
-                    " Yes"
+        writer.text(id, ViewPart::Options as usize).replace_range(
+            ..,
+            if focus.is_focused(id) {
+                if confirm.yes {
+                    " no/YES"
                 } else {
-                    " No"
-                },
-            );
+                    " NO/yes"
+                }
+            } else if confirm.yes {
+                " Yes"
+            } else {
+                " No"
+            },
+        );
     }
 }
 
@@ -91,7 +96,8 @@ pub(crate) fn checkbox_view(
     mut writer: TextUiWriter,
 ) {
     for (id, checkbox) in query.iter_mut() {
-        writer.text(id, ViewPart::PreQuestion as usize)
+        writer
+            .text(id, ViewPart::PreQuestion as usize)
             .replace_range(.., if checkbox.checked { "[x] " } else { "[ ] " });
     }
 }
@@ -102,9 +108,9 @@ pub(crate) fn focus_view(
     mut writer: TextUiWriter,
 ) {
     for id in query.iter_mut() {
-        writer.text(id, ViewPart::Focus as usize)
-            .replace_range(..,
-                           if focus.is_focused(id) { "> " } else { "  " });
+        writer
+            .text(id, ViewPart::Focus as usize)
+            .replace_range(.., if focus.is_focused(id) { "> " } else { "  " });
     }
 }
 
@@ -115,11 +121,7 @@ pub(crate) fn feedback_view(
     for (id, feedback) in query.iter_mut() {
         let mut text = writer.text(id, ViewPart::Feedback as usize);
         text.clear();
-        let _ = write!(
-            text,
-            " {}",
-            &feedback
-        );
+        let _ = write!(text, " {}", &feedback);
     }
 }
 
@@ -131,20 +133,24 @@ pub(crate) fn clear_feedback<T: Component>(
     }
 }
 
-pub(crate) fn prompt_view(mut query: Query<(Entity, &Prompt), (With<View>, With<Text>, Changed<Prompt>)>,
+pub(crate) fn prompt_view(
+    mut query: Query<(Entity, &Prompt), (With<View>, With<Text>, Changed<Prompt>)>,
     mut writer: TextUiWriter,
 ) {
     for (id, prompt) in query.iter_mut() {
-        writer.text(id, ViewPart::Question as usize)
+        writer
+            .text(id, ViewPart::Question as usize)
             .replace_range(.., prompt);
     }
 }
 
-pub(crate) fn radio_view(mut query: Query<(Entity, &Radio), (With<View>, With<Text>, Changed<Radio>)>,
+pub(crate) fn radio_view(
+    mut query: Query<(Entity, &Radio), (With<View>, With<Text>, Changed<Radio>)>,
     mut writer: TextUiWriter,
 ) {
     for (id, radio) in query.iter_mut() {
-        writer.text(id, ViewPart::PreQuestion as usize)
+        writer
+            .text(id, ViewPart::PreQuestion as usize)
             .replace_range(.., if radio.checked { "(o) " } else { "( ) " });
     }
 }
@@ -152,7 +158,11 @@ pub(crate) fn radio_view(mut query: Query<(Entity, &Radio), (With<View>, With<Te
 pub(crate) fn toggle_view(
     mut query: Query<
         (Entity, &Toggle),
-        (With<View>, With<Text>, Or<(Changed<Focusable>, Changed<Toggle>)>),
+        (
+            With<View>,
+            With<Text>,
+            Or<(Changed<Focusable>, Changed<Toggle>)>,
+        ),
     >,
     focus: Focus,
     mut writer: TextUiWriter,
@@ -162,17 +172,9 @@ pub(crate) fn toggle_view(
         text.clear();
         if focus.is_focused(id) {
             if toggle.index == 0 {
-                let _ = write!(
-                    text,
-                    " [{}] _{}_",
-                    toggle.options[0], toggle.options[1]
-                );
+                let _ = write!(text, " [{}] _{}_", toggle.options[0], toggle.options[1]);
             } else {
-                let _ = write!(
-                    text,
-                    " _{}_ [{}]",
-                    toggle.options[0], toggle.options[1]
-                );
+                let _ = write!(text, " _{}_ [{}]", toggle.options[0], toggle.options[1]);
             }
         } else {
             let _ = write!(text, " {}", toggle.options[toggle.index]);
@@ -183,7 +185,12 @@ pub(crate) fn toggle_view(
 pub(crate) fn text_view(
     mut query: Query<
         (Entity, &StringCursor, Option<&Placeholder>),
-        (With<View>, With<Text>, Without<Password>, Changed<StringCursor>),
+        (
+            With<View>,
+            With<Text>,
+            Without<Password>,
+            Changed<StringCursor>,
+        ),
     >,
     mut writer: TextUiWriter,
 ) {
@@ -191,11 +198,7 @@ pub(crate) fn text_view(
         let mut text = writer.text(id, ViewPart::Answer as usize);
         if text_state.value.is_empty() && placeholder.is_some() {
             text.clear();
-            let _ = write!(
-                text,
-                "[{}]",
-                &placeholder.map(|x| x.as_ref()).unwrap()
-            );
+            let _ = write!(text, "[{}]", &placeholder.map(|x| x.as_ref()).unwrap());
         } else {
             text.replace_range(.., &text_state.value);
         }
@@ -205,7 +208,12 @@ pub(crate) fn text_view(
 pub(crate) fn password_view(
     mut query: Query<
         (Entity, &StringCursor, Option<&Placeholder>),
-        (With<View>, With<Text>, With<Password>, Changed<StringCursor>),
+        (
+            With<View>,
+            With<Text>,
+            With<Password>,
+            Changed<StringCursor>,
+        ),
     >,
     mut writer: TextUiWriter,
 ) {
@@ -213,11 +221,7 @@ pub(crate) fn password_view(
         let mut text = writer.text(id, ViewPart::Answer as usize);
         if text_state.value.is_empty() && placeholder.is_some() {
             text.clear();
-            let _ = write!(
-                text,
-                "[{}]",
-                &placeholder.map(|x| x.as_ref()).unwrap()
-            );
+            let _ = write!(text, "[{}]", &placeholder.map(|x| x.as_ref()).unwrap());
         } else {
             let replacement = "*";
             for _ in 0..text_state.value.len() {

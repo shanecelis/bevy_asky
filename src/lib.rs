@@ -2,10 +2,7 @@
 #![doc = include_str!("../README.md")]
 #![forbid(missing_docs)]
 #![allow(clippy::type_complexity)]
-use bevy::{
-    app::PluginGroupBuilder,
-    prelude::*,
-};
+use bevy::{app::PluginGroupBuilder, prelude::*};
 
 pub mod focus;
 
@@ -44,7 +41,6 @@ pub mod prelude {
 /// If using "async" features, [bevy_defer]'s `AsyncPlugin` is also required.
 /// Consider adding it or use [AskyPlugins] which will include it.
 pub struct AskyPlugin;
-
 
 /// Asky plugins
 ///
@@ -93,7 +89,7 @@ pub enum Submit<T> {
     /// Submit has not been handled yet.
     Unhandled(Result<T, Error>),
     /// Submit has been handled.
-    Handled
+    Handled,
 }
 
 impl<T> Submit<T> {

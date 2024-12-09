@@ -1,7 +1,7 @@
 use crate::{construct::*, prelude::*, Part};
-use bevy_a11y::AccessibilityNode;
+use accesskit::{Node as Accessible, Role};
 use bevy::prelude::*;
-use accesskit::{Role, Node as Accessible};
+use bevy_a11y::AccessibilityNode;
 use std::borrow::Cow;
 
 /// Radio element

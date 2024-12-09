@@ -19,7 +19,7 @@ fn setup(mut commands: Commands) {
 
     let column = commands
         .spawn(Node {
-                flex_direction: FlexDirection::Column,
+            flex_direction: FlexDirection::Column,
             ..default()
         })
         .id();
@@ -32,12 +32,11 @@ fn setup(mut commands: Commands) {
                     eprintln!("trigger {:?}", trigger.event());
                     let answer = trigger.event_mut().take_result().unwrap_or(false);
                     commands.entity(column).with_children(|parent| {
-                        parent.spawn(Text::new(
-                            if answer {
-                                "Me too."
-                            } else {
-                                "We have other options."
-                            }));
+                        parent.spawn(Text::new(if answer {
+                            "Me too."
+                        } else {
+                            "We have other options."
+                        }));
                         parent
                             .construct::<View>(())
                             .construct::<Confirm>("Do you prefer color?");

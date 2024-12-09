@@ -18,8 +18,8 @@ fn setup(mut commands: Commands) {
     commands.spawn(Camera2d);
     commands
         .spawn(Node {
-                flex_direction: FlexDirection::Column,
-                ..default()
+            flex_direction: FlexDirection::Column,
+            ..default()
         })
         .with_children(|parent| {
             parent
