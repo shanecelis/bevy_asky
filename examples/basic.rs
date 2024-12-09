@@ -15,7 +15,7 @@ fn main() {
 
 fn setup(mut commands: Commands) {
     // UI camera
-    commands.spawn(Camera2d::default());
+    commands.spawn(Camera2d);
 
     let column = commands
         .spawn(Node {

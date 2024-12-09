@@ -28,7 +28,7 @@ pub struct Focus<'w> {
     focus: ResMut<'w, private::Focus>,
 }
 
-impl<'w> Focus<'w> {
+impl Focus<'_> {
     /// Is entity focused?
     pub fn is_focused(&self, id: Entity) -> bool {
         self.focus.is_focused(id)
@@ -93,7 +93,7 @@ pub struct FocusParam<'w, 's> {
     keyboard_nav: ResMut<'w, KeyboardNav>,
 }
 
-impl<'w, 's> FocusParam<'w, 's> {
+impl FocusParam<'_, '_> {
     /// Is entity focused?
     pub fn is_focused(&self, id: Entity) -> bool {
         self.focus.is_focused(id)

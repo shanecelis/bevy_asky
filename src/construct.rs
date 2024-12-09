@@ -107,7 +107,7 @@ pub struct ConstructContext<'a> {
     pub world: &'a mut World,
 }
 
-impl<'a> ConstructContext<'a> {
+impl ConstructContext<'_> {
     /// Construct helper function
     pub fn construct<T: Construct>(
         &mut self,
@@ -180,7 +180,7 @@ where
     }
 }
 
-impl<'w> ConstructExt for Commands<'w, '_> {
+impl ConstructExt for Commands<'_, '_> {
     // type Out = EntityCommands;
     fn construct<T: Construct + Bundle>(&mut self, props: impl Into<T::Props>) -> EntityCommands
     where
@@ -192,7 +192,7 @@ impl<'w> ConstructExt for Commands<'w, '_> {
     }
 }
 
-impl<'w> ConstructExt for ChildBuilder<'w> {
+impl ConstructExt for ChildBuilder<'_> {
     // type Out = EntityCommands;
     fn construct<T: Construct + Bundle>(&mut self, props: impl Into<T::Props>) -> EntityCommands
     where
@@ -204,7 +204,7 @@ impl<'w> ConstructExt for ChildBuilder<'w> {
     }
 }
 
-impl<'w> ConstructExt for EntityCommands<'w> {
+impl ConstructExt for EntityCommands<'_> {
     // type Out = EntityCommands;
     fn construct<T: Construct + Bundle>(&mut self, props: impl Into<T::Props>) -> EntityCommands
     where
@@ -215,7 +215,7 @@ impl<'w> ConstructExt for EntityCommands<'w> {
     }
 }
 
-impl<'w> ConstructChildrenExt for EntityCommands<'w> {
+impl ConstructChildrenExt for EntityCommands<'_> {
     fn construct_children<T: Construct + Bundle>(
         &mut self,
         props: impl IntoIterator<Item = impl Into<T::Props>>,

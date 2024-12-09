@@ -45,7 +45,7 @@ impl<'w> AskyEntityCommands<'w> for EntityCommands<'w> {
     }
 }
 
-impl<'w, 's> AskyCommands for Commands<'w, 's> {
+impl AskyCommands for Commands<'_, '_> {
     fn prompt<T: Construct + Bundle + Submitter>(
         &mut self,
         props: impl Into<T::Props>,

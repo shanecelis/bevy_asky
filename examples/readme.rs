@@ -15,7 +15,7 @@ fn main() {
 
 fn setup(mut commands: Commands) {
     // UI camera
-    commands.spawn(Camera2d::default());
+    commands.spawn(Camera2d);
     commands
         .construct::<View>(())
         .construct::<Confirm>("Do you like cats?")
