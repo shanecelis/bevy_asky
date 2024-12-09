@@ -187,7 +187,7 @@ impl<'w> ConstructExt for Commands<'w, '_> {
         <T as Construct>::Props: Send,
     {
         let mut s = self.spawn_empty();
-        s.add(ConstructCommand::<T>(props.into()));
+        s.queue(ConstructCommand::<T>(props.into()));
         s
     }
 }
@@ -199,7 +199,7 @@ impl<'w> ConstructExt for ChildBuilder<'w> {
         <T as Construct>::Props: Send,
     {
         let mut s = self.spawn_empty();
-        s.add(ConstructCommand::<T>(props.into()));
+        s.queue(ConstructCommand::<T>(props.into()));
         s
     }
 }
@@ -210,7 +210,7 @@ impl<'w> ConstructExt for EntityCommands<'w> {
     where
         <T as Construct>::Props: Send,
     {
-        self.add(ConstructCommand::<T>(props.into()));
+        self.queue(ConstructCommand::<T>(props.into()));
         self.reborrow()
     }
 }

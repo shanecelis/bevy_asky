@@ -33,15 +33,9 @@ impl Construct for View {
         context: &mut ConstructContext,
         _props: Self::Props,
     ) -> Result<Self, ConstructError> {
-        if let Some(mut eref) = context.world.get_entity_mut(context.id) {
+        if let Ok(mut eref) = context.world.get_entity_mut(context.id) {
             if !eref.contains::<Node>() {
-                eref.insert(NodeBundle {
-                    style: Style {
-                        // flex_wrap: FlexWrap::Wrap,
-                        ..default()
-                    },
-                    ..default()
-                });
+                eref.insert(Node::default());
             }
         }
         Ok(View)
@@ -70,9 +64,9 @@ impl<'w, 's, C: Component> Inserter<'w, 's, C> {
                     if let Some(mut ecommands) = self.commands.get_entity(root) {
                         ecommands.with_children(|parent| {
                             for _ in children.len()..index {
-                                parent.spawn(TextBundle::default());
+                                parent.spawn(Text::default());
                             }
-                            id = Some(parent.spawn(TextBundle::default()).id());
+                            id = Some(parent.spawn(Text::default()).id());
                         });
                     }
                     Err(id)
@@ -83,9 +77,9 @@ impl<'w, 's, C: Component> Inserter<'w, 's, C> {
                 if let Some(mut ecommands) = self.commands.get_entity(root) {
                     ecommands.with_children(|parent| {
                         for _ in 0..index {
-                            parent.spawn(TextBundle::default());
+                            parent.spawn(Text::default());
                         }
-                        id = Some(parent.spawn(TextBundle::default()).id());
+                        id = Some(parent.spawn(Text::default()).id());
                     });
                 }
                 Err(id)
@@ -114,11 +108,11 @@ impl<'w, 's, C: Component> Inserter<'w, 's, C> {
                     if let Some(mut ecommands) = self.commands.get_entity(root) {
                         ecommands.with_children(|parent| {
                             for _ in children.len()..index {
-                                parent.spawn(TextBundle::default());
+                                parent.spawn(Text::default());
                             }
                             let mut text = C::default();
                             apply(&mut text);
-                            parent.spawn(TextBundle::default()).insert(text);
+                            parent.spawn(Text::default()).insert(text);
                         });
                     }
                     Ok(())
@@ -128,11 +122,11 @@ impl<'w, 's, C: Component> Inserter<'w, 's, C> {
                 if let Some(mut ecommands) = self.commands.get_entity(root) {
                     ecommands.with_children(|parent| {
                         for _ in 0..index {
-                            parent.spawn(TextBundle::default());
+                            parent.spawn(Text::default());
                         }
                         let mut text = C::default();
                         apply(&mut text);
-                        parent.spawn(TextBundle::default()).insert(text);
+                        parent.spawn(Text::default()).insert(text);
                     });
                 }
                 Ok(())
@@ -280,9 +274,9 @@ pub(crate) fn text_view<F: bevy::ecs::query::QueryFilter>(
             let mut new_node = None;
             commands.entity(root).with_children(|parent| {
                 for _ in children.len()..index {
-                    parent.spawn(TextBundle::default());
+                    parent.spawn(Text::default());
                 }
-                new_node = Some(parent.spawn(TextBundle::default()).id());
+                new_node = Some(parent.spawn(Text::default()).id());
             });
             new_node.unwrap()
         };
@@ -327,13 +321,13 @@ pub(crate) fn text_view<F: bevy::ecs::query::QueryFilter>(
             // Make the parts.
             commands.entity(id).with_children(|parent| {
                 // pre cursor
-                parent.spawn(TextBundle::from_section(
+                parent.spawn(Text::from_section(
                     &text_state.value[text_state.next_index()..],
                     TextStyle::default(),
                 ));
                 // cursor
                 parent
-                    .spawn(TextBundle::from_section(
+                    .spawn(Text::from_section(
                         if text_state.index >= text_state.value.len() {
                             " "
                         } else {
@@ -345,16 +339,13 @@ pub(crate) fn text_view<F: bevy::ecs::query::QueryFilter>(
                 // post cursor
                 match placeholder {
                     Some(placeholder) if text_state.value.is_empty() => {
-                        parent.spawn(TextBundle::from_section(
+                        parent.spawn(Text::from_section(
                             placeholder.0.clone(),
-                            TextStyle {
-                                color: palette.lowlight.into(),
-                                ..default()
-                            },
+                            TextColor(palette.lowlight.into()),
                         ));
                     }
                     _ => {
-                        parent.spawn(TextBundle::from_section(
+                        parent.spawn(Text::from_section(
                             &text_state.value[0..text_state.index],
                             TextStyle::default(),
                         ));
@@ -389,9 +380,9 @@ pub(crate) fn password_view(
             let mut new_node = None;
             commands.entity(root).with_children(|parent| {
                 for _ in children.len()..index {
-                    parent.spawn(TextBundle::default());
+                    parent.spawn(Text::default());
                 }
-                new_node = Some(parent.spawn(TextBundle::default()).id());
+                new_node = Some(parent.spawn(Text::default()).id());
             });
             new_node.unwrap()
         };
@@ -430,13 +421,13 @@ pub(crate) fn password_view(
             // Make the parts.
             commands.entity(id).with_children(|parent| {
                 // pre cursor
-                parent.spawn(TextBundle::from_section(
+                parent.spawn(Text::from_section(
                     glyph.repeat(text_state.index),
                     TextStyle::default(),
                 ));
                 // cursor
                 parent
-                    .spawn(TextBundle::from_section(
+                    .spawn(Text::from_section(
                         if text_state.index >= text_state.value.len() {
                             " "
                         } else {
@@ -446,7 +437,7 @@ pub(crate) fn password_view(
                     ))
                     .insert(Cursor);
                 // post cursor
-                parent.spawn(TextBundle::from_section(
+                parent.spawn(Text::from_section(
                     glyph.repeat(text_state.value.len().saturating_sub(text_state.index)),
                     TextStyle::default(),
                 ));
@@ -488,18 +479,18 @@ pub(crate) fn toggle_view(
             Err(Some(new)) => {
                 commands.entity(new).with_children(|parent| {
                     let style = TextStyle::default();
-                    parent.spawn(TextBundle::from_section(" ", style.clone())); // 0
+                    parent.spawn(Text::from_section(" ", style.clone())); // 0
                     parent.spawn(
-                        TextBundle::from_section(format!(" {} ", toggle.options[0]), style.clone())
+                        Text::from_section(format!(" {} ", toggle.options[0]), style.clone())
                             .with_background_color(if toggle.index == 0 {
                                 palette.highlight.into()
                             } else {
                                 palette.lowlight.into()
                             }),
                     ); // 1
-                    parent.spawn(TextBundle::from_section(" ", style.clone())); // 2
+                    parent.spawn(Text::from_section(" ", style.clone())); // 2
                     parent.spawn(
-                        TextBundle::from_section(format!(" {} ", toggle.options[1]), style) // 3
+                        Text::from_section(format!(" {} ", toggle.options[1]), style) // 3
                             .with_background_color(if toggle.index == 1 {
                                 palette.highlight.into()
                             } else {
@@ -545,9 +536,9 @@ pub(crate) fn confirm_view(
             Err(Some(new)) => {
                 commands.entity(new).with_children(|parent| {
                     let style = TextStyle::default();
-                    parent.spawn(TextBundle::from_section(" ", style.clone())); // 0
+                    parent.spawn(Text::from_section(" ", style.clone())); // 0
                     parent.spawn(
-                        TextBundle::from_section(" No ", style.clone()).with_background_color(
+                        Text::from_section(" No ", style.clone()).with_background_color(
                             if !confirm.yes {
                                 palette.highlight.into()
                             } else {
@@ -555,9 +546,9 @@ pub(crate) fn confirm_view(
                             },
                         ),
                     ); // 1
-                    parent.spawn(TextBundle::from_section(" ", style.clone())); // 2
+                    parent.spawn(Text::from_section(" ", style.clone())); // 2
                     parent.spawn(
-                        TextBundle::from_section(" Yes ", style) // 3
+                        Text::from_section(" Yes ", style) // 3
                             .with_background_color(if confirm.yes {
                                 palette.highlight.into()
                             } else {

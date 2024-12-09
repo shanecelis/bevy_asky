@@ -16,10 +16,10 @@ fn main() {
 
 fn setup(mut commands: Commands) {
     // UI camera
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d::default());
     commands.column().with_children(|parent| {
         parent
-            .spawn(NodeBundle::default())
+            .spawn(Node::default())
             .construct::<CheckboxGroup>("checkbox group 0")
             .construct_children::<Add0<Checkbox, View>>(["Money", "Time", "Power"])
             .observe(move |trigger: Trigger<Submit<Vec<bool>>>| {

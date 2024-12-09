@@ -16,7 +16,7 @@ fn main() {
 
 fn setup(mut commands: Commands, mut asky: AskyAsync) {
     // UI camera
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d::default());
 
     // TODO: This one is still not right. Focus doesn't move down.
     let id = commands.column().id();

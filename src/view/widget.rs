@@ -48,8 +48,8 @@ impl<T: Spawn> Widgets for T {
     fn button(&mut self, text: impl Into<String>, palette: &Palette) -> EntityCommands {
         let mut entity = self.spawn((
             Name::new("Button"),
-            ButtonBundle {
-                style: Style {
+            Button,
+            Node {
                     margin: UiRect {
                         // right: Val::Px(5.0),
                         left: Val::Px(10.0),
@@ -62,45 +62,31 @@ impl<T: Spawn> Widgets for T {
                     align_items: AlignItems::Center,
                     ..default()
                 },
-                border_color: palette.border.into(),
-                background_color: palette.background.into(),
-                ..default()
-            },
-            // palette.interaction.clone(),
+                BorderColor(palette.border.into()),
+                BackgroundColor(palette.background.into()),
         ));
         entity.with_children(|children| {
-            children.spawn((
-                Name::new("Button Text"),
-                TextBundle::from_section(
-                    text,
-                    TextStyle {
-                        // font_size: 40.0,
-                        color: palette.text,
-                        ..default()
-                    },
-                ),
-            ));
+            ChildBuild::spawn(
+                children,
+                (Name::new("Button Text"),
+                 Text::new(text),
+                 TextColor(palette.text),
+                ));
         });
         entity
     }
 
     fn column(&mut self) -> EntityCommands {
-        self.spawn(NodeBundle {
-            style: Style {
-                flex_direction: FlexDirection::Column,
-                ..default()
-            },
+        self.spawn(Node {
+            flex_direction: FlexDirection::Column,
             ..default()
         })
     }
 
     fn column_wrap(&mut self) -> EntityCommands {
-        self.spawn(NodeBundle {
-            style: Style {
-                flex_direction: FlexDirection::Column,
-                flex_wrap: FlexWrap::Wrap,
-                ..default()
-            },
+        self.spawn(Node {
+            flex_direction: FlexDirection::Column,
+            flex_wrap: FlexWrap::Wrap,
             ..default()
         })
     }
@@ -217,6 +203,6 @@ impl Spawn for EntityCommands<'_> {
 
 impl Spawn for ChildBuilder<'_> {
     fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands {
-        self.spawn(bundle)
+        ChildBuild::spawn(self, bundle)
     }
 }

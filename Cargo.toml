@@ -1,6 +1,6 @@
 [package]
 name = "bevy_asky"
-description = "A simple question-and-answer UI for Bevy"
+description = "A simple question-and-answer UI middleware for Bevy"
 version = "0.1.0"
 edition = "2021"
 authors = ["Shane Celis <shane.celis@gmail.com>"]
@@ -16,15 +16,18 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/shanecelis/bevy_asky"
 
 [dependencies]
-bevy = { version = "0.14.0", default-features = false, features = [ "bevy_text", "bevy_ui", "default_font" ] }
-bevy-alt-ui-navigation-lite = { version = "0.2.1", optional = true }
+accesskit = "0.17.1"
+bevy = { version = "0.15", default-features = false, features = [ "bevy_text", "bevy_ui", "default_font" ] }
+bevy-alt-ui-navigation-lite = { version = "0.3.0", optional = true }
+bevy_a11y = "0.15.0"
 # bevy-ui-navigation = "0.33.1"
-bevy_defer = { version = "0.12.1", optional = true }
+bevy_defer = { version = "0.13", optional = true }
 futures = { version = "0.3.30", optional = true }
 thiserror = "1.0.62"
 
 [features]
-default = [ "color" ]
+# default = [ "color" ]
+default = [ "ascii" ]
 async = [ "dep:bevy_defer", "dep:futures" ]
 focus = [ "dep:bevy-alt-ui-navigation-lite" ]
 button = []
@@ -32,8 +35,8 @@ color = []
 ascii = []
 
 [dev-dependencies]
-bevy = { version = "0.14.0" }
-bevy-inspector-egui = "0.27.0"
+bevy = { version = "0.15" }
+bevy-inspector-egui = "0.28.0"
 
 [[example]]
 name = "text-async"

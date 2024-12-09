@@ -77,6 +77,7 @@ fn text_controller(
                 Key::Space => text_state.insert(' '),
                 Key::Backspace => text_state.backspace(),
                 Key::Delete => text_state.delete(),
+
                 Key::ArrowLeft => text_state.move_cursor(CursorDirection::Left),
                 Key::ArrowRight => text_state.move_cursor(CursorDirection::Right),
                 Key::Enter => {

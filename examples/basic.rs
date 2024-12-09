@@ -15,14 +15,11 @@ fn main() {
 
 fn setup(mut commands: Commands) {
     // UI camera
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d::default());
 
     let column = commands
-        .spawn(NodeBundle {
-            style: Style {
+        .spawn(Node {
                 flex_direction: FlexDirection::Column,
-                ..default()
-            },
             ..default()
         })
         .id();
@@ -33,19 +30,19 @@ fn setup(mut commands: Commands) {
             .observe(
                 move |mut trigger: Trigger<Submit<bool>>, mut commands: Commands| {
                     eprintln!("trigger {:?}", trigger.event());
-                    let answer = trigger.event_mut().take().unwrap().unwrap_or(false);
+                    let answer = trigger.event_mut().take_result().unwrap_or(false);
                     commands.entity(column).with_children(|parent| {
-                        parent.spawn(TextBundle::from_section(
+                        parent.spawn(Text::new(
                             if answer {
                                 "Me too."
                             } else {
                                 "We have other options."
-                            },
-                            TextStyle::default(),
-                        ));
-
-                        parent.construct::<Confirm>("Do you prefer color?");
+                            }));
+                        parent
+                            .construct::<View>(())
+                            .construct::<Confirm>("Do you prefer color?");
                     });
+                    commands.entity(trigger.entity()).despawn();
                 },
             );
     });

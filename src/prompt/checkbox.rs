@@ -124,7 +124,7 @@ impl Construct for CheckboxGroup {
             .entity(context.id)
             // .column()
             .with_children(|parent| {
-                parent.spawn(TextBundle::from_section(props, TextStyle::default()));
+                parent.spawn(Text::new(props));
             });
         context.world.flush();
         Ok(CheckboxGroup)

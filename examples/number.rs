@@ -15,14 +15,11 @@ fn main() {
 
 fn setup(mut commands: Commands) {
     // UI camera
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d::default());
     commands
-        .spawn(NodeBundle {
-            style: Style {
+        .spawn(Node {
                 flex_direction: FlexDirection::Column,
                 ..default()
-            },
-            ..default()
         })
         .with_children(|parent| {
             parent

@@ -1,8 +1,7 @@
 use crate::{construct::*, prelude::*, Part};
-use bevy::{
-    a11y::{accesskit::*, AccessibilityNode},
-    prelude::*,
-};
+use bevy_a11y::AccessibilityNode;
+use bevy::prelude::*;
+use accesskit::{Role, Node as Accessible};
 use std::borrow::Cow;
 
 /// Radio element
@@ -35,7 +34,7 @@ impl Construct for Radio {
             .entity(context.id)
             .insert(Focusable::default())
             .insert(Prompt(props.clone()))
-            .insert(AccessibilityNode(NodeBuilder::new(Role::RadioButton)));
+            .insert(AccessibilityNode(Accessible::new(Role::RadioButton)));
         // commands.trigger(AddView(context.id));
         context.world.flush();
         Ok(Radio { checked: false })
@@ -109,7 +108,7 @@ impl Construct for RadioGroup {
         // Our requirements.
         let mut commands = context.world.commands();
         commands.entity(context.id).with_children(|parent| {
-            parent.spawn(TextBundle::from_section(props, TextStyle::default()));
+            parent.spawn(Text::new(props));
         });
 
         context.world.flush();

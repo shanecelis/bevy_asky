@@ -15,7 +15,7 @@ fn main() {
 
 fn setup(mut commands: Commands) {
     // UI camera
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d::default());
     commands.column().with_children(|parent| {
         parent.construct::<View>(()).construct::<Checkbox>("Money?");
         // Checkboxes themselves don't trigger on enter.

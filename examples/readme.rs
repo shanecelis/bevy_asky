@@ -15,13 +15,13 @@ fn main() {
 
 fn setup(mut commands: Commands) {
     // UI camera
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d::default());
     commands
         .construct::<View>(())
         .construct::<Confirm>("Do you like cats?")
         .observe(
             move |mut trigger: Trigger<Submit<bool>>, mut commands: Commands| {
-                if let Ok(yes) = trigger.event_mut().take().unwrap() {
+                if let Ok(yes) = trigger.event_mut().take_result() {
                     commands
                         .entity(trigger.entity())
                         .construct::<Feedback>(Feedback::info(if yes { "Me too!" } else { "Ok." }));

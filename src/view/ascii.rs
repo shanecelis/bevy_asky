@@ -1,5 +1,4 @@
 //! Use ascii text
-use super::replace_or_insert_rep;
 use crate::{prelude::*, string_cursor::*};
 use bevy::prelude::*;
 use std::fmt::Write;
@@ -26,16 +25,14 @@ impl Construct for View {
         _props: Self::Props,
     ) -> Result<Self, ConstructError> {
         let mut commands = context.world.commands();
-        commands.entity(context.id).insert(TextBundle {
-            text: Text::from_sections([
-                "".into(), // 0
-                "".into(), // 1
-                "".into(), // 2
-                "".into(), // 3
-                "".into(), // 4
-                "".into(), // 5
-            ]),
-            ..default()
+        commands.entity(context.id).insert(Text::default())
+        .with_children(|parent| {
+            parent.spawn(TextSpan::default());
+            parent.spawn(TextSpan::default());
+            parent.spawn(TextSpan::default());
+            parent.spawn(TextSpan::default());
+            parent.spawn(TextSpan::default());
+            parent.spawn(TextSpan::default());
         });
         // context.world.flush();
         Ok(View)
@@ -64,14 +61,14 @@ pub fn plugin(app: &mut App) {
 
 pub(crate) fn confirm_view(
     mut query: Query<
-        (Entity, &Confirm, &mut Text),
-        (With<View>, Or<(Changed<Focusable>, Changed<Confirm>)>),
+        (Entity, &Confirm),
+        (With<View>, With<Text>, Or<(Changed<Focusable>, Changed<Confirm>)>),
     >,
+    mut writer: TextUiWriter,
     focus: Focus,
 ) {
-    for (id, confirm, mut text) in query.iter_mut() {
-        text.sections[ViewPart::Options as usize]
-            .value
+    for (id, confirm) in query.iter_mut() {
+        writer.text(id, ViewPart::Options as usize)
             .replace_range(
                 ..,
                 if focus.is_focused(id) {
@@ -90,39 +87,36 @@ pub(crate) fn confirm_view(
 }
 
 pub(crate) fn checkbox_view(
-    mut query: Query<(&Checkbox, &mut Text), (With<View>, Changed<Checkbox>)>,
+    mut query: Query<(Entity, &Checkbox), (With<View>, With<Text>, Changed<Checkbox>)>,
+    mut writer: TextUiWriter,
 ) {
-    for (checkbox, mut text) in query.iter_mut() {
-        text.sections[ViewPart::PreQuestion as usize]
-            .value
+    for (id, checkbox) in query.iter_mut() {
+        writer.text(id, ViewPart::PreQuestion as usize)
             .replace_range(.., if checkbox.checked { "[x] " } else { "[ ] " });
     }
 }
 
 pub(crate) fn focus_view(
-    mut query: Query<(Entity, &mut Text), (With<View>, Changed<Focusable>)>,
+    mut query: Query<Entity, (With<View>, With<Text>, Changed<Focusable>)>,
     focus: Focus,
+    mut writer: TextUiWriter,
 ) {
-    for (id, mut text) in query.iter_mut() {
-        if focus.is_focused(id) {
-            text.sections[ViewPart::Focus as usize]
-                .value
-                .replace_range(.., "> ");
-        } else {
-            text.sections[ViewPart::Focus as usize]
-                .value
-                .replace_range(.., "  ");
-        }
+    for id in query.iter_mut() {
+        writer.text(id, ViewPart::Focus as usize)
+            .replace_range(..,
+                           if focus.is_focused(id) { "> " } else { "  " });
     }
 }
 
 pub(crate) fn feedback_view(
-    mut query: Query<(&mut Text, &Feedback), (With<View>, Changed<Feedback>)>,
+    mut query: Query<(Entity, &Feedback), (With<View>, With<Text>, Changed<Feedback>)>,
+    mut writer: TextUiWriter,
 ) {
-    for (mut text, feedback) in query.iter_mut() {
-        text.sections[ViewPart::Feedback as usize].value.clear();
+    for (id, feedback) in query.iter_mut() {
+        let mut text = writer.text(id, ViewPart::Feedback as usize);
+        text.clear();
         let _ = write!(
-            &mut text.sections[ViewPart::Feedback as usize].value,
+            text,
             " {}",
             &feedback
         );
@@ -137,90 +131,99 @@ pub(crate) fn clear_feedback<T: Component>(
     }
 }
 
-pub(crate) fn prompt_view(mut query: Query<(&mut Text, &Prompt), (With<View>, Changed<Prompt>)>) {
-    for (mut text, prompt) in query.iter_mut() {
-        text.sections[ViewPart::Question as usize]
-            .value
+pub(crate) fn prompt_view(mut query: Query<(Entity, &Prompt), (With<View>, With<Text>, Changed<Prompt>)>,
+    mut writer: TextUiWriter,
+) {
+    for (id, prompt) in query.iter_mut() {
+        writer.text(id, ViewPart::Question as usize)
             .replace_range(.., prompt);
     }
 }
 
-pub(crate) fn radio_view(mut query: Query<(&Radio, &mut Text), (With<View>, Changed<Radio>)>) {
-    for (radio, mut text) in query.iter_mut() {
-        text.sections[ViewPart::PreQuestion as usize]
-            .value
+pub(crate) fn radio_view(mut query: Query<(Entity, &Radio), (With<View>, With<Text>, Changed<Radio>)>,
+    mut writer: TextUiWriter,
+) {
+    for (id, radio) in query.iter_mut() {
+        writer.text(id, ViewPart::PreQuestion as usize)
             .replace_range(.., if radio.checked { "(o) " } else { "( ) " });
     }
 }
 
 pub(crate) fn toggle_view(
     mut query: Query<
-        (Entity, &Toggle, &mut Text),
-        (With<View>, Or<(Changed<Focusable>, Changed<Toggle>)>),
+        (Entity, &Toggle),
+        (With<View>, With<Text>, Or<(Changed<Focusable>, Changed<Toggle>)>),
     >,
     focus: Focus,
+    mut writer: TextUiWriter,
 ) {
-    for (id, toggle, mut text) in query.iter_mut() {
-        let o = ViewPart::Options as usize;
-        text.sections[o].value.clear();
+    for (id, toggle) in query.iter_mut() {
+        let mut text = writer.text(id, ViewPart::Options as usize);
+        text.clear();
         if focus.is_focused(id) {
             if toggle.index == 0 {
                 let _ = write!(
-                    text.sections[o].value,
+                    text,
                     " [{}] _{}_",
                     toggle.options[0], toggle.options[1]
                 );
             } else {
                 let _ = write!(
-                    text.sections[o].value,
+                    text,
                     " _{}_ [{}]",
                     toggle.options[0], toggle.options[1]
                 );
             }
         } else {
-            let _ = write!(text.sections[o].value, " {}", toggle.options[toggle.index]);
+            let _ = write!(text, " {}", toggle.options[toggle.index]);
         }
     }
 }
 
 pub(crate) fn text_view(
     mut query: Query<
-        (&StringCursor, &mut Text, Option<&Placeholder>),
-        (With<View>, Without<Password>, Changed<StringCursor>),
+        (Entity, &StringCursor, Option<&Placeholder>),
+        (With<View>, With<Text>, Without<Password>, Changed<StringCursor>),
     >,
+    mut writer: TextUiWriter,
 ) {
-    for (text_state, mut text, placeholder) in query.iter_mut() {
-        let a = ViewPart::Answer as usize;
+    for (id, text_state, placeholder) in query.iter_mut() {
+        let mut text = writer.text(id, ViewPart::Answer as usize);
         if text_state.value.is_empty() && placeholder.is_some() {
-            text.sections[a].value.clear();
+            text.clear();
             let _ = write!(
-                text.sections[a].value,
+                text,
                 "[{}]",
                 &placeholder.map(|x| x.as_ref()).unwrap()
             );
         } else {
-            text.sections[a].value.replace_range(.., &text_state.value);
+            text.replace_range(.., &text_state.value);
         }
     }
 }
 
 pub(crate) fn password_view(
     mut query: Query<
-        (&StringCursor, &mut Text, Option<&Placeholder>),
-        (With<View>, With<Password>, Changed<StringCursor>),
+        (Entity, &StringCursor, Option<&Placeholder>),
+        (With<View>, With<Text>, With<Password>, Changed<StringCursor>),
     >,
+    mut writer: TextUiWriter,
 ) {
-    for (text_state, mut text, placeholder) in query.iter_mut() {
-        let a = ViewPart::Answer as usize;
+    for (id, text_state, placeholder) in query.iter_mut() {
+        let mut text = writer.text(id, ViewPart::Answer as usize);
         if text_state.value.is_empty() && placeholder.is_some() {
-            text.sections[a].value.clear();
+            text.clear();
             let _ = write!(
-                text.sections[a].value,
+                text,
                 "[{}]",
                 &placeholder.map(|x| x.as_ref()).unwrap()
             );
         } else {
-            replace_or_insert_rep(&mut text, a, "*", text_state.value.len());
+            let replacement = "*";
+            for _ in 0..text_state.value.len() {
+                // This doesn't allocate a string.
+                text.push_str(replacement);
+            }
         }
     }
 }
