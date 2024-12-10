@@ -122,99 +122,6 @@ impl Construct for View {
     }
 }
 
-#[derive(SystemParam)]
-pub(crate) struct Inserter<'w, 's, C: Component> {
-    roots: Query<'w, 's, &'static mut C>,
-    children: Query<'w, 's, &'static Children>,
-    commands: Commands<'w, 's>,
-}
-
-impl<'w, 's, C: Component> Inserter<'w, 's, C> {
-    fn insert_or_get_child(
-        &mut self,
-        root: Entity,
-        index: usize,
-    ) -> Result<Entity, Option<Entity>> {
-        match self.children.get(root) {
-            Ok(children) => {
-                if index < children.len() {
-                    Ok(children[index])
-                } else {
-                    let mut id = None;
-                    if let Some(mut ecommands) = self.commands.get_entity(root) {
-                        ecommands.with_children(|parent| {
-                            for _ in children.len()..index {
-                                parent.spawn(Text::default());
-                            }
-                            id = Some(parent.spawn(Text::default()).id());
-                        });
-                    }
-                    Err(id)
-                }
-            }
-            _ => {
-                let mut id = None;
-                if let Some(mut ecommands) = self.commands.get_entity(root) {
-                    ecommands.with_children(|parent| {
-                        for _ in 0..index {
-                            parent.spawn(Text::default());
-                        }
-                        id = Some(parent.spawn(Text::default()).id());
-                    });
-                }
-                Err(id)
-            }
-        }
-    }
-
-    fn insert_or_get_mut<F>(
-        &mut self,
-        root: Entity,
-        index: usize,
-        apply: F,
-    ) -> Result<(), QueryEntityError>
-    where
-        F: Fn(&mut C),
-        C: Default,
-    {
-        match self.children.get(root) {
-            Ok(children) => {
-                if index < children.len() {
-                    self.roots
-                        .get_mut(children[index])
-                        .map(|mut t: Mut<C>| apply(&mut t))
-                } else {
-                    // dbg!(index, children.len());
-                    if let Some(mut ecommands) = self.commands.get_entity(root) {
-                        ecommands.with_children(|parent| {
-                            for _ in children.len()..index {
-                                parent.spawn(Text::default());
-                            }
-                            let mut text = C::default();
-                            apply(&mut text);
-                            parent.spawn(Text::default()).insert(text);
-                        });
-                    }
-                    Ok(())
-                }
-            }
-            _ => {
-                if let Some(mut ecommands) = self.commands.get_entity(root) {
-                    ecommands.with_children(|parent| {
-                        for _ in 0..index {
-                            parent.spawn(Text::default());
-                        }
-                        let mut text = C::default();
-                        apply(&mut text);
-                        parent.spawn(Text::default()).insert(text);
-                    });
-                }
-                Ok(())
-            }
-        }
-    }
-}
-
 /// The color palette
 #[derive(Debug, Resource, Component, Reflect)]
 pub struct Palette {
@@ -386,7 +293,7 @@ pub(crate) fn opaque_view<F: bevy::ecs::query::QueryFilter>(
         let glyph = "*";
         let mut pre = writer.text(id, ViewPart::PreCursor);
         pre.clear();
-        write_rep(&mut *pre, glyph, text_state.index);
+        let _ = write_rep(&mut *pre, glyph, text_state.index);
         let mut cursor = writer.text(id, ViewPart::Cursor);
         cursor.clear();
         if text_state.value.is_empty() && placeholder.is_some() {
@@ -395,7 +302,7 @@ pub(crate) fn opaque_view<F: bevy::ecs::query::QueryFilter>(
         } else if text_state.index >= text_state.value.len() {
             cursor.replace_range(.., " ");
         } else {
-            write_rep(&mut *cursor, glyph, 1);
+            let _ = write_rep(&mut *cursor, glyph, 1);
         }
         commands.entity(writer.entity(id, ViewPart::Cursor))
                 .insert(Cursor);
@@ -407,7 +314,7 @@ pub(crate) fn opaque_view<F: bevy::ecs::query::QueryFilter>(
         } else {
             let mut post = writer.text(id, ViewPart::PostCursor);
             post.clear();
-            write_rep(&mut *post, glyph, text_state.value.len().saturating_sub(text_state.index + 1));
+            let _ = write_rep(&mut *post, glyph, text_state.value.len().saturating_sub(text_state.index + 1));
             writer.color(id, ViewPart::PostCursor).0 = palette.text_color.into();
         }
     }
