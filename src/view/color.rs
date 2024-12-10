@@ -344,14 +344,20 @@ pub(crate) fn text_view<F: bevy::ecs::query::QueryFilter>(
             .replace_range(.., &text_state.value[0..text_state.index]);
         writer.text(id, ViewPart::Cursor)
             .replace_range(..,
-                           if text_state.index >= text_state.value.len() {
+                           if text_state.value.is_empty() && placeholder.is_some() {
+                               let p = placeholder.unwrap();
+                               &p[0..ceil_char_boundary(p, 1)]
+                           } else if text_state.index >= text_state.value.len() {
                                " "
                            } else {
                                &text_state.value[text_state.index..text_state.next_index()]
                            });
+        commands.entity(writer.entity(id, ViewPart::Cursor))
+                .insert(Cursor);
         if text_state.value.is_empty() && placeholder.is_some() {
+            let p = placeholder.unwrap();
             writer.text(id, ViewPart::PostCursor)
-                  .replace_range(.., &placeholder.unwrap().0);
+                  .replace_range(.., &p[ceil_char_boundary(p, 1)..]);
             writer.color(id, ViewPart::PostCursor).0 = palette.lowlight.into();
         } else {
             writer.text(id, ViewPart::PostCursor)
@@ -383,14 +389,20 @@ pub(crate) fn opaque_view<F: bevy::ecs::query::QueryFilter>(
         write_rep(&mut *pre, glyph, text_state.index);
         let mut cursor = writer.text(id, ViewPart::Cursor);
         cursor.clear();
-        if text_state.index >= text_state.value.len() {
+        if text_state.value.is_empty() && placeholder.is_some() {
+            let p = placeholder.unwrap();
+            cursor.replace_range(.., &p[0..ceil_char_boundary(p, 1)]);
+        } else if text_state.index >= text_state.value.len() {
             cursor.replace_range(.., " ");
         } else {
             write_rep(&mut *cursor, glyph, 1);
         }
+        commands.entity(writer.entity(id, ViewPart::Cursor))
+                .insert(Cursor);
         if text_state.value.is_empty() && placeholder.is_some() {
+            let p = placeholder.unwrap();
             writer.text(id, ViewPart::PostCursor)
-                  .replace_range(.., &placeholder.unwrap().0);
+                  .replace_range(.., &p[ceil_char_boundary(p, 1)..]);
             writer.color(id, ViewPart::PostCursor).0 = palette.lowlight.into();
         } else {
             let mut post = writer.text(id, ViewPart::PostCursor);
