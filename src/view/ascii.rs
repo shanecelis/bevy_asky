@@ -223,11 +223,8 @@ pub(crate) fn password_view(
             text.clear();
             let _ = write!(text, "[{}]", &placeholder.map(|x| x.as_ref()).unwrap());
         } else {
-            let replacement = "*";
             text.clear();
-            for _ in 0..text_state.value.len() {
-                text.push_str(replacement);
-            }
+            let _ = write_rep(&mut *text, "*", text_state.value.len());
         }
     }
 }
