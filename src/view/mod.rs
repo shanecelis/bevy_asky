@@ -1,5 +1,6 @@
 //! ascii, color, or button views
 use bevy::prelude::*;
+use std::fmt::Write;
 
 #[cfg(feature = "ascii")]
 pub mod ascii;
@@ -24,6 +25,13 @@ pub(crate) fn plugin(_app: &mut App) {}
 //         text.sections[index].value.replace_range(.., replacement);
 //     }
 // }
+//
+pub(crate) fn write_rep(writer: &mut impl Write, s: &str, repetition: usize) -> Result<(), std::fmt::Error>{
+    for _ in 0..repetition {
+        writer.write_str(s)?;
+    }
+    Ok(())
+}
 
 // /// Replace or insert a [TextSection] at a particular index with a repeating string.
 // pub fn replace_or_insert_rep(text: &mut Text, index: usize, replacement: &str, repetition: usize) {

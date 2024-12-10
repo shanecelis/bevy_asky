@@ -30,6 +30,14 @@ pub struct Placeholder(pub Cow<'static, str>);
 pub struct DefaultValue<T>(pub T);
 // pub struct DefaultValue<T: std::fmt::Display>(pub T);
 
+/// Used to unify toggle and confirm handling.
+pub trait OptionPrompt {
+    /// Return name of option.
+    fn name(&self, index: usize) -> &str;
+    /// Return state of prompt.
+    fn state(&self) -> usize;
+}
+
 impl Construct for Prompt {
     type Props = Cow<'static, str>;
     fn construct(

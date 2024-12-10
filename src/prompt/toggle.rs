@@ -13,6 +13,19 @@ pub struct Toggle {
     pub index: usize,
 }
 
+impl OptionPrompt for Toggle {
+    fn name(&self, index: usize) -> &str {
+        match index {
+            0 => &self.options[0],
+            1 => &self.options[1],
+            _ => panic!("No such option for Confirm."),
+        }
+    }
+    fn state(&self) -> usize {
+        self.index
+    }
+}
+
 impl Toggle {
     /// Make a new toggle
     pub fn new<T: Into<Cow<'static, str>>>(

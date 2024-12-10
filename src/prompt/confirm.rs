@@ -9,6 +9,23 @@ pub struct Confirm {
     pub yes: bool,
 }
 
+impl OptionPrompt for Confirm {
+    fn name(&self, index: usize) -> &str {
+        match index {
+            0 => "No",
+            1 => "Yes",
+            _ => panic!("No such option for Confirm."),
+        }
+    }
+    fn state(&self) -> usize {
+        if self.yes {
+            1
+        } else {
+            0
+        }
+    }
+}
+
 unsafe impl Submitter for Confirm {
     type Out = bool;
 }
