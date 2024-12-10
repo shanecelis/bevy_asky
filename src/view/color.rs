@@ -11,6 +11,8 @@ const PADDING: Val = Val::Px(5.);
 #[derive(Component, Reflect, Default)]
 pub struct View;
 
+/// Identifies a part of the the view
+///
 /// - Node
 ///   - Text, Focus
 ///     - TextSpan, PreQuestion
@@ -20,31 +22,43 @@ pub struct View;
 ///     - Text, Cursor
 ///     - Text, PostCursor, Toggle1
 ///     - Text, Feedback
-#[derive(Debug, Reflect, Component)]
+#[derive(Debug, Component)]
 #[repr(u8)]
-enum ViewPart {
+pub enum ViewPart {
+    /// Focus
     Focus = 0,
+    /// Check box or radio button
     PreQuestion = 1,
+    /// The prompt
     Question = 2,
+    /// An answer if unfocused
     Answer = 3,
+    /// Text field prior to cursor
     PreCursor = 4,
+    /// First toggle option
     Toggle0 = 5,
+    /// Cursor, one character if present
     Cursor = 6,
+    /// Second toggle option
     Toggle1 = 7,
+    /// Text field after the cursor
     PostCursor = 8,
+    /// Feedback if any
     Feedback = 9,
 }
 
 
+/// Writes to part of the view
 #[derive(SystemParam)]
-pub(crate) struct ViewWriter<'w, 's> {
+pub struct ViewWriter<'w, 's> {
     writer: TextUiWriter<'w, 's>,
     children: Query<'w, 's, &'static Children>,
 }
 
 impl ViewWriter<'_, '_> {
 
-    fn entity(&mut self, root: Entity, part: ViewPart) -> Entity {
+    /// Return entity of that part of the view.
+    pub fn entity(&mut self, root: Entity, part: ViewPart) -> Entity {
         use ViewPart::*;
         let children = self.children.get(root).expect("view children");
         match part {
@@ -60,7 +74,8 @@ impl ViewWriter<'_, '_> {
         }
     }
 
-    fn text(&mut self, root: Entity, part: ViewPart) -> Mut<'_, String> {
+    /// Return text of that part of the view.
+    pub fn text(&mut self, root: Entity, part: ViewPart) -> Mut<'_, String> {
         use ViewPart::*;
         let children = self.children.get(root).expect("view children");
         match part {
@@ -71,7 +86,9 @@ impl ViewWriter<'_, '_> {
             Feedback => self.writer.text(children[4], 0),
         }
     }
-    fn color(&mut self, root: Entity, part: ViewPart) -> Mut<'_, TextColor> {
+
+    /// Return color of that part of the view.
+    pub fn color(&mut self, root: Entity, part: ViewPart) -> Mut<'_, TextColor> {
         use ViewPart::*;
         let children = self.children.get(root).expect("view children");
         match part {
@@ -84,11 +101,13 @@ impl ViewWriter<'_, '_> {
     }
 }
 
+/// This node is a cursor.
 #[derive(Debug, Component, Reflect)]
-struct Cursor;
+pub struct Cursor;
 
+/// Keeps time of cursor blink.
 #[derive(Resource, Deref, DerefMut, Reflect)]
-struct CursorBlink(Timer);
+pub struct CursorBlink(Timer);
 
 impl Construct for View {
     type Props = ();
@@ -121,7 +140,10 @@ impl Construct for View {
 }
 
 /// The color palette
+///
+/// TODO: Make sure we have all the colors defined here.
 #[derive(Debug, Resource, Component, Reflect)]
+#[reflect(Resource)]
 pub struct Palette {
     /// Text color
     pub text_color: Srgba,
@@ -152,16 +174,19 @@ impl Default for Palette {
 
 /// Add color views handlers.
 pub fn plugin(app: &mut App) {
+    plugin_no_focus(app);
+    app.add_systems(Update, focus_view.in_set(AskySet::View));
+}
+
+/// Add color views handlers without `focus_view()`.
+pub fn plugin_no_focus(app: &mut App) {
     app.register_type::<View>()
-        .register_type::<ViewPart>()
         .register_type::<Cursor>()
         .register_type::<CursorBlink>()
         .register_type::<Palette>()
         .add_systems(
-            PreUpdate,
-            (
+            Update,
                 (
-                    focus_view,
                     radio_view,
                     checkbox_view,
                     prompt_view,
@@ -169,14 +194,12 @@ pub fn plugin(app: &mut App) {
                     opaque_view::<With<Password>>,
                     option_view::<Confirm>,
                     option_view::<Toggle>,
-                    feedback_view,
-                )
-                    .chain(),
-                clear_feedback::<StringCursor>,
-                clear_feedback::<Toggle>,
-                blink_cursor,
-            )
-                .in_set(AskySet::View),
+                    blink_cursor,
+                    (clear_feedback::<StringCursor>,
+                    clear_feedback::<Toggle>,
+                    clear_feedback::<Radio>,
+                    feedback_view).chain(),
+                ).in_set(AskySet::View),
         )
         .insert_resource(CursorBlink(Timer::from_seconds(
             1.0 / 3.0,
@@ -229,7 +252,7 @@ pub(crate) fn focus_view(
 }
 
 /// Displays a [StringCursor] matching a query filter.
-pub(crate) fn text_view<F: bevy::ecs::query::QueryFilter>(
+pub fn text_view<F: bevy::ecs::query::QueryFilter>(
     query: Query<
         (Entity, &StringCursor, Option<&Placeholder>),
         (
@@ -271,7 +294,7 @@ pub(crate) fn text_view<F: bevy::ecs::query::QueryFilter>(
 }
 
 /// Displays a [StringCursor] matching a query filter.
-pub(crate) fn opaque_view<F: bevy::ecs::query::QueryFilter>(
+pub fn opaque_view<F: bevy::ecs::query::QueryFilter>(
     query: Query<
         (Entity, &StringCursor, Option<&Placeholder>),
         (
