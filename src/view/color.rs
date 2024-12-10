@@ -40,7 +40,6 @@ enum ViewPart {
 pub(crate) struct ViewWriter<'w, 's> {
     writer: TextUiWriter<'w, 's>,
     children: Query<'w, 's, &'static Children>,
-    commands: Commands<'w, 's>,
 }
 
 impl ViewWriter<'_, '_> {
@@ -222,7 +221,6 @@ pub(crate) fn focus_view(
     focus: Focus,
     mut query: Query<Entity, Or<(Changed<View>, Changed<Focusable>)>>,
     mut writer: ViewWriter,
-    palette: Res<Palette>,
 ) {
     for id in query.iter_mut() {
         writer.text(id, ViewPart::Focus)
@@ -242,7 +240,6 @@ pub(crate) fn text_view<F: bevy::ecs::query::QueryFilter>(
     >,
     palette: Res<Palette>,
     mut commands: Commands,
-    focus: Focus,
     mut writer: ViewWriter,
 ) {
     for (id, text_state, placeholder) in query.iter() {
@@ -285,7 +282,6 @@ pub(crate) fn opaque_view<F: bevy::ecs::query::QueryFilter>(
     >,
     palette: Res<Palette>,
     mut commands: Commands,
-    focus: Focus,
     mut writer: ViewWriter,
 ) {
     for (id, text_state, placeholder) in query.iter() {
