@@ -1,7 +1,7 @@
 [package]
 name = "bevy_asky"
 description = "A simple question-and-answer UI middleware for Bevy"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Shane Celis <shane.celis@gmail.com>"]
 keywords = [
@@ -26,8 +26,7 @@ futures = { version = "0.3.30", optional = true }
 thiserror = "1.0.62"
 
 [features]
-# default = [ "color" ]
-default = [ "ascii" ]
+default = [ "color" ]
 async = [ "dep:bevy_defer", "dep:futures" ]
 focus = [ "dep:bevy-alt-ui-navigation-lite" ]
 button = []
@@ -35,7 +34,7 @@ color = []
 ascii = []
 
 [dev-dependencies]
-bevy = { version = "0.15" }
+bevy = "0.15"
 bevy-inspector-egui = "0.28.0"
 
 [[example]]

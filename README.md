@@ -54,7 +54,7 @@ are limited. It is suggested to copy-and-paste [ascii.rs](/src/view/ascii.rs) or
 
 ![Run of code below](https://github.com/user-attachments/assets/3570dc94-2042-494c-b926-dfa06ea30cb6)
 
-```rust
+```rust ignore
 commands
     .construct::<Confirm>("Do you like cats?")
     .construct::<ascii::View>(())
@@ -81,13 +81,14 @@ commands
 - [ ] Make keys re-bindable.
 - [ ] Add a `button::View` that uses mouse-clickable elements.
 
-      There is old button code that used to do this, but it has rotted and no
-      longer compiles.
+There is old button code that used to do this, but it has rotted and no longer
+compiles.
 
 # Compatibility
 
 | bevy_asky | bevy |
 |-----------|------|
+| 0.2.0     | 0.15 |
 | 0.1.0     | 0.14 |
 
 # Acknowledgments

@@ -26,7 +26,6 @@ fn setup(mut commands: Commands) {
                 eprintln!("trigger {:?}", trigger.event());
             });
 
-        // parent.spawn(TextBundle::from("checkbox group 1"));
         parent
             .column()
             .construct::<CheckboxGroup>("checkbox group 1")
