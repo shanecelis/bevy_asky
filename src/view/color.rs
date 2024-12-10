@@ -1,10 +1,9 @@
 //! Uses colored text
 use crate::{construct::*, prelude::*, string_cursor::*};
 use bevy::{
-    ecs::{query::QueryEntityError, system::SystemParam},
+    ecs::system::SystemParam,
     prelude::*,
 };
-use std::borrow::Cow;
 
 const PADDING: Val = Val::Px(5.);
 
@@ -44,7 +43,7 @@ pub(crate) struct ViewWriter<'w, 's> {
     commands: Commands<'w, 's>,
 }
 
-impl<'w, 's> ViewWriter<'w, 's> {
+impl ViewWriter<'_, '_> {
 
     fn entity(&mut self, root: Entity, part: ViewPart) -> Entity {
         use ViewPart::*;
@@ -332,7 +331,7 @@ pub(crate) fn option_view<C: Component + OptionPrompt>(
     for (id, confirm) in query.iter_mut() {
 
         let toggle0 = writer.entity(id, ViewPart::Toggle0);
-        writer.text(id, ViewPart::Toggle0).replace_range(.., &confirm.name(0));
+        writer.text(id, ViewPart::Toggle0).replace_range(.., confirm.name(0));
         // *writer.color(id, ViewPart::Toggle0) =
         *background.get_mut(toggle0)
                   .expect("background color") =
@@ -357,7 +356,7 @@ pub(crate) fn option_view<C: Component + OptionPrompt>(
             .insert(TextLayout { justify: JustifyText::Center, ..default() });
 
         let toggle1 = writer.entity(id, ViewPart::Toggle1);
-        writer.text(id, ViewPart::Toggle1).replace_range(.., &confirm.name(1));
+        writer.text(id, ViewPart::Toggle1).replace_range(.., confirm.name(1));
         *background.get_mut(toggle1)
                   .expect("background color") =
                 if confirm.state() == 1 {
@@ -436,7 +435,7 @@ fn blink_cursor(
                     Color::WHITE
                 } else {
                     Color::NONE
-                }.into();
+                };
 
                 *writer.color(id, 0) = if *count % 2 == 0 {
                     Color::BLACK.into()
