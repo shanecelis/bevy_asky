@@ -224,8 +224,8 @@ pub(crate) fn password_view(
             let _ = write!(text, "[{}]", &placeholder.map(|x| x.as_ref()).unwrap());
         } else {
             let replacement = "*";
+            text.clear();
             for _ in 0..text_state.value.len() {
-                // This doesn't allocate a string.
                 text.push_str(replacement);
             }
         }
