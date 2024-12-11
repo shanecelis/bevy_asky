@@ -120,7 +120,10 @@ impl Construct for View {
         let highlight = context.world.resource::<Palette>().highlight;
         if let Ok(mut eref) = context.world.get_entity_mut(context.id) {
             if !eref.contains::<Node>() {
-                eref.insert(Node::default());
+                eref.insert(Node {
+                    flex_wrap: FlexWrap::Wrap,
+                    ..default()
+                });
             }
             eref.with_children(|node| {
                 node.spawn((Text::default(), TextColor(highlight.into()))) // Focus
