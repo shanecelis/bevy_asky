@@ -107,8 +107,10 @@ impl Construct for RadioGroup {
     ) -> Result<Self, ConstructError> {
         // Our requirements.
         let mut commands = context.world.commands();
-        commands.entity(context.id).with_children(|parent| {
-            parent.column().insert(Text::new(props));
+        commands.entity(context.id)
+                .column()
+                .with_children(|parent| {
+            parent.spawn(Text::new(props));
         });
 
         context.world.flush();

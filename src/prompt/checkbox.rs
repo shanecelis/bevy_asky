@@ -122,7 +122,7 @@ impl Construct for CheckboxGroup {
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
-            // .column()
+            .column()
             .with_children(|parent| {
                 parent.spawn(Text::new(props));
             });

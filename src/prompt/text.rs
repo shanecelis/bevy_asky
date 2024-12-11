@@ -89,7 +89,9 @@ fn text_controller(
                     // commands.entity(id).insert(Feedback::error("canceled"));
                     // focus.block(id);
                 }
-                x => info!("Unhandled key {x:?}"),
+                _x => {
+                    // info!("Unhandled key {x:?}");
+                }
             }
         }
     }
