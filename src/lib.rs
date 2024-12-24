@@ -136,8 +136,8 @@ pub trait Part {
 /// Asky errors
 #[derive(Debug, thiserror::Error, Clone)]
 pub enum Error {
-    /// User cancelled
-    #[error("cancelled")]
+    /// User canceled
+    #[error("canceled")]
     Cancel,
     /// Input was invalid
     #[error("invalid input")]
