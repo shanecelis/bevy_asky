@@ -41,7 +41,7 @@ fn setup(mut commands: Commands) {
                             .construct::<View>(())
                             .construct::<Confirm>("Do you prefer color?");
                     });
-                    commands.entity(trigger.entity()).despawn();
+                    commands.entity(trigger.target()).despawn();
                 },
             );
     });

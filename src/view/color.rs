@@ -445,7 +445,7 @@ fn blink_cursor(
     focus: Focus,
     palette: Res<Palette>,
     mut writer: TextUiWriter,
-    parent: Query<&Parent>,
+    parent: Query<&ChildOf>,
 ) {
     if timer.tick(time.delta()).just_finished() {
         *count = count.checked_add(1).unwrap_or(0);

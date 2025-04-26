@@ -61,7 +61,7 @@ commands
     .observe(
         move |trigger: Trigger<Submit<bool>>, mut commands: Commands| {
             if let Submit(Ok(yes)) = trigger.event() {
-                commands.entity(trigger.entity())
+                commands.entity(trigger.target())
                         .construct::<Feedback>(Feedback::info(if *yes {
                             "\nMe too!"
                         } else {
@@ -88,6 +88,7 @@ compiles.
 
 | bevy_asky | bevy |
 |-----------|------|
+| 0.3.0     | 0.16 |
 | 0.2.0     | 0.15 |
 | 0.1.0     | 0.14 |
 

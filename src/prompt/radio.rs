@@ -43,7 +43,7 @@ impl Construct for Radio {
 
 fn radio_controller(
     focus: FocusParam,
-    mut query: Query<(Entity, &mut Radio, Option<&Parent>)>,
+    mut query: Query<(Entity, &mut Radio, Option<&ChildOf>)>,
     child_query: Query<&Children>,
     input: Res<ButtonInput<KeyCode>>,
     mut toggled: Local<Vec<(Entity, Entity)>>,
@@ -70,7 +70,7 @@ fn radio_controller(
         if radio.checked && !was_checked {
             // We've been checked and weren't checked before.
             if let Some(p) = parent {
-                toggled.push((id, **p));
+                toggled.push((id, p.parent()));
             }
         }
     }

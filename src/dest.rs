@@ -1,5 +1,7 @@
 use super::*;
-use bevy::ecs::system::EntityCommands;
+use bevy::ecs::{
+    system::EntityCommands,
+};
 use std::fmt::Debug;
 
 /// The destination for constructing new entities
@@ -35,7 +37,7 @@ impl Dest {
             }
             Replace(id) => commands.entity(*id),
             ReplaceChildren(id) => {
-                commands.entity(*id).despawn_descendants();
+                commands.entity(*id).despawn_related::<Children>();
                 let mut child = None;
                 commands.entity(*id).with_children(|parent| {
                     child = Some(parent.spawn_empty().id());
@@ -52,25 +54,25 @@ impl Dest {
         match self {
             Append(id) => {
                 let mut child = None;
-                if let Some(mut ecommands) = commands.get_entity(*id) {
+                if let Some(mut ecommands) = commands.get_entity(*id).ok() {
                     ecommands.with_children(|parent| {
                         child = Some(parent.spawn_empty().id());
                     });
                 }
-                child.and_then(|id| commands.get_entity(id))
+                child.and_then(|id| commands.get_entity(id).ok())
             }
-            Replace(id) => commands.get_entity(*id),
+            Replace(id) => commands.get_entity(*id).ok(),
             ReplaceChildren(id) => {
-                if let Some(mut ecommands) = commands.get_entity(*id) {
-                    ecommands.despawn_descendants();
+                if let Some(mut ecommands) = commands.get_entity(*id).ok() {
+                    ecommands.despawn_related::<Children>();
                 }
                 let mut child = None;
-                if let Some(mut ecommands) = commands.get_entity(*id) {
+                if let Some(mut ecommands) = commands.get_entity(*id).ok() {
                     ecommands.with_children(|parent| {
                         child = Some(parent.spawn_empty().id());
                     });
                 }
-                child.and_then(|id| commands.get_entity(id))
+                child.and_then(|id| commands.get_entity(id).ok())
             }
             Root => Some(commands.spawn_empty()),
         }

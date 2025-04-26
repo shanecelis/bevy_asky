@@ -40,7 +40,7 @@ impl AskyAsync {
                             .expect("send");
                     }
                     // TODO: This should be the result of some policy not de facto.
-                    // commands.entity(trigger.entity()).despawn_recursive();
+                    // commands.entity(trigger.target()).despawn_recursive();
                 });
             });
             receiver.await?
@@ -91,7 +91,7 @@ impl AskyAsync {
     //     //                         sender.send(trigger.event().0.clone()).expect("send");
     //     //                     }
     //     //                     // TODO: This should be the result of some policy not de facto.
-    //     //                     // commands.entity(trigger.entity()).despawn_recursive();
+    //     //                     // commands.entity(trigger.target()).despawn_recursive();
     //     //                 },
     //     //             );
     //     //     });

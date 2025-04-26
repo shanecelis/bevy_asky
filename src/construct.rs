@@ -57,9 +57,9 @@ pub trait Construct: Sized {
 ///
 /// Useful for adding a view to children for instance.
 #[derive(Bundle)]
-pub struct Add0<A: Sync + Send + 'static + Bundle, B: Sync + Send + 'static + Bundle>(pub A, pub B);
+pub struct Add0<A: Sync + Send + 'static + Bundle + Component, B: Sync + Send + 'static + Bundle + Component>(pub A, pub B);
 
-unsafe impl<A: Submitter + Sync + Send + 'static + Bundle, B: Sync + Send + 'static + Bundle>
+unsafe impl<A: Submitter + Sync + Send + 'static + Bundle + Component, B: Sync + Send + 'static + Bundle + Component>
     Submitter for Add0<A, B>
 {
     /// Output of submitter.
@@ -68,8 +68,8 @@ unsafe impl<A: Submitter + Sync + Send + 'static + Bundle, B: Sync + Send + 'sta
 
 impl<A, B> Construct for Add0<A, B>
 where
-    A: Construct + Sync + Send + 'static + Bundle,
-    B: Construct<Props = ()> + Sync + Send + 'static + Bundle,
+    A: Construct + Sync + Send + 'static + Bundle + Component,
+    B: Construct<Props = ()> + Sync + Send + 'static + Bundle + Component,
 {
     type Props = A::Props;
     fn construct(
@@ -173,10 +173,13 @@ impl<T: Construct + Bundle> bevy::ecs::system::EntityCommand for ConstructComman
 where
     <T as Construct>::Props: Send,
 {
-    fn apply(self, id: Entity, world: &mut World) {
-        let mut context = ConstructContext { id, world };
-        let c = T::construct(&mut context, self.0).expect("component");
-        world.entity_mut(id).insert(c);
+    fn apply(self, mut entity_world: EntityWorldMut) {
+        let id = entity_world.id();
+        entity_world.world_scope(move |world: &mut World| {
+            let mut context = ConstructContext { id, world };
+            let c = T::construct(&mut context, self.0).expect("component");
+            world.entity_mut(id).insert(c);
+        });
     }
 }
 
@@ -192,7 +195,7 @@ impl ConstructExt for Commands<'_, '_> {
     }
 }
 
-impl ConstructExt for ChildBuilder<'_> {
+impl ConstructExt for ChildSpawnerCommands<'_> {
     // type Out = EntityCommands;
     fn construct<T: Construct + Bundle>(&mut self, props: impl Into<T::Props>) -> EntityCommands
     where
@@ -203,6 +206,18 @@ impl ConstructExt for ChildBuilder<'_> {
         s
     }
 }
+
+// impl ConstructExt for ChildBuilder<'_> {
+//     // type Out = EntityCommands;
+//     fn construct<T: Construct + Bundle>(&mut self, props: impl Into<T::Props>) -> EntityCommands
+//     where
+//         <T as Construct>::Props: Send,
+//     {
+//         let mut s = self.spawn_empty();
+//         s.queue(ConstructCommand::<T>(props.into()));
+//         s
+//     }
+// }
 
 impl ConstructExt for EntityCommands<'_> {
     // type Out = EntityCommands;

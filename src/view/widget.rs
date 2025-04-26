@@ -66,8 +66,7 @@ impl<T: Spawn> Widgets for T {
             BackgroundColor(palette.background),
         ));
         entity.with_children(|children| {
-            ChildBuild::spawn(
-                children,
+                children.spawn(
                 (
                     Name::new("Button Text"),
                     Text::new(text),
@@ -203,8 +202,8 @@ impl Spawn for EntityCommands<'_> {
     }
 }
 
-impl Spawn for ChildBuilder<'_> {
-    fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands {
-        ChildBuild::spawn(self, bundle)
-    }
-}
+// impl Spawn for ChildBuilder<'_> {
+//     fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands {
+//         ChildBuild::spawn(self, bundle)
+//     }
+// }
