@@ -66,13 +66,11 @@ impl<T: Spawn> Widgets for T {
             BackgroundColor(palette.background),
         ));
         entity.with_children(|children| {
-                children.spawn(
-                (
-                    Name::new("Button Text"),
-                    Text::new(text),
-                    TextColor(palette.text),
-                ),
-            );
+            children.spawn((
+                Name::new("Button Text"),
+                Text::new(text),
+                TextColor(palette.text),
+            ));
         });
         entity
     }

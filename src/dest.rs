@@ -1,7 +1,5 @@
 use super::*;
-use bevy::ecs::{
-    system::EntityCommands,
-};
+use bevy::ecs::system::EntityCommands;
 use std::fmt::Debug;
 
 /// The destination for constructing new entities

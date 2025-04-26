@@ -1,9 +1,6 @@
 //! Uses colored text
 use crate::{construct::*, prelude::*, string_cursor::*};
-use bevy::{
-    ecs::system::SystemParam,
-    prelude::*,
-};
+use bevy::{ecs::system::SystemParam, prelude::*};
 
 const PADDING: Val = Val::Px(5.);
 
@@ -47,7 +44,6 @@ pub enum ViewPart {
     Feedback = 9,
 }
 
-
 /// Writes to part of the view
 #[derive(SystemParam)]
 pub struct ViewWriter<'w, 's> {
@@ -56,7 +52,6 @@ pub struct ViewWriter<'w, 's> {
 }
 
 impl ViewWriter<'_, '_> {
-
     /// Return entity of that part of the view.
     pub fn entity(&mut self, root: Entity, part: ViewPart) -> Entity {
         use ViewPart::*;
@@ -92,7 +87,9 @@ impl ViewWriter<'_, '_> {
         use ViewPart::*;
         let children = self.children.get(root).expect("view children");
         match part {
-            Focus | PreQuestion | Question | Answer => self.writer.color(children[0], part as usize),
+            Focus | PreQuestion | Question | Answer => {
+                self.writer.color(children[0], part as usize)
+            }
             PreCursor | Toggle0 => self.writer.color(children[1], 0),
             Cursor => self.writer.color(children[2], 0),
             PostCursor | Toggle1 => self.writer.color(children[3], 0),
@@ -116,7 +113,6 @@ impl Construct for View {
         context: &mut ConstructContext,
         _props: Self::Props,
     ) -> Result<Self, ConstructError> {
-
         let highlight = context.world.resource::<Palette>().highlight;
         if let Ok(mut eref) = context.world.get_entity_mut(context.id) {
             if !eref.contains::<Node>() {
@@ -189,20 +185,24 @@ pub fn plugin_no_focus(app: &mut App) {
         .register_type::<Palette>()
         .add_systems(
             Update,
+            (
+                radio_view,
+                checkbox_view,
+                prompt_view,
+                text_view::<Without<Password>>,
+                opaque_view::<With<Password>>,
+                option_view::<Confirm>,
+                option_view::<Toggle>,
+                blink_cursor,
                 (
-                    radio_view,
-                    checkbox_view,
-                    prompt_view,
-                    text_view::<Without<Password>>,
-                    opaque_view::<With<Password>>,
-                    option_view::<Confirm>,
-                    option_view::<Toggle>,
-                    blink_cursor,
-                    (clear_feedback::<StringCursor>,
+                    clear_feedback::<StringCursor>,
                     clear_feedback::<Toggle>,
                     clear_feedback::<Radio>,
-                    feedback_view).chain(),
-                ).in_set(AskySet::View),
+                    feedback_view,
+                )
+                    .chain(),
+            )
+                .in_set(AskySet::View),
         )
         .insert_resource(CursorBlink(Timer::from_seconds(
             1.0 / 3.0,
@@ -216,7 +216,8 @@ pub(crate) fn prompt_view(
     mut query: Query<(Entity, &Prompt), (With<View>, Changed<Prompt>)>,
 ) {
     for (id, prompt) in query.iter_mut() {
-        writer.text(id, ViewPart::Question)
+        writer
+            .text(id, ViewPart::Question)
             .replace_range(.., prompt);
     }
 }
@@ -227,8 +228,12 @@ pub(crate) fn feedback_view(
     mut writer: ViewWriter,
 ) {
     for (id, feedback) in &query {
-        writer.text(id, ViewPart::Feedback).replace_range(.., &feedback.message);
-        node.get_mut(writer.entity(id, ViewPart::Feedback)).unwrap().margin = UiRect {
+        writer
+            .text(id, ViewPart::Feedback)
+            .replace_range(.., &feedback.message);
+        node.get_mut(writer.entity(id, ViewPart::Feedback))
+            .unwrap()
+            .margin = UiRect {
             left: PADDING,
             ..default()
         };
@@ -249,7 +254,8 @@ pub(crate) fn focus_view(
     mut writer: ViewWriter,
 ) {
     for id in query.iter_mut() {
-        writer.text(id, ViewPart::Focus)
+        writer
+            .text(id, ViewPart::Focus)
             .replace_range(.., if focus.is_focused(id) { "> " } else { "  " });
     }
 }
@@ -269,27 +275,32 @@ pub fn text_view<F: bevy::ecs::query::QueryFilter>(
     mut writer: ViewWriter,
 ) {
     for (id, text_state, placeholder) in query.iter() {
-        writer.text(id, ViewPart::PreCursor)
+        writer
+            .text(id, ViewPart::PreCursor)
             .replace_range(.., &text_state.value[0..text_state.index]);
-        writer.text(id, ViewPart::Cursor)
-            .replace_range(..,
-                           if text_state.value.is_empty() && placeholder.is_some() {
-                               let p = placeholder.unwrap();
-                               &p[0..ceil_char_boundary(p, 1)]
-                           } else if text_state.index >= text_state.value.len() {
-                               " "
-                           } else {
-                               &text_state.value[text_state.index..text_state.next_index()]
-                           });
-        commands.entity(writer.entity(id, ViewPart::Cursor))
-                .insert(Cursor);
+        writer.text(id, ViewPart::Cursor).replace_range(
+            ..,
+            if text_state.value.is_empty() && placeholder.is_some() {
+                let p = placeholder.unwrap();
+                &p[0..ceil_char_boundary(p, 1)]
+            } else if text_state.index >= text_state.value.len() {
+                " "
+            } else {
+                &text_state.value[text_state.index..text_state.next_index()]
+            },
+        );
+        commands
+            .entity(writer.entity(id, ViewPart::Cursor))
+            .insert(Cursor);
         if text_state.value.is_empty() && placeholder.is_some() {
             let p = placeholder.unwrap();
-            writer.text(id, ViewPart::PostCursor)
-                  .replace_range(.., &p[ceil_char_boundary(p, 1)..]);
+            writer
+                .text(id, ViewPart::PostCursor)
+                .replace_range(.., &p[ceil_char_boundary(p, 1)..]);
             writer.color(id, ViewPart::PostCursor).0 = palette.lowlight.into();
         } else {
-            writer.text(id, ViewPart::PostCursor)
+            writer
+                .text(id, ViewPart::PostCursor)
                 .replace_range(.., &text_state.value[text_state.next_index()..]);
             writer.color(id, ViewPart::PostCursor).0 = palette.text_color.into();
         }
@@ -325,17 +336,23 @@ pub fn opaque_view<F: bevy::ecs::query::QueryFilter>(
         } else {
             let _ = write_rep(&mut *cursor, glyph, 1);
         }
-        commands.entity(writer.entity(id, ViewPart::Cursor))
-                .insert(Cursor);
+        commands
+            .entity(writer.entity(id, ViewPart::Cursor))
+            .insert(Cursor);
         if text_state.value.is_empty() && placeholder.is_some() {
             let p = placeholder.unwrap();
-            writer.text(id, ViewPart::PostCursor)
-                  .replace_range(.., &p[ceil_char_boundary(p, 1)..]);
+            writer
+                .text(id, ViewPart::PostCursor)
+                .replace_range(.., &p[ceil_char_boundary(p, 1)..]);
             writer.color(id, ViewPart::PostCursor).0 = palette.lowlight.into();
         } else {
             let mut post = writer.text(id, ViewPart::PostCursor);
             post.clear();
-            let _ = write_rep(&mut *post, glyph, text_state.value.len().saturating_sub(text_state.index + 1));
+            let _ = write_rep(
+                &mut *post,
+                glyph,
+                text_state.value.len().saturating_sub(text_state.index + 1),
+            );
             writer.color(id, ViewPart::PostCursor).0 = palette.text_color.into();
         }
     }
@@ -351,17 +368,17 @@ pub(crate) fn option_view<C: Component + OptionPrompt>(
 ) {
     // TODO: Shouldn't this just show the answer when it is not in focus?
     for (id, confirm) in query.iter_mut() {
-
         let toggle0 = writer.entity(id, ViewPart::Toggle0);
-        writer.text(id, ViewPart::Toggle0).replace_range(.., confirm.name(0));
+        writer
+            .text(id, ViewPart::Toggle0)
+            .replace_range(.., confirm.name(0));
         // *writer.color(id, ViewPart::Toggle0) =
-        *background.get_mut(toggle0)
-                  .expect("background color") =
-                if confirm.state() == 0 {
-                    palette.highlight
-                } else {
-                    palette.lowlight
-                }.into();
+        *background.get_mut(toggle0).expect("background color") = if confirm.state() == 0 {
+            palette.highlight
+        } else {
+            palette.lowlight
+        }
+        .into();
 
         let mut node0 = node.get_mut(toggle0).unwrap();
         node0.margin = UiRect {
@@ -374,18 +391,21 @@ pub(crate) fn option_view<C: Component + OptionPrompt>(
             left: PADDING,
             ..default()
         };
-        commands.entity(toggle0)
-            .insert(TextLayout { justify: JustifyText::Center, ..default() });
+        commands.entity(toggle0).insert(TextLayout {
+            justify: JustifyText::Center,
+            ..default()
+        });
 
         let toggle1 = writer.entity(id, ViewPart::Toggle1);
-        writer.text(id, ViewPart::Toggle1).replace_range(.., confirm.name(1));
-        *background.get_mut(toggle1)
-                  .expect("background color") =
-                if confirm.state() == 1 {
-                    palette.highlight
-                } else {
-                    palette.lowlight
-                }.into();
+        writer
+            .text(id, ViewPart::Toggle1)
+            .replace_range(.., confirm.name(1));
+        *background.get_mut(toggle1).expect("background color") = if confirm.state() == 1 {
+            palette.highlight
+        } else {
+            palette.lowlight
+        }
+        .into();
         let mut node1 = node.get_mut(toggle1).unwrap();
         node1.margin = UiRect {
             right: PADDING,
@@ -397,8 +417,10 @@ pub(crate) fn option_view<C: Component + OptionPrompt>(
             left: PADDING,
             ..default()
         };
-        commands.entity(toggle1)
-            .insert(TextLayout { justify: JustifyText::Center, ..default() });
+        commands.entity(toggle1).insert(TextLayout {
+            justify: JustifyText::Center,
+            ..default()
+        });
     }
 }
 
@@ -412,7 +434,9 @@ pub(crate) fn checkbox_view(
     focus: Focus,
 ) {
     for (id, checkbox) in query.iter_mut() {
-        writer.text(id, ViewPart::PreQuestion).replace_range(.., if checkbox.checked { "[x] " } else { "[ ] " });
+        writer
+            .text(id, ViewPart::PreQuestion)
+            .replace_range(.., if checkbox.checked { "[x] " } else { "[ ] " });
         *writer.color(id, ViewPart::PreQuestion) = if focus.is_focused(id) {
             palette.highlight.into()
         } else {
@@ -428,7 +452,9 @@ pub(crate) fn radio_view(
     focus: Focus,
 ) {
     for (id, radio) in query.iter_mut() {
-        writer.text(id, ViewPart::PreQuestion).replace_range(.., if radio.checked { "(x) " } else { "( ) " });
+        writer
+            .text(id, ViewPart::PreQuestion)
+            .replace_range(.., if radio.checked { "(x) " } else { "( ) " });
         *writer.color(id, ViewPart::PreQuestion) = if focus.is_focused(id) {
             palette.highlight.into()
         } else {
@@ -450,9 +476,7 @@ fn blink_cursor(
     if timer.tick(time.delta()).just_finished() {
         *count = count.checked_add(1).unwrap_or(0);
         for (id, mut color) in &mut query {
-            if focus.is_focused(id) || parent.iter_ancestors(id).any(|id| focus.is_focused(id))
-            {
-
+            if focus.is_focused(id) || parent.iter_ancestors(id).any(|id| focus.is_focused(id)) {
                 color.0 = if *count % 2 == 0 {
                     Color::WHITE
                 } else {

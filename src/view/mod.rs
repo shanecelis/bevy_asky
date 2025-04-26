@@ -26,7 +26,11 @@ pub(crate) fn plugin(_app: &mut App) {}
 //     }
 // }
 //
-pub(crate) fn write_rep(writer: &mut impl Write, s: &str, repetition: usize) -> Result<(), std::fmt::Error>{
+pub(crate) fn write_rep(
+    writer: &mut impl Write,
+    s: &str,
+    repetition: usize,
+) -> Result<(), std::fmt::Error> {
     for _ in 0..repetition {
         writer.write_str(s)?;
     }

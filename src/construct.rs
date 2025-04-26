@@ -57,10 +57,15 @@ pub trait Construct: Sized {
 ///
 /// Useful for adding a view to children for instance.
 #[derive(Bundle)]
-pub struct Add0<A: Sync + Send + 'static + Bundle + Component, B: Sync + Send + 'static + Bundle + Component>(pub A, pub B);
+pub struct Add0<
+    A: Sync + Send + 'static + Bundle + Component,
+    B: Sync + Send + 'static + Bundle + Component,
+>(pub A, pub B);
 
-unsafe impl<A: Submitter + Sync + Send + 'static + Bundle + Component, B: Sync + Send + 'static + Bundle + Component>
-    Submitter for Add0<A, B>
+unsafe impl<
+        A: Submitter + Sync + Send + 'static + Bundle + Component,
+        B: Sync + Send + 'static + Bundle + Component,
+    > Submitter for Add0<A, B>
 {
     /// Output of submitter.
     type Out = A::Out;
