@@ -86,7 +86,7 @@ fn text_controller(
                 }
                 Key::Escape => {
                     commands.trigger_targets(Submit::<String>::new(Err(Error::Cancel)), id);
-                    // commands.entity(id).insert(Feedback::error("canceled"));
+                    // commands.entity(id).try_insert(Feedback::error("canceled"));
                     // focus.block(id);
                 }
                 _x => {

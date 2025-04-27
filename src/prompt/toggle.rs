@@ -96,7 +96,7 @@ fn toggle_controller(
                 commands.trigger_targets(Submit::<bool>::new(Err(Error::Cancel)), id);
                 focus.move_focus_from(id);
                 // focus.unfocus(id, false);
-                commands.entity(id).insert(Feedback::error("canceled"));
+                commands.entity(id).try_insert(Feedback::error("canceled"));
             }
         }
     }

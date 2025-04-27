@@ -123,7 +123,7 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                             // commands
                             //     .trigger_targets(Submit::<T>(Err(Error::InvalidNumber)), id);
                             // focus.block(id);
-                            commands.entity(id).insert(Feedback::warn(format!(
+                            commands.entity(id).try_insert(Feedback::warn(format!(
                                 "invalid number for {}",
                                 T::short_type_path()
                             )));
@@ -132,7 +132,7 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                 }
                 Key::Escape => {
                     commands.trigger_targets(Submit::<String>::new(Err(Error::Cancel)), id);
-                    commands.entity(id).insert(Feedback::error("canceled"));
+                    commands.entity(id).try_insert(Feedback::error("canceled"));
                     focus.block(id);
                     focus.move_focus_from(id);
                     // focus.unfocus(id, false);

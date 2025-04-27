@@ -87,7 +87,7 @@ fn confirm_controller(
             }
             if input.just_pressed(KeyCode::Escape) {
                 commands.trigger_targets(Submit::<bool>::new(Err(Error::Cancel)), id);
-                // commands.entity(id).insert(Feedback::error("canceled"));
+                // commands.entity(id).try_insert(Feedback::error("canceled"));
             }
         }
     }

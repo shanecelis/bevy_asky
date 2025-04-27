@@ -149,13 +149,13 @@ fn radio_group_controller(
                 } else {
                     commands
                         .entity(id)
-                        .insert(Feedback::warn("must select one"));
+                        .try_insert(Feedback::warn("must select one"));
                 }
             }
 
             if input.just_pressed(KeyCode::Escape) {
                 commands.trigger_targets(Submit::<usize>::new(Err(Error::Cancel)), id);
-                commands.entity(id).insert(Feedback::error("canceled"));
+                commands.entity(id).try_insert(Feedback::error("canceled"));
             }
         }
     }
