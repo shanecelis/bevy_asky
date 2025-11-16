@@ -239,7 +239,7 @@ impl Construct for View {
                             let (mut asky_state, mut confirm) = query.get_mut(id).unwrap();
                             *asky_state = AskyState::Complete;
                             confirm.yes = false;
-                            commands.trigger_targets(Submit::new(Ok(false)), id);
+                            commands.trigger(Submit::new(id, Ok(false)));
                         },
                     );
                 parent.spawn(TextBundle::from_section(" ", TextStyle::default()));
@@ -254,7 +254,7 @@ impl Construct for View {
                             let (mut asky_state, mut confirm) = query.get_mut(id).unwrap();
                             *asky_state = AskyState::Complete;
                             confirm.yes = true;
-                            commands.trigger_targets(Submit::new(Ok(true)), id);
+                            commands.trigger(Submit::new(id, Ok(true)));
                         },
                     );
             });

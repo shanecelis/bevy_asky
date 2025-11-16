@@ -148,11 +148,11 @@ fn checkbox_group_controller(
                     .iter_many(children)
                     .map(|(_, checkbox)| checkbox.checked)
                     .collect();
-                commands.trigger_targets(Submit::new(Ok(result)), id);
+                commands.trigger(Submit::new(id, Ok(result)));
             }
 
             if input.just_pressed(KeyCode::Escape) {
-                commands.trigger_targets(Submit::<Vec<bool>>::new(Err(Error::Cancel)), id);
+                commands.trigger(Submit::<Vec<bool>>::new(id, Err(Error::Cancel)));
             }
         }
     }

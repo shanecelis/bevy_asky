@@ -84,8 +84,16 @@ impl Plugin for AskyPlugin {
 /// Prompts trigger an Submit
 ///
 /// [Submitter] trait on prompt defines what output type to expect.
-#[derive(Event, Debug, Clone)]
-pub enum Submit<T> {
+#[derive(EntityEvent, Debug, Clone)]
+pub struct Submit<T> {
+    /// The entity that triggered this submit event.
+    pub entity: Entity,
+    /// The state of the submit event.
+    state: SubmitState<T>,
+}
+
+#[derive(Debug, Clone)]
+enum SubmitState<T> {
     /// Submit has not been handled yet.
     Unhandled(Result<T, Error>),
     /// Submit has been handled.
@@ -94,16 +102,29 @@ pub enum Submit<T> {
 
 impl<T> Submit<T> {
     /// Create a new submission event.
-    pub fn new(r: Result<T, Error>) -> Self {
-        Self::Unhandled(r)
+    pub fn new(entity: Entity, r: Result<T, Error>) -> Self {
+        Self {
+            entity,
+            state: SubmitState::Unhandled(r),
+        }
     }
 
     /// Unwrap the result assuming it hasn't been taken already.
     pub fn take_result(&mut self) -> Result<T, Error> {
-        match std::mem::replace(self, Submit::Handled) {
-            Submit::Unhandled(res) => res,
-            Submit::Handled => Err(Error::SubmitHandled),
+        match std::mem::replace(&mut self.state, SubmitState::Handled) {
+            SubmitState::Unhandled(res) => res,
+            SubmitState::Handled => Err(Error::SubmitHandled),
         }
+    }
+
+    /// Get the event (for observers).
+    pub fn event(&self) -> &SubmitState<T> {
+        &self.state
+    }
+
+    /// Get the event mutably (for observers).
+    pub fn event_mut(&mut self) -> &mut SubmitState<T> {
+        &mut self.state
     }
 }
 

@@ -392,7 +392,7 @@ pub(crate) fn option_view<C: Component + OptionPrompt>(
             ..default()
         };
         commands.entity(toggle0).insert(TextLayout {
-            justify: JustifyText::Center,
+            justify: Justify::Center,
             ..default()
         });
 
@@ -418,7 +418,7 @@ pub(crate) fn option_view<C: Component + OptionPrompt>(
             ..default()
         };
         commands.entity(toggle1).insert(TextLayout {
-            justify: JustifyText::Center,
+            justify: Justify::Center,
             ..default()
         });
     }

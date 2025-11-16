@@ -65,7 +65,7 @@ impl<T: Spawn> Widgets for T {
                 align_items: AlignItems::Center,
                 ..default()
             },
-            BorderColor(palette.border),
+            BorderColor::all(palette.border),
             BackgroundColor(palette.background),
         ));
         entity.with_children(|children| {

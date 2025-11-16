@@ -16,11 +16,11 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/shanecelis/bevy_asky"
 
 [dependencies]
-accesskit = "0.18.0"
-bevy = { version = "0.16", default-features = false, features = [ "bevy_text", "bevy_ui", "default_font", "std", "async_executor", "bevy_log" ] }
-bevy-alt-ui-navigation-lite = { version = "0.4.0", optional = true }
-bevy_a11y = "0.16.0"
-bevy_defer = { version = "0.14", optional = true }
+accesskit = "0.21"
+bevy = { version = "0.17", default-features = false, features = [ "bevy_text", "bevy_ui", "default_font", "std", "async_executor", "bevy_log" ] }
+bevy-alt-ui-navigation-lite = { version = "0.5.0", optional = true }
+bevy_a11y = "0.17.0"
+bevy_defer = { version = "0.15", optional = true }
 futures = { version = "0.3.30", optional = true }
 thiserror = "1.0.62"
 
@@ -33,8 +33,8 @@ color = []
 ascii = []
 
 [dev-dependencies]
-bevy = "0.16"
-bevy-inspector-egui = "0.31.0"
+bevy = "0.17"
+bevy-inspector-egui = "0.35"
 
 [[example]]
 name = "text-async"

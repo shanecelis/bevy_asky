@@ -68,8 +68,11 @@ pub fn plugin(app: &mut App) {
 /// }
 /// ```
 /// [1]: https://gist.github.com/shanecelis/06b2d1a598e1e06d0a00671596e9f74f
-#[derive(Event, Debug)]
-pub struct Click;
+#[derive(EntityEvent, Debug)]
+pub struct Click {
+    /// The entity that was clicked.
+    pub entity: Entity,
+}
 
 /// This system looks at [Button] [Interaction] changes. If that state changes
 /// from [Interaction::Pressed] to [Interaction::Hovered] then it will trigger a
@@ -85,7 +88,7 @@ fn button_click(
     for (id, interaction) in &mut interaction_query {
         let last = last_state.get(&id);
         if *interaction == Interaction::Hovered && matches!(last, Some(Interaction::Pressed)) {
-            commands.trigger_targets(Click, id);
+            commands.trigger(Click { entity: id });
         }
         last_state.insert(id, *interaction);
     }

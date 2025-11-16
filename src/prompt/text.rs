@@ -81,11 +81,11 @@ fn text_controller(
                 Key::ArrowLeft => text_state.move_cursor(CursorDirection::Left),
                 Key::ArrowRight => text_state.move_cursor(CursorDirection::Right),
                 Key::Enter => {
-                    commands.trigger_targets(Submit::new(Ok(text_state.value.clone())), id);
+                    commands.trigger(Submit::new(id, Ok(text_state.value.clone())));
                     // focus.block_and_move(id);
                 }
                 Key::Escape => {
-                    commands.trigger_targets(Submit::<String>::new(Err(Error::Cancel)), id);
+                    commands.trigger(Submit::<String>::new(id, Err(Error::Cancel)));
                     // commands.entity(id).try_insert(Feedback::error("canceled"));
                     // focus.block(id);
                 }
