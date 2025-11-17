@@ -1,37 +1,25 @@
-use bevy::{ecs::system::SystemParam, math::CompassQuadrant, prelude::*};
+use bevy::{ecs::system::SystemParam, math::CompassQuadrant, prelude::*,
+input_focus::{
+        directional_navigation::{
+            DirectionalNavigation, DirectionalNavigationMap, DirectionalNavigationPlugin,
+        },
+        InputDispatchPlugin, InputFocus, InputFocusVisible,
+    },
+};
 use std::fmt::Debug;
-
-mod private {
-    use bevy::prelude::*;
-
-    /// A substitute for [bevy::a11y::Focus]
-    ///
-    /// [bevy::a11y::Focus] caused panics for reasons I didn't understand so I
-    /// used my own instead, but I'd like to switch to Bevy's eventually.
-    #[derive(Resource, Default, Debug, Reflect)]
-    #[reflect(Resource)]
-    pub struct Focus(pub Option<Entity>);
-
-    impl Focus {
-        /// Is entity focused?
-        pub fn is_focused(&self, id: Entity) -> bool {
-            self.0.map(|f| f == id).unwrap_or(false)
-        }
-    }
-}
 
 /// A rudimentary focus parameter
 ///
 /// This is only used to test whether an entity is focused.
 #[derive(SystemParam)]
 pub struct Focus<'w> {
-    focus: ResMut<'w, private::Focus>,
+    focus: ResMut<'w, InputFocus>,
 }
 
 impl Focus<'_> {
     /// Is entity focused?
     pub fn is_focused(&self, id: Entity) -> bool {
-        self.focus.is_focused(id)
+        self.focus.get() == Some(id)
     }
 
     /// Focus on given entity.
@@ -64,9 +52,8 @@ impl Focusable {
 // pub struct Blocked;
 
 pub(crate) fn plugin(app: &mut App) {
-    app.register_type::<private::Focus>()
+    app
         .register_type::<Focusable>()
-        .insert_resource(private::Focus(None))
         .insert_resource(KeyboardNav(true))
         .add_systems(PreUpdate, focus_keys)
         .add_systems(Update, reset_focus);
@@ -89,14 +76,14 @@ fn to_dir(dir: CompassQuadrant) -> Dir2 {
 pub struct FocusParam<'w, 's> {
     query: Query<'w, 's, (Entity, &'static mut Focusable, &'static GlobalTransform)>,
     // nodes: Query<'w, 's, (Entity, &'static Node)>,
-    focus: ResMut<'w, private::Focus>,
+    focus: ResMut<'w, InputFocus>,
     keyboard_nav: ResMut<'w, KeyboardNav>,
 }
 
 impl FocusParam<'_, '_> {
     /// Is entity focused?
     pub fn is_focused(&self, id: Entity) -> bool {
-        self.focus.is_focused(id)
+        self.focus.get() == Some(id)
     }
 
     /// Move the focus in a direction if possible.

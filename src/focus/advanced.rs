@@ -16,6 +16,7 @@ fn setup(mut input_mapping: ResMut<InputMapping>) {
 
 pub use bevy_alt_ui_navigation_lite::prelude::Focusable;
 
+/// Focus system param.
 #[derive(SystemParam)]
 pub struct Focus<'w, 's> {
     query: Query<'w, 's, &'static Focused>,
@@ -30,16 +31,16 @@ impl<'w, 's> Focus<'w, 's> {
 #[derive(SystemParam)]
 pub struct FocusParam<'w, 's> {
     focus: Query<'w, 's, &'static mut Focusable>,
-    requests: EventWriter<'w, NavRequest>,
-    blocks: EventWriter<'w, BlockRequest>,
+    requests: MessageWriter<'w, NavRequest>,
+    blocks: MessageWriter<'w, BlockRequest>,
     input_mapping: ResMut<'w, InputMapping>,
 }
 
-#[derive(Event, Debug)]
+#[derive(Message, Debug)]
 struct BlockRequest(Entity);
 
 fn handle_block_requests(
-    mut blocks: EventReader<BlockRequest>,
+    mut blocks: MessageReader<BlockRequest>,
     mut focusables: Query<&mut Focusable>,
 ) {
     for request in blocks.read() {
@@ -61,7 +62,7 @@ impl<'w, 's> FocusParam<'w, 's> {
     }
 
     pub fn move_focus_from(&mut self, _id_maybe: impl Into<Option<Entity>>) {
-        self.requests.send(NavRequest::Move(NavDirection::South));
+        self.requests.write(NavRequest::Move(NavDirection::South));
     }
 
     pub fn set_keyboard_nav(&mut self, on: bool) {
@@ -70,7 +71,7 @@ impl<'w, 's> FocusParam<'w, 's> {
 
     pub fn block(&mut self, id_maybe: impl Into<Option<Entity>>) {
         if let Some(id) = id_maybe.into() {
-            self.blocks.send(BlockRequest(id));
+            self.blocks.write(BlockRequest(id));
             // self.move_focus_from(id);
             // self.focus.get_mut(id).map(|mut focusable| {
             //     if !focusable.block() {

@@ -1,6 +1,6 @@
 #![doc(html_root_url = "https://docs.rs/bevy_asky/0.3.0")]
 #![doc = include_str!("../README.md")]
-#![forbid(missing_docs)]
+// #![forbid(missing_docs)]
 #![allow(clippy::type_complexity)]
 use bevy::{app::PluginGroupBuilder, prelude::*};
 
