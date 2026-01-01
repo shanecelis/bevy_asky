@@ -145,6 +145,9 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
 
 #[cfg(test)]
 mod test {
+    use super::*;
+    use bevy::ecs::system::RunSystemOnce;
+    use bevy::input::keyboard::KeyboardInput;
 
     use crate::string_cursor::{ceil_char_boundary, floor_char_boundary};
 
@@ -174,5 +177,395 @@ mod test {
         assert_eq!(ceil_char_boundary(s, 0), 0);
         assert_eq!(ceil_char_boundary(s, 26), 26);
         assert_eq!(ceil_char_boundary(s, 27), 26);
+    }
+
+    // Temporary resource to pass entity to focus system
+    #[derive(Resource)]
+    struct FocusTarget(Entity);
+
+    // Helper system to set focus
+    fn set_focus_system(target: Res<FocusTarget>, mut focus: FocusParam) {
+        focus.move_focus_to(target.0);
+    }
+
+    #[test]
+    fn test_number_key_presses() {
+        let mut app = App::new();
+        app.add_plugins(MinimalPlugins)
+            .add_plugins(AskyPlugin)
+            .add_event::<KeyboardInput>()
+            .init_resource::<bevy::input::ButtonInput<bevy::input::keyboard::KeyCode>>();
+
+        // Create a Number<i32> entity with required components
+        let entity = app
+            .world_mut()
+            .spawn((
+                Number::<i32> {
+                    default_value: None,
+                },
+                StringCursor::default(),
+                Focusable::default(),
+                Prompt(Cow::Borrowed("Enter a number: ")),
+                GlobalTransform::default(),
+            ))
+            .id();
+
+        // Set the focus target resource
+        app.world_mut().insert_resource(FocusTarget(entity));
+
+        // Set focus on the entity using a one-shot system
+        app.world_mut().run_system_once(set_focus_system);
+
+        // Helper to send keyboard events
+        fn send_key_event(app: &mut App, event: KeyboardInput) {
+            app.world_mut()
+                .resource_mut::<Events<KeyboardInput>>()
+                .send(event);
+        }
+
+        // Helper to create character events
+        fn create_char_event(c: char) -> KeyboardInput {
+            use bevy::input::keyboard::KeyCode;
+            // Map character to KeyCode for the key_code field
+            let key_code = match c {
+                '1' => KeyCode::Digit1,
+                '2' => KeyCode::Digit2,
+                '3' => KeyCode::Digit3,
+                '4' => KeyCode::Digit4,
+                '5' => KeyCode::Digit5,
+                '6' => KeyCode::Digit6,
+                '7' => KeyCode::Digit7,
+                '8' => KeyCode::Digit8,
+                '9' => KeyCode::Digit9,
+                '0' => KeyCode::Digit0,
+                '-' => KeyCode::Minus,
+                'a' => KeyCode::KeyA,
+                _ => KeyCode::Digit1, // fallback
+            };
+            KeyboardInput {
+                logical_key: Key::Character(c.to_string().into()),
+                state: ButtonState::Pressed,
+                window: Entity::PLACEHOLDER,
+                key_code,
+                text: Some(c.to_string().into()),
+                repeat: false,
+            }
+        }
+
+        fn create_key_event(key: Key) -> KeyboardInput {
+            use bevy::input::keyboard::KeyCode;
+            let key_code = match key {
+                Key::Backspace => KeyCode::Backspace,
+                Key::Delete => KeyCode::Delete,
+                Key::ArrowLeft => KeyCode::ArrowLeft,
+                Key::ArrowRight => KeyCode::ArrowRight,
+                Key::Enter => KeyCode::Enter,
+                Key::Escape => KeyCode::Escape,
+                _ => KeyCode::Backspace, // fallback
+            };
+            KeyboardInput {
+                logical_key: key,
+                state: ButtonState::Pressed,
+                window: Entity::PLACEHOLDER,
+                key_code,
+                text: None,
+                repeat: false,
+            }
+        }
+
+        // Simulate typing "123"
+        send_key_event(&mut app, create_char_event('1'));
+        send_key_event(&mut app, create_char_event('2'));
+        send_key_event(&mut app, create_char_event('3'));
+
+        // Run update to process the events
+        app.update();
+
+        // Verify the text was inserted
+        let cursor = app.world().get::<StringCursor>(entity).unwrap();
+        assert_eq!(cursor.value, "123");
+        assert_eq!(cursor.index, 3);
+
+        // Test that invalid characters are rejected (e.g., 'a' for i32)
+        send_key_event(&mut app, create_char_event('a'));
+
+        app.update();
+
+        // Verify 'a' was not inserted (i32 only accepts digits and +/-)
+        let cursor = app.world().get::<StringCursor>(entity).unwrap();
+        assert_eq!(cursor.value, "123");
+        assert_eq!(cursor.index, 3);
+
+        // Test negative number
+        // Move cursor to beginning
+        send_key_event(&mut app, create_key_event(Key::ArrowLeft));
+        send_key_event(&mut app, create_key_event(Key::ArrowLeft));
+        send_key_event(&mut app, create_key_event(Key::ArrowLeft));
+
+        app.update();
+
+        // Verify cursor moved to beginning
+        let cursor = app.world().get::<StringCursor>(entity).unwrap();
+        assert_eq!(cursor.index, 0);
+
+        // Insert minus sign
+        send_key_event(&mut app, create_char_event('-'));
+
+        app.update();
+
+        // Verify minus was inserted
+        let cursor = app.world().get::<StringCursor>(entity).unwrap();
+        assert_eq!(cursor.value, "-123");
+        assert_eq!(cursor.index, 1);
+
+        // Test backspace
+        send_key_event(&mut app, create_key_event(Key::Backspace));
+
+        app.update();
+
+        // Verify backspace worked
+        let cursor = app.world().get::<StringCursor>(entity).unwrap();
+        assert_eq!(cursor.value, "123");
+        assert_eq!(cursor.index, 0);
+
+        // Test cursor movement
+        send_key_event(&mut app, create_key_event(Key::ArrowRight));
+
+        app.update();
+
+        // Verify cursor moved right
+        let cursor = app.world().get::<StringCursor>(entity).unwrap();
+        assert_eq!(cursor.index, 1);
+
+        // Test delete
+        send_key_event(&mut app, create_key_event(Key::Delete));
+
+        app.update();
+
+        // Verify delete worked (removed '2' at position 1)
+        let cursor = app.world().get::<StringCursor>(entity).unwrap();
+        assert_eq!(cursor.value, "13");
+        assert_eq!(cursor.index, 1);
+
+        // Test Enter key (should trigger submit, but we'll just verify it doesn't crash)
+        // The number "13" is valid, so it should submit successfully
+        send_key_event(&mut app, create_key_event(Key::Enter));
+
+        app.update();
+
+        // Verify state remains (Enter submits but doesn't change StringCursor)
+        let cursor = app.world().get::<StringCursor>(entity).unwrap();
+        assert_eq!(cursor.value, "13");
+    }
+
+    #[test]
+    fn test_number_f32_key_presses() {
+        let mut app = App::new();
+        app.add_plugins(MinimalPlugins)
+            .add_plugins(AskyPlugin)
+            .add_event::<KeyboardInput>()
+            .init_resource::<bevy::input::ButtonInput<bevy::input::keyboard::KeyCode>>();
+
+        // Create a Number<f32> entity with required components
+        let entity = app
+            .world_mut()
+            .spawn((
+                Number::<f32> {
+                    default_value: None,
+                },
+                StringCursor::default(),
+                Focusable::default(),
+                Prompt(Cow::Borrowed("Enter a number: ")),
+                GlobalTransform::default(),
+            ))
+            .id();
+
+        // Set the focus target resource
+        app.world_mut().insert_resource(FocusTarget(entity));
+
+        // Set focus on the entity using a one-shot system
+        app.world_mut().run_system_once(set_focus_system);
+
+        // Helper to send keyboard events
+        fn send_key_event(app: &mut App, event: KeyboardInput) {
+            app.world_mut()
+                .resource_mut::<Events<KeyboardInput>>()
+                .send(event);
+        }
+
+        // Helper to create character events
+        fn create_char_event(c: char) -> KeyboardInput {
+            use bevy::input::keyboard::KeyCode;
+            // Map character to KeyCode for the key_code field
+            let key_code = match c {
+                '1' => KeyCode::Digit1,
+                '2' => KeyCode::Digit2,
+                '3' => KeyCode::Digit3,
+                '4' => KeyCode::Digit4,
+                '5' => KeyCode::Digit5,
+                '6' => KeyCode::Digit6,
+                '7' => KeyCode::Digit7,
+                '8' => KeyCode::Digit8,
+                '9' => KeyCode::Digit9,
+                '0' => KeyCode::Digit0,
+                '-' => KeyCode::Minus,
+                '.' => KeyCode::Period,
+                'e' => KeyCode::KeyE,
+                'E' => KeyCode::KeyE,
+                'a' => KeyCode::KeyA,
+                _ => KeyCode::Digit1, // fallback
+            };
+            KeyboardInput {
+                logical_key: Key::Character(c.to_string().into()),
+                state: ButtonState::Pressed,
+                window: Entity::PLACEHOLDER,
+                key_code,
+                text: Some(c.to_string().into()),
+                repeat: false,
+            }
+        }
+
+        fn create_key_event(key: Key) -> KeyboardInput {
+            use bevy::input::keyboard::KeyCode;
+            let key_code = match key {
+                Key::Backspace => KeyCode::Backspace,
+                Key::Delete => KeyCode::Delete,
+                Key::ArrowLeft => KeyCode::ArrowLeft,
+                Key::ArrowRight => KeyCode::ArrowRight,
+                Key::Enter => KeyCode::Enter,
+                Key::Escape => KeyCode::Escape,
+                _ => KeyCode::Backspace, // fallback
+            };
+            KeyboardInput {
+                logical_key: key,
+                state: ButtonState::Pressed,
+                window: Entity::PLACEHOLDER,
+                key_code,
+                text: None,
+                repeat: false,
+            }
+        }
+
+        // Simulate typing "123.45"
+        send_key_event(&mut app, create_char_event('1'));
+        send_key_event(&mut app, create_char_event('2'));
+        send_key_event(&mut app, create_char_event('3'));
+        send_key_event(&mut app, create_char_event('.'));
+        send_key_event(&mut app, create_char_event('4'));
+        send_key_event(&mut app, create_char_event('5'));
+
+        // Run update to process the events
+        app.update();
+
+        // Verify the text was inserted
+        let cursor = app.world().get::<StringCursor>(entity).unwrap();
+        assert_eq!(cursor.value, "123.45");
+        assert_eq!(cursor.index, 6);
+
+        // Test that invalid characters are rejected (e.g., 'a' for f32)
+        send_key_event(&mut app, create_char_event('a'));
+
+        app.update();
+
+        // Verify 'a' was not inserted (f32 only accepts digits, decimal point, +/- and e/E)
+        let cursor = app.world().get::<StringCursor>(entity).unwrap();
+        assert_eq!(cursor.value, "123.45");
+        assert_eq!(cursor.index, 6);
+
+        // Test negative number
+        // Move cursor to beginning
+        for _ in 0..6 {
+            send_key_event(&mut app, create_key_event(Key::ArrowLeft));
+        }
+
+        app.update();
+
+        // Verify cursor moved to beginning
+        let cursor = app.world().get::<StringCursor>(entity).unwrap();
+        assert_eq!(cursor.index, 0);
+
+        // Insert minus sign
+        send_key_event(&mut app, create_char_event('-'));
+
+        app.update();
+
+        // Verify minus was inserted
+        let cursor = app.world().get::<StringCursor>(entity).unwrap();
+        assert_eq!(cursor.value, "-123.45");
+        assert_eq!(cursor.index, 1);
+
+        // Test backspace
+        send_key_event(&mut app, create_key_event(Key::Backspace));
+
+        app.update();
+
+        // Verify backspace worked
+        let cursor = app.world().get::<StringCursor>(entity).unwrap();
+        assert_eq!(cursor.value, "123.45");
+        assert_eq!(cursor.index, 0);
+
+        // Test cursor movement to middle
+        // Move to position after decimal point (index 4: "123.|45")
+        send_key_event(&mut app, create_key_event(Key::ArrowRight));
+        send_key_event(&mut app, create_key_event(Key::ArrowRight));
+        send_key_event(&mut app, create_key_event(Key::ArrowRight));
+        send_key_event(&mut app, create_key_event(Key::ArrowRight));
+
+        app.update();
+
+        // Verify cursor moved to after the decimal point
+        let cursor = app.world().get::<StringCursor>(entity).unwrap();
+        assert_eq!(cursor.index, 4);
+
+        // Test delete (should remove '4' at position 4)
+        send_key_event(&mut app, create_key_event(Key::Delete));
+
+        app.update();
+
+        // Verify delete worked
+        let cursor = app.world().get::<StringCursor>(entity).unwrap();
+        assert_eq!(cursor.value, "123.5");
+        assert_eq!(cursor.index, 4);
+
+        // Test that 'e' is rejected (scientific notation not supported in validation)
+        // Move cursor to end
+        send_key_event(&mut app, create_key_event(Key::ArrowRight));
+
+        app.update();
+
+        // Verify cursor is at end
+        let cursor = app.world().get::<StringCursor>(entity).unwrap();
+        assert_eq!(cursor.index, 5);
+
+        // Try to insert 'e' for scientific notation
+        send_key_event(&mut app, create_char_event('e'));
+
+        app.update();
+
+        // Verify 'e' was NOT inserted (validation doesn't allow 'e' even though f32 can parse it)
+        let cursor = app.world().get::<StringCursor>(entity).unwrap();
+        assert_eq!(cursor.value, "123.5");
+        assert_eq!(cursor.index, 5);
+
+        // Test that only one decimal point is allowed
+        // Try to insert another decimal point
+        send_key_event(&mut app, create_char_event('.'));
+
+        app.update();
+
+        // Verify second decimal point was NOT inserted
+        let cursor = app.world().get::<StringCursor>(entity).unwrap();
+        assert_eq!(cursor.value, "123.5");
+        assert_eq!(cursor.index, 5);
+
+        // Test Enter key (should trigger submit, but we'll just verify it doesn't crash)
+        // The number "123.5" is valid, so it should submit successfully
+        send_key_event(&mut app, create_key_event(Key::Enter));
+
+        app.update();
+
+        // Verify state remains (Enter submits but doesn't change StringCursor)
+        let cursor = app.world().get::<StringCursor>(entity).unwrap();
+        assert_eq!(cursor.value, "123.5");
     }
 }
