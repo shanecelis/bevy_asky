@@ -160,3 +160,117 @@ fn radio_group_controller(
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use bevy::ecs::system::RunSystemOnce;
+    use bevy::input::keyboard::KeyCode;
+
+    // Temporary resource to pass entity to focus system
+    #[derive(Resource)]
+    struct FocusTarget(Entity);
+
+    // Helper system to set focus
+    fn set_focus_system(target: Res<FocusTarget>, mut focus: FocusParam) {
+        focus.move_focus_to(target.0);
+    }
+
+    // Temporary resource to pass key code to press system
+    #[derive(Resource)]
+    struct KeyToPress(KeyCode);
+
+    // Helper system to press a key
+    fn press_key_system(key: Res<KeyToPress>, mut input: ResMut<ButtonInput<KeyCode>>) {
+        input.press(key.0);
+    }
+
+    // Helper system to clear all key presses
+    fn clear_keys_system(mut input: ResMut<ButtonInput<KeyCode>>) {
+        // ButtonInput doesn't have a clear_all, so we need to release all pressed keys
+        // For testing, we'll just reset the resource
+        *input = ButtonInput::default();
+    }
+
+    #[test]
+    fn test_radio_key_presses() {
+        let mut app = App::new();
+        app.add_plugins(MinimalPlugins)
+            .add_plugins(AskyPlugin)
+            .add_event::<bevy::input::keyboard::KeyboardInput>()
+            .init_resource::<ButtonInput<KeyCode>>();
+
+        // Create a Radio entity with required components
+        let entity = app
+            .world_mut()
+            .spawn((
+                Radio { checked: false },
+                Focusable::default(),
+                Prompt(Cow::Borrowed("Option 1")),
+                GlobalTransform::default(),
+                AccessibilityNode(accesskit::Node::new(accesskit::Role::RadioButton)),
+            ))
+            .id();
+
+        // Set the focus target resource
+        app.world_mut().insert_resource(FocusTarget(entity));
+
+        // Set focus on the entity using a one-shot system
+        app.world_mut().run_system_once(set_focus_system);
+
+        // Helper to simulate a key press
+        fn simulate_key_press(app: &mut App, key: KeyCode) {
+            // Set the key to press
+            app.world_mut().insert_resource(KeyToPress(key));
+            // Press the key using a system
+            app.world_mut().run_system_once(press_key_system);
+            // Run update to process the key press
+            app.update();
+            // Clear the key press state
+            app.world_mut().run_system_once(clear_keys_system);
+            // Run update again to clear the "just_pressed" state
+            app.update();
+        }
+
+        // Verify initial state
+        let radio = app.world().get::<Radio>(entity).unwrap();
+        assert_eq!(radio.checked, false);
+
+        // Simulate Space key press (should toggle to true)
+        simulate_key_press(&mut app, KeyCode::Space);
+
+        // Verify radio is now checked
+        let radio = app.world().get::<Radio>(entity).unwrap();
+        assert_eq!(radio.checked, true);
+
+        // Simulate Space key press again (should toggle back to false)
+        simulate_key_press(&mut app, KeyCode::Space);
+
+        // Verify radio is unchecked again
+        let radio = app.world().get::<Radio>(entity).unwrap();
+        assert_eq!(radio.checked, false);
+
+        // Simulate KeyL press (should set to true)
+        simulate_key_press(&mut app, KeyCode::KeyL);
+
+        // Verify radio is checked
+        let radio = app.world().get::<Radio>(entity).unwrap();
+        assert_eq!(radio.checked, true);
+
+        // Simulate KeyH press (should set to false)
+        simulate_key_press(&mut app, KeyCode::KeyH);
+
+        // Verify radio is unchecked
+        let radio = app.world().get::<Radio>(entity).unwrap();
+        assert_eq!(radio.checked, false);
+
+        // Test toggle again with Space
+        simulate_key_press(&mut app, KeyCode::Space);
+        let radio = app.world().get::<Radio>(entity).unwrap();
+        assert_eq!(radio.checked, true);
+
+        simulate_key_press(&mut app, KeyCode::Space);
+        let radio = app.world().get::<Radio>(entity).unwrap();
+        assert_eq!(radio.checked, false);
+    }
+}
