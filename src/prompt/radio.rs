@@ -198,7 +198,8 @@ mod test {
         app.add_plugins(MinimalPlugins)
             .add_plugins(AskyPlugin)
             .add_event::<bevy::input::keyboard::KeyboardInput>()
-            .init_resource::<ButtonInput<KeyCode>>();
+            .init_resource::<ButtonInput<KeyCode>>()
+            .init_resource::<bevy::input_focus::InputFocus>();
 
         // Create a Radio entity with required components
         let entity = app

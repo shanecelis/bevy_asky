@@ -194,7 +194,8 @@ mod test {
         app.add_plugins(MinimalPlugins)
             .add_plugins(AskyPlugin)
             .add_event::<KeyboardInput>()
-            .init_resource::<bevy::input::ButtonInput<bevy::input::keyboard::KeyCode>>();
+            .init_resource::<bevy::input::ButtonInput<bevy::input::keyboard::KeyCode>>()
+            .init_resource::<bevy::input_focus::InputFocus>();
 
         // Create a Number<i32> entity with required components
         let entity = app
@@ -364,7 +365,8 @@ mod test {
         app.add_plugins(MinimalPlugins)
             .add_plugins(AskyPlugin)
             .add_event::<KeyboardInput>()
-            .init_resource::<bevy::input::ButtonInput<bevy::input::keyboard::KeyCode>>();
+            .init_resource::<bevy::input::ButtonInput<bevy::input::keyboard::KeyCode>>()
+            .init_resource::<bevy::input_focus::InputFocus>();
 
         // Create a Number<f32> entity with required components
         let entity = app

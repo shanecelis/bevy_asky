@@ -52,6 +52,12 @@ impl Focusable {
 // pub struct Blocked;
 
 pub(crate) fn plugin(app: &mut App) {
+    // InputDispatchPlugin is needed for InputFocus to work in Bevy 0.17,
+    // but it requires message types that aren't available in test mode.
+    // Only add it when not in test configuration.
+    #[cfg(not(test))]
+    app.add_plugins(InputDispatchPlugin);
+    
     app
         .register_type::<Focusable>()
         .insert_resource(KeyboardNav(true))

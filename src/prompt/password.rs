@@ -70,7 +70,8 @@ mod test {
         app.add_plugins(MinimalPlugins)
             .add_plugins(AskyPlugin)
             .add_event::<KeyboardInput>()
-            .init_resource::<bevy::input::ButtonInput<bevy::input::keyboard::KeyCode>>();
+            .init_resource::<bevy::input::ButtonInput<bevy::input::keyboard::KeyCode>>()
+            .init_resource::<bevy::input_focus::InputFocus>();
 
         // Create a Password entity with required components
         let entity = app
