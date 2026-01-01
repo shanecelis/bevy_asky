@@ -1,7 +1,10 @@
 //! Helper traits for creating common widgets
 
 use bevy::{
-    ecs::system::EntityCommands,
+    ecs::{
+        relationship::{Relationship, RelatedSpawnerCommands},
+        system::EntityCommands,
+    },
     prelude::*,
     // ui::Val::*
 };
@@ -188,6 +191,12 @@ trait Spawn {
 }
 
 impl Spawn for Commands<'_, '_> {
+    fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands {
+        self.spawn(bundle)
+    }
+}
+
+impl<R: bevy::ecs::relationship::Relationship> Spawn for RelatedSpawnerCommands<'_, R> {
     fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands {
         self.spawn(bundle)
     }

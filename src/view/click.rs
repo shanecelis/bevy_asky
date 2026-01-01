@@ -31,7 +31,7 @@
 //! # use bevy::prelude::*;
 //! # use bevy_asky::view::click::{self, Click};
 //! fn setup(mut commands: Commands) {
-//!     commands.spawn(ButtonBundle::default())
+//!     commands.spawn(Button::default())
 //!         .observe(|trigger: Trigger<Click>|
 //!             eprintln!("Clicked on {}", trigger.target()));
 //! }
@@ -62,7 +62,7 @@ pub fn plugin(app: &mut App) {
 /// # use bevy::prelude::*;
 /// # use bevy_asky::view::click::{self, Click};
 /// fn setup(mut commands: Commands) {
-///     commands.spawn(ButtonBundle::default())
+///     commands.spawn(Button::default())
 ///         .observe(|trigger: Trigger<Click>|
 ///             eprintln!("Clicked on {}", trigger.target()));
 /// }
