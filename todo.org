@@ -1,2 +1,12 @@
 #+title: Todo
 - [ ] Remove ConfirmState
+* Examples that don't work
+- [ ] radio
+- [ ] radio group
+- [ ] number
+- [ ] confirm
+- [x] password
+- [x] text
+- [ ] text-async
+- [ ] toggle
+  dies after enter

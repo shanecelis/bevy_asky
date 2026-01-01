@@ -11,6 +11,7 @@ fn main() {
         .add_plugins((DefaultPlugins, AskyPlugin))
         .add_plugins(common::views)
         .add_systems(Startup, setup)
+        .add_systems(Update, common::set_initial_focus)
         .run();
 }
 
