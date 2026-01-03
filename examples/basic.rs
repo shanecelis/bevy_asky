@@ -20,8 +20,6 @@ fn main() {
     App::new()
         .add_plugins((DefaultPlugins,
                       AskyPlugin,
-                      InputDispatchPlugin,
-                      DirectionalNavigationPlugin,
         ))
         .insert_resource(InputFocusVisible(true))
         .add_plugins(common::views)
@@ -79,7 +77,18 @@ fn setup(mut commands: Commands, mut input_focus: ResMut<InputFocus>) {
                         }));
                         parent
                             .construct::<View>(())
-                            .construct::<Confirm>("Do you prefer color?");
+                            .construct::<Confirm>("Do you prefer color?")
+                            .observe(move |mut trigger: Trigger<Submit<bool>>, mut commands: Commands| {
+                                let answer = trigger.event_mut().take_result().unwrap_or(false);
+                                commands.entity(column).with_children(|parent| {
+                                    parent.spawn(Text::new(if answer {
+                                        "Me too!"
+                                    } else {
+                                        "Oh, yeah, too vibrant."
+                                    }));
+                                });
+                                commands.entity(trigger.target()).despawn();
+                            });
                     });
                     commands.entity(trigger.target()).despawn();
                 },
