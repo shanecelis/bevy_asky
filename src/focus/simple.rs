@@ -4,6 +4,7 @@ input_focus::{
     },
 };
 use std::fmt::Debug;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// A rudimentary focus parameter
 ///
@@ -29,11 +30,26 @@ impl Focus<'_> {
 #[derive(Resource, Default, Debug)]
 pub struct KeyboardNav(bool);
 
+/// Atomic counter for generating unique creation IDs for Focusable components.
+static FOCUSABLE_COUNTER: AtomicUsize = AtomicUsize::new(0);
+
 /// Marker for Focusable components
-#[derive(Component, Clone, Default, Reflect)]
+#[derive(Component, Clone, Reflect)]
 pub struct Focusable {
     version: usize,
     block: bool,
+    /// Creation order ID, used for ordering focusable entities.
+    pub created: usize,
+}
+
+impl Default for Focusable {
+    fn default() -> Self {
+        Self {
+            version: 0,
+            block: false,
+            created: FOCUSABLE_COUNTER.fetch_add(1, Ordering::Relaxed),
+        }
+    }
 }
 
 impl Focusable {
@@ -105,7 +121,7 @@ fn to_dir(dir: CompassQuadrant) -> Dir2 {
 /// A rich focus parameter
 #[derive(SystemParam)]
 pub struct FocusParam<'w, 's> {
-    query: Query<'w, 's, (Entity, &'static mut Focusable, &'static GlobalTransform)>,
+    query: Query<'w, 's, (Entity, &'static mut Focusable)>,
     // nodes: Query<'w, 's, (Entity, &'static Node)>,
     focus: ResMut<'w, InputFocus>,
     keyboard_nav: ResMut<'w, KeyboardNav>,
@@ -118,10 +134,16 @@ impl FocusParam<'_, '_> {
     }
 
     /// Move the focus in a direction if possible.
+    /// 
+    /// For directional navigation, we use creation order:
+    /// - North/Up: previous (lower created ID)
+    /// - South/Down: next (higher created ID)
+    /// - East/Right: next (higher created ID)
+    /// - West/Left: previous (lower created ID)
     pub fn move_focus(&mut self, dir: CompassQuadrant) {
-        let (old_id, old_pos) = if let Some(old_focus) = self.focus.0 {
-            if let Ok((id, _, transform)) = self.query.get_mut(old_focus) {
-                (id, transform.translation())
+        let old_created = if let Some(old_focus) = self.focus.0 {
+            if let Ok((_, focusable)) = self.query.get(old_focus) {
+                focusable.created
             } else {
                 self.move_focus_from(None);
                 return;
@@ -130,16 +152,51 @@ impl FocusParam<'_, '_> {
             self.move_focus_from(None);
             return;
         };
-        let dir: Dir2 = to_dir(dir);
-        if let Some((min_id, _min_dist)) = focus_next_wrap(dir, (old_id, old_pos.xy()), || {
-            self.query
-                .iter()
-                .map(|(id, _, transform)| (id, transform.translation().xy()))
-        }) {
-            // info!("focus to {min_id}");
-            self.move_focus_to(min_id);
-        } else {
-            // warn!("no focus found");
+        
+        use CompassQuadrant::*;
+        let candidates: Vec<_> = self.query
+            .iter()
+            .filter(|(id, focusable)| {
+                *id != self.focus.0.unwrap() && !focusable.block
+            })
+            .map(|(id, focusable)| (id, focusable.created))
+            .collect();
+        
+        let result = match dir {
+            North | West => {
+                // Previous: find highest created ID that is less than current
+                candidates
+                    .iter()
+                    .filter(|(_, created)| *created < old_created)
+                    .max_by_key(|(_, created)| *created)
+                    .map(|(id, _)| *id)
+            }
+            South | East => {
+                // Next: find lowest created ID that is greater than current
+                candidates
+                    .iter()
+                    .filter(|(_, created)| *created > old_created)
+                    .min_by_key(|(_, created)| *created)
+                    .map(|(id, _)| *id)
+            }
+        };
+        
+        // If no result in direction, wrap around
+        let result = result.or_else(|| {
+            match dir {
+                North | West => {
+                    // Wrap: find highest created ID overall
+                    candidates.iter().max_by_key(|(_, created)| *created).map(|(id, _)| *id)
+                }
+                South | East => {
+                    // Wrap: find lowest created ID overall
+                    candidates.iter().min_by_key(|(_, created)| *created).map(|(id, _)| *id)
+                }
+            }
+        });
+        
+        if let Some(id) = result {
+            self.move_focus_to(id);
         }
     }
 
@@ -149,30 +206,46 @@ impl FocusParam<'_, '_> {
     }
 
     /// Move focus away from an entity.
+    /// 
+    /// Uses creation order: moves to the next unblocked entity after the current one.
     pub fn move_focus_from(&mut self, id_maybe: impl Into<Option<Entity>>) {
         if let Some(focus_id) = id_maybe.into().or(self.focus.0) {
-            // We're moving from a definite id.
-            let mut seen_id = false;
-            let mut result = None;
-            for (id, focusable, _) in &self.query {
-                if seen_id {
-                    result = Some(id);
-                    break;
-                }
-                if focus_id == id {
-                    seen_id = true;
-                } else if !focusable.block && result.is_none() {
-                    result = Some(id);
-                }
-            }
+            // Get the creation order of the current focus
+            let current_created = self.query
+                .get(focus_id)
+                .map(|(_, focusable)| focusable.created)
+                .unwrap_or(0);
+            
+            // Find the next unblocked entity with higher creation order
+            let mut candidates: Vec<_> = self.query
+                .iter()
+                .filter(|(id, focusable)| {
+                    *id != focus_id && !focusable.block
+                })
+                .map(|(id, focusable)| (id, focusable.created))
+                .collect();
+            
+            // Sort by creation order
+            candidates.sort_by_key(|(_, created)| *created);
+            
+            // Find next after current, or wrap to first
+            let result = candidates
+                .iter()
+                .find(|(_, created)| *created > current_created)
+                .map(|(id, _)| *id)
+                .or_else(|| candidates.first().map(|(id, _)| *id));
+            
             self.focus.0 = result;
         } else {
-            // We're moving to any available id.
-            self.focus.0 = self
-                .query
+            // We're moving to any available id - pick the first (lowest created ID).
+            let mut candidates: Vec<_> = self.query
                 .iter()
-                .find(|(_, focusable, _)| !focusable.block)
-                .map(|(id, _, _)| id);
+                .filter(|(_, focusable)| !focusable.block)
+                .map(|(id, focusable)| (id, focusable.created))
+                .collect();
+            
+            candidates.sort_by_key(|(_, created)| *created);
+            self.focus.0 = candidates.first().map(|(id, _)| *id);
         }
     }
 
@@ -197,14 +270,14 @@ impl FocusParam<'_, '_> {
     pub fn is_blocked(&self, id: Entity) -> bool {
         self.query
             .get(id)
-            .map(|(_, focusable, _)| focusable.block)
+            .map(|(_, focusable)| focusable.block)
             .unwrap_or(true)
     }
 
     /// Block focus on current or given entity.
     pub fn block(&mut self, id_maybe: impl Into<Option<Entity>>) {
         if let Some(id) = id_maybe.into().or(self.focus.0) {
-            if let Ok((_, mut focus, _)) = self.query.get_mut(id) {
+            if let Ok((_, mut focus)) = self.query.get_mut(id) {
                 focus.block = true;
             } else {
                 // Entity doesn't have Focusable component or was despawned
@@ -219,7 +292,7 @@ impl FocusParam<'_, '_> {
     /// Unblock focus on current or given entity.
     pub fn unblock(&mut self, id_maybe: impl Into<Option<Entity>>) {
         if let Some(id) = id_maybe.into().or(self.focus.0) {
-            if let Ok((_, mut focus, _)) = self.query.get_mut(id) {
+            if let Ok((_, mut focus)) = self.query.get_mut(id) {
                 focus.block = false;
             } else {
                 // Entity doesn't have Focusable component or was despawned
