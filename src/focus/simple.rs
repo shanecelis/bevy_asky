@@ -1,9 +1,6 @@
 use bevy::{ecs::system::SystemParam, math::CompassQuadrant, prelude::*,
 input_focus::{
-        directional_navigation::{
-            DirectionalNavigation, DirectionalNavigationMap, DirectionalNavigationPlugin,
-        },
-        InputDispatchPlugin, InputFocus, InputFocusVisible,
+        InputDispatchPlugin, InputFocus,
     },
 };
 use std::fmt::Debug;
@@ -61,8 +58,36 @@ pub(crate) fn plugin(app: &mut App) {
     app
         .register_type::<Focusable>()
         .insert_resource(KeyboardNav(true))
-        .add_systems(PreUpdate, focus_keys)
+        .add_systems(PreUpdate, (sync_focus_to_focusable, focus_keys))
         .add_systems(Update, reset_focus);
+}
+
+/// Sync InputFocus changes to Focusable components for change detection.
+fn sync_focus_to_focusable(
+    input_focus: Res<InputFocus>,
+    mut focusables: Query<(Entity, &mut Focusable)>,
+    mut last_focus: Local<Option<Entity>>,
+) {
+    let current_focus = input_focus.get();
+    
+    // If focus changed, touch the old and new focusable
+    if *last_focus != current_focus {
+        // Touch the old focused entity
+        if let Some(old_id) = *last_focus {
+            if let Ok((_, mut focusable)) = focusables.get_mut(old_id) {
+                focusable.touch();
+            }
+        }
+        
+        // Touch the new focused entity
+        if let Some(new_id) = current_focus {
+            if let Ok((_, mut focusable)) = focusables.get_mut(new_id) {
+                focusable.touch();
+            }
+        }
+        
+        *last_focus = current_focus;
+    }
 }
 
 fn to_dir(dir: CompassQuadrant) -> Dir2 {
@@ -120,18 +145,7 @@ impl FocusParam<'_, '_> {
 
     /// Move focus to an entity.
     pub fn move_focus_to(&mut self, id: Entity) {
-        if let Some(old_focus) = self.focus.0.take() {
-            if let Ok((_, mut focusable, _)) = self.query.get_mut(old_focus) {
-                // Touch the old one so it knows it's no longer the focus.
-                focusable.touch()
-            }
-        }
         self.focus.0 = Some(id);
-
-        if let Ok((_, mut focusable, _)) = self.query.get_mut(id) {
-            // Touch the old one so it knows it's no longer the focus.
-            focusable.touch()
-        }
     }
 
     /// Move focus away from an entity.
@@ -151,21 +165,14 @@ impl FocusParam<'_, '_> {
                     result = Some(id);
                 }
             }
-            if let Some(id) = result {
-                let (_, mut focusable, _) = self.query.get_mut(id).unwrap();
-                focusable.touch();
-            }
             self.focus.0 = result;
         } else {
             // We're moving to any available id.
             self.focus.0 = self
                 .query
-                .iter_mut()
+                .iter()
                 .find(|(_, focusable, _)| !focusable.block)
-                .map(|(id, mut focusable, _)| {
-                    focusable.touch();
-                    id
-                });
+                .map(|(id, _, _)| id);
         }
     }
 
@@ -197,10 +204,13 @@ impl FocusParam<'_, '_> {
     /// Block focus on current or given entity.
     pub fn block(&mut self, id_maybe: impl Into<Option<Entity>>) {
         if let Some(id) = id_maybe.into().or(self.focus.0) {
-            self.query
-                .get_mut(id)
-                .map(|(_, mut focus, _)| focus.block = true)
-                .expect("no Focusable");
+            if let Ok((_, mut focus, _)) = self.query.get_mut(id) {
+                focus.block = true;
+            } else {
+                // Entity doesn't have Focusable component or was despawned
+                // This can happen if the entity was despawned after submit
+                warn!("Cannot block entity {:?}: no Focusable component", id);
+            }
         } else {
             warn!("No id to block");
         }
@@ -209,11 +219,12 @@ impl FocusParam<'_, '_> {
     /// Unblock focus on current or given entity.
     pub fn unblock(&mut self, id_maybe: impl Into<Option<Entity>>) {
         if let Some(id) = id_maybe.into().or(self.focus.0) {
-            // self.commands.entity(id).remove::<Blocked>();
-            self.query
-                .get_mut(id)
-                .map(|(_, mut focus, _)| focus.block = false)
-                .expect("no Focusable");
+            if let Ok((_, mut focus, _)) = self.query.get_mut(id) {
+                focus.block = false;
+            } else {
+                // Entity doesn't have Focusable component or was despawned
+                warn!("Cannot unblock entity {:?}: no Focusable component", id);
+            }
         } else {
             warn!("No id to unblock");
         }
