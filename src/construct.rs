@@ -156,7 +156,7 @@ impl ConstructContext<'_> {
 /// The main touch point for the user.
 pub trait ConstructExt {
     /// Construct a type using the given properties.
-    fn construct<T: Construct + Bundle>(&mut self, props: impl Into<T::Props>) -> EntityCommands
+    fn construct<T: Construct + Bundle>(&mut self, props: impl Into<T::Props>) -> EntityCommands<'_>
     where
         <T as Construct>::Props: Send;
 }
@@ -167,7 +167,7 @@ pub trait ConstructChildrenExt: ConstructExt {
     fn construct_children<T: Construct + Bundle>(
         &mut self,
         props: impl IntoIterator<Item = impl Into<T::Props>>,
-    ) -> EntityCommands
+    ) -> EntityCommands<'_>
     where
         <T as Construct>::Props: Send;
 }
@@ -190,7 +190,7 @@ where
 
 impl ConstructExt for Commands<'_, '_> {
     // type Out = EntityCommands;
-    fn construct<T: Construct + Bundle>(&mut self, props: impl Into<T::Props>) -> EntityCommands
+    fn construct<T: Construct + Bundle>(&mut self, props: impl Into<T::Props>) -> EntityCommands<'_>
     where
         <T as Construct>::Props: Send,
     {
@@ -202,7 +202,7 @@ impl ConstructExt for Commands<'_, '_> {
 
 impl ConstructExt for ChildSpawnerCommands<'_> {
     // type Out = EntityCommands;
-    fn construct<T: Construct + Bundle>(&mut self, props: impl Into<T::Props>) -> EntityCommands
+    fn construct<T: Construct + Bundle>(&mut self, props: impl Into<T::Props>) -> EntityCommands<'_>
     where
         <T as Construct>::Props: Send,
     {
@@ -226,7 +226,7 @@ impl ConstructExt for ChildSpawnerCommands<'_> {
 
 impl ConstructExt for EntityCommands<'_> {
     // type Out = EntityCommands;
-    fn construct<T: Construct + Bundle>(&mut self, props: impl Into<T::Props>) -> EntityCommands
+    fn construct<T: Construct + Bundle>(&mut self, props: impl Into<T::Props>) -> EntityCommands<'_>
     where
         <T as Construct>::Props: Send,
     {
@@ -239,7 +239,7 @@ impl ConstructChildrenExt for EntityCommands<'_> {
     fn construct_children<T: Construct + Bundle>(
         &mut self,
         props: impl IntoIterator<Item = impl Into<T::Props>>,
-    ) -> EntityCommands
+    ) -> EntityCommands<'_>
     where
         <T as Construct>::Props: Send,
     {

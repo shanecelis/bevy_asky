@@ -33,10 +33,10 @@ impl AskyAsync {
                 let mut ecommands = commands.prompt::<T>(p, d);
                 f(&mut ecommands);
                 let mut send_once = Some(sender);
-                ecommands.observe(move |mut trigger: Trigger<Submit<T::Out>>| {
+                ecommands.observe(move |mut trigger: On<Submit<T::Out>>| {
                     if let Some(sender) = send_once.take() {
                         sender
-                            .send(trigger.event_mut().take_result())
+                            write_message(trigger.event_mut().take_result())
                             .expect("send");
                     }
                     // TODO: This should be the result of some policy not de facto.
@@ -86,9 +86,9 @@ impl AskyAsync {
     //     //         commands
     //     //             .prompt_group::<T, V>(g, p, d)
     //     //             .observe(
-    //     //                 move |trigger: Trigger<Submit<<<T as Part>::Group as Submitter>::Out>>, mut commands: Commands| {
+    //     //                 move |trigger: On<Submit<<<T as Part>::Group as Submitter>::Out>>, mut commands: Commands| {
     //     //                     if let Some(sender) = send_once.take() {
-    //     //                         sender.send(trigger.event().0.clone()).expect("send");
+    //     //                         senderwrite_message(trigger.event().0.clone()).expect("send");
     //     //                     }
     //     //                     // TODO: This should be the result of some policy not de facto.
     //     //                     // commands.entity(trigger.target()).despawn_recursive();

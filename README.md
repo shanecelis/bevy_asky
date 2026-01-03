@@ -59,7 +59,7 @@ commands
     .construct::<Confirm>("Do you like cats?")
     .construct::<ascii::View>(())
     .observe(
-        move |trigger: Trigger<Submit<bool>>, mut commands: Commands| {
+        move |trigger: On<Submit<bool>>, mut commands: Commands| {
             if let Submit(Ok(yes)) = trigger.event() {
                 commands.entity(trigger.target())
                         .construct::<Feedback>(Feedback::info(if *yes {

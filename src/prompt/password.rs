@@ -46,7 +46,6 @@ impl Construct for Password {
 #[cfg(test)]
 mod test {
     use super::*;
-    use bevy::ecs::system::RunSystemOnce;
 
         use bevy::{
                 input::{
@@ -60,7 +59,7 @@ mod test {
         let mut app = App::new();
         app.add_plugins(MinimalPlugins)
             .add_plugins(AskyPlugin)
-            .add_event::<KeyboardInput>()
+            .add_message::<KeyboardInput>()
             .init_resource::<bevy::input::ButtonInput<bevy::input::keyboard::KeyCode>>()
             .init_resource::<bevy::input_focus::InputFocus>();
 
@@ -81,8 +80,8 @@ mod test {
         // Helper to send keyboard events
         fn send_key_event(app: &mut App, event: KeyboardInput) {
             app.world_mut()
-                .resource_mut::<Events<KeyboardInput>>()
-                .send(event);
+                .resource_mut::<Messages<KeyboardInput>>()
+                .write(event);
         }
 
         // Helper to create character events

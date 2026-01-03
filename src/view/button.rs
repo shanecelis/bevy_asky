@@ -233,7 +233,7 @@ impl Construct for View {
                     .button(" No ", &Palette::default())
                     .insert(Answer::Selection(false))
                     .observe(
-                        move |_trigger: Trigger<Click>,
+                        move |_trigger: On<Click>,
                               mut query: Query<(&mut AskyState, &mut Confirm)>,
                               mut commands: Commands| {
                             let (mut asky_state, mut confirm) = query.get_mut(id).unwrap();
@@ -248,7 +248,7 @@ impl Construct for View {
                     .button(" Yes ", &Palette::default())
                     .insert(Answer::Selection(true))
                     .observe(
-                        move |_trigger: Trigger<Click>,
+                        move |_trigger: On<Click>,
                               mut query: Query<(&mut AskyState, &mut Confirm)>,
                               mut commands: Commands| {
                             let (mut asky_state, mut confirm) = query.get_mut(id).unwrap();

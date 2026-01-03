@@ -1,8 +1,9 @@
 use bevy::{ecs::system::SystemParam, math::CompassQuadrant, prelude::*,
-input_focus::{
-        InputDispatchPlugin, InputFocus,
-    },
+input_focus:: InputFocus,
 };
+
+#[cfg(not(test))]
+use bevy::input_focus::InputDispatchPlugin;
 use std::fmt::Debug;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -103,18 +104,6 @@ fn sync_focus_to_focusable(
         }
         
         *last_focus = current_focus;
-    }
-}
-
-fn to_dir(dir: CompassQuadrant) -> Dir2 {
-    use CompassQuadrant::*;
-    match dir {
-        // NOTE: I think the Y axis is inverted for UI coordinates.
-        North => Dir2::NEG_Y,
-        South => Dir2::Y,
-
-        East => Dir2::X,
-        West => Dir2::NEG_X,
     }
 }
 
@@ -346,140 +335,3 @@ fn reset_focus(mut focus: FocusParam) {
     }
 }
 
-fn focus_next_rev<T>(
-    dir: Dir2,
-    curr: (T, Vec2),
-    elements: impl Iterator<Item = (T, Vec2)>,
-) -> Option<(T, f32)>
-where
-    T: PartialEq + Copy + Debug,
-{
-    let (curr_id, curr_pos) = curr;
-    elements
-        .filter_map(|(id, pos)| {
-            if id == curr_id {
-                None
-            } else {
-                let delta = pos - curr_pos;
-                let dirdist = delta.dot(*dir);
-                (dirdist > 0.0).then_some((id, dirdist))
-            }
-        })
-        .max_by(|a, b| a.1.total_cmp(&b.1))
-}
-
-fn focus_next_wrap<T, I>(dir: Dir2, curr: (T, Vec2), elements: impl Fn() -> I) -> Option<(T, f32)>
-where
-    T: PartialEq + Copy + Debug,
-    I: Iterator<Item = (T, Vec2)>,
-{
-    focus_next(dir, curr, elements()).or_else(|| focus_next_rev(-dir, curr, elements()))
-}
-
-fn focus_next<T>(
-    dir: Dir2,
-    curr: (T, Vec2),
-    elements: impl Iterator<Item = (T, Vec2)>,
-) -> Option<(T, f32)>
-where
-    T: PartialEq + Copy + Debug,
-{
-    let (curr_id, curr_pos) = curr;
-    elements
-        .filter_map(|(id, pos)| {
-            // dbg!(id, pos);
-            if id == curr_id {
-                None
-            } else {
-                let delta = pos - curr_pos;
-                let dirdist = delta.dot(*dir);
-                (dirdist > 0.0).then_some((id, dirdist))
-            }
-        })
-        .min_by(|a, b| a.1.total_cmp(&b.1))
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn next_right() {
-        let elements = [(0, Vec2::ZERO), (1, Vec2::X)];
-        assert_eq!(
-            focus_next(
-                to_dir(CompassQuadrant::East),
-                elements[0],
-                elements.into_iter()
-            ),
-            Some((1, 1.0))
-        );
-    }
-
-    #[test]
-    fn two_right() {
-        let elements = [(0, Vec2::ZERO), (1, Vec2::X), (2, 2.0 * Vec2::X)];
-        assert_eq!(
-            focus_next(
-                to_dir(CompassQuadrant::East),
-                elements[0],
-                elements.into_iter()
-            ),
-            Some((1, 1.0))
-        );
-    }
-
-    #[test]
-    fn none_right() {
-        let elements = [(0, Vec2::ZERO), (1, Vec2::NEG_X)];
-        assert_eq!(
-            focus_next(
-                to_dir(CompassQuadrant::East),
-                elements[0],
-                elements.into_iter()
-            ),
-            None
-        );
-    }
-
-    #[test]
-    fn none_right_wrap() {
-        let elements = [(0, Vec2::ZERO), (1, Vec2::NEG_X)];
-        assert_eq!(
-            focus_next_wrap(to_dir(CompassQuadrant::East), elements[0], || elements
-                .into_iter())
-            .map(|x| x.0),
-            Some(1)
-        );
-    }
-
-    #[test]
-    fn two_left_wrap() {
-        let elements = [(0, Vec2::ZERO), (1, Vec2::NEG_X), (2, 2.0 * Vec2::NEG_X)];
-        assert_eq!(
-            focus_next_wrap(to_dir(CompassQuadrant::East), elements[0], || elements
-                .into_iter())
-            .map(|x| x.0),
-            Some(2)
-        );
-    }
-
-    #[test]
-    fn checkbox_group() {
-        let elements = [
-            (4, Vec2::new(258.0, 12.0)),
-            (5, Vec2::new(384.0, 12.0)),
-            (6, Vec2::new(510.0, 12.0)),
-            (8, Vec2::new(288.0, 60.0)),
-            (9, Vec2::new(288.0, 84.0)),
-            (10, Vec2::new(288.0, 108.0)),
-        ];
-
-        assert_eq!(
-            focus_next_wrap(to_dir(CompassQuadrant::East), elements[0], || elements
-                .into_iter())
-            .map(|x| x.0),
-            Some(8)
-        );
-    }
-}

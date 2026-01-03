@@ -52,7 +52,7 @@ impl Dest {
         match self {
             Append(id) => {
                 let mut child = None;
-                if let Some(mut ecommands) = commands.get_entity(*id).ok() {
+                if let Ok(mut ecommands) = commands.get_entity(*id) {
                     ecommands.with_children(|parent| {
                         child = Some(parent.spawn_empty().id());
                     });
@@ -61,11 +61,11 @@ impl Dest {
             }
             Replace(id) => commands.get_entity(*id).ok(),
             ReplaceChildren(id) => {
-                if let Some(mut ecommands) = commands.get_entity(*id).ok() {
+                if let Ok(mut ecommands) = commands.get_entity(*id) {
                     ecommands.despawn_related::<Children>();
                 }
                 let mut child = None;
-                if let Some(mut ecommands) = commands.get_entity(*id).ok() {
+                if let Ok(mut ecommands) = commands.get_entity(*id) {
                     ecommands.with_children(|parent| {
                         child = Some(parent.spawn_empty().id());
                     });

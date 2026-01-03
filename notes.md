@@ -19,7 +19,7 @@ might be helpful to point out.
                 init: None,
             },
         ))
-        .observe(|trigger: Trigger<Submit<bool>>| {
+        .observe(|trigger: On<Submit<bool>>| {
             eprintln!("trigger {:?}", trigger.event());
         });
 ```
@@ -29,7 +29,7 @@ and became this:
 ```rust
     commands
         .construct::<Confirm>("Do you like ascii?")
-        .observe(|trigger: Trigger<Submit<bool>>| {
+        .observe(|trigger: On<Submit<bool>>| {
             eprintln!("trigger {:?}", trigger.event());
         });
 ```
@@ -45,7 +45,7 @@ which I consider a win.
             .spawn_empty() // spawn_empty() required in order to attach an observer.
             .construct::<ascii::View<Confirm>>("Do you like ascii?".into())
             .observe(
-                move |trigger: Trigger<Submit<bool>>, mut commands: Commands| {
+                move |trigger: On<Submit<bool>>, mut commands: Commands| {
                     eprintln!("trigger {:?}", trigger.event());
                 },
             );

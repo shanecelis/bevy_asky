@@ -85,7 +85,7 @@ impl<T: NumLike> Number<T> {
 
 fn number_controller<T: NumLike + Sync + 'static + TypePath>(
     mut query: Query<(Entity, &mut StringCursor), With<Number<T>>>,
-    mut input: EventReader<KeyboardInput>,
+    mut input: MessageReader<KeyboardInput>,
     mut commands: Commands,
     mut focus: FocusParam,
 ) {
@@ -146,7 +146,6 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
 #[cfg(test)]
 mod test {
     use super::*;
-    use bevy::ecs::system::RunSystemOnce;
     use bevy::input::keyboard::KeyboardInput;
 
     use crate::string_cursor::{ceil_char_boundary, floor_char_boundary};
@@ -184,7 +183,7 @@ mod test {
         let mut app = App::new();
         app.add_plugins(MinimalPlugins)
             .add_plugins(AskyPlugin)
-            .add_event::<KeyboardInput>()
+            .add_message::<KeyboardInput>()
             .init_resource::<bevy::input::ButtonInput<bevy::input::keyboard::KeyCode>>()
             .init_resource::<bevy::input_focus::InputFocus>();
 
@@ -207,8 +206,8 @@ mod test {
         // Helper to send keyboard events
         fn send_key_event(app: &mut App, event: KeyboardInput) {
             app.world_mut()
-                .resource_mut::<Events<KeyboardInput>>()
-                .send(event);
+                .resource_mut::<Messages<KeyboardInput>>()
+                .write(event);
         }
 
         // Helper to create character events
@@ -351,7 +350,7 @@ mod test {
         let mut app = App::new();
         app.add_plugins(MinimalPlugins)
             .add_plugins(AskyPlugin)
-            .add_event::<KeyboardInput>()
+            .add_message::<KeyboardInput>()
             .init_resource::<bevy::input::ButtonInput<bevy::input::keyboard::KeyCode>>()
             .init_resource::<bevy::input_focus::InputFocus>();
 
@@ -374,8 +373,8 @@ mod test {
         // Helper to send keyboard events
         fn send_key_event(app: &mut App, event: KeyboardInput) {
             app.world_mut()
-                .resource_mut::<Events<KeyboardInput>>()
-                .send(event);
+                .resource_mut::<Messages<KeyboardInput>>()
+                .write(event);
         }
 
         // Helper to create character events

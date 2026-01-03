@@ -2,7 +2,7 @@
 
 use bevy::{
     ecs::{
-        relationship::{Relationship, RelatedSpawnerCommands},
+        relationship::RelatedSpawnerCommands,
         system::EntityCommands,
     },
     prelude::*,
@@ -34,11 +34,11 @@ impl Default for Palette {
 /// An extension trait for spawning UI widgets.
 pub trait Widgets {
     /// Spawn a simple button with text.
-    fn button(&mut self, text: impl Into<String>, palette: &Palette) -> EntityCommands;
+    fn button(&mut self, text: impl Into<String>, palette: &Palette) -> EntityCommands<'_>;
     /// Spawn a column.
-    fn column(&mut self) -> EntityCommands;
+    fn column(&mut self) -> EntityCommands<'_>;
     /// Spawn a column whose elements can wrap around.
-    fn column_wrap(&mut self) -> EntityCommands;
+    fn column_wrap(&mut self) -> EntityCommands<'_>;
 
     // Spawn a simple header label. Bigger than [`Widgets::label`].
     // fn header(&mut self, text: impl Into<String>, palette: &Palette) -> EntityCommands;
@@ -48,7 +48,7 @@ pub trait Widgets {
 }
 
 impl<T: Spawn> Widgets for T {
-    fn button(&mut self, text: impl Into<String>, palette: &Palette) -> EntityCommands {
+    fn button(&mut self, text: impl Into<String>, palette: &Palette) -> EntityCommands<'_> {
         let mut entity = self.spawn((
             Name::new("Button"),
             Button,
@@ -78,14 +78,14 @@ impl<T: Spawn> Widgets for T {
         entity
     }
 
-    fn column(&mut self) -> EntityCommands {
+    fn column(&mut self) -> EntityCommands<'_> {
         self.spawn(Node {
             flex_direction: FlexDirection::Column,
             ..default()
         })
     }
 
-    fn column_wrap(&mut self) -> EntityCommands {
+    fn column_wrap(&mut self) -> EntityCommands<'_> {
         self.spawn(Node {
             flex_direction: FlexDirection::Column,
             flex_wrap: FlexWrap::Wrap,
@@ -187,23 +187,23 @@ impl<T: Spawn> Widgets for T {
 /// are able to spawn entities.
 /// Ideally, this trait should be [part of Bevy itself](https://github.com/bevyengine/bevy/issues/14231).
 trait Spawn {
-    fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands;
+    fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands<'_>;
 }
 
 impl Spawn for Commands<'_, '_> {
-    fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands {
+    fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands<'_> {
         self.spawn(bundle)
     }
 }
 
 impl<R: bevy::ecs::relationship::Relationship> Spawn for RelatedSpawnerCommands<'_, R> {
-    fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands {
+    fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands<'_> {
         self.spawn(bundle)
     }
 }
 
 impl Spawn for EntityCommands<'_> {
-    fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands {
+    fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands<'_> {
         self.insert(bundle);
         self.reborrow()
     }

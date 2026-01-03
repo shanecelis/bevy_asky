@@ -55,7 +55,7 @@ impl Construct for TextField {
 fn text_controller(
     mut focus: FocusParam,
     mut query: Query<(Entity, &mut StringCursor), Or<(With<TextField>, With<Password>)>>,
-    mut input: EventReader<KeyboardInput>,
+    mut input: MessageReader<KeyboardInput>,
     mut commands: Commands,
 ) {
     let mut any_focused_text = false;
@@ -101,7 +101,6 @@ fn text_controller(
 #[cfg(test)]
 mod test {
     use super::*;
-    use bevy::ecs::system::RunSystemOnce;
     use bevy::input::keyboard::KeyboardInput;
 
     #[test]
@@ -109,7 +108,7 @@ mod test {
         let mut app = App::new();
         app.add_plugins(MinimalPlugins)
             .add_plugins(AskyPlugin)
-            .add_event::<KeyboardInput>()
+            .add_message::<KeyboardInput>()
             .init_resource::<bevy::input::ButtonInput<bevy::input::keyboard::KeyCode>>()
             .init_resource::<bevy::input_focus::InputFocus>();
 
@@ -130,8 +129,8 @@ mod test {
         // Helper to send keyboard events
         fn send_key_event(app: &mut App, event: KeyboardInput) {
             app.world_mut()
-                .resource_mut::<Events<KeyboardInput>>()
-                .send(event);
+                .resource_mut::<Messages<KeyboardInput>>()
+                .write(event);
         }
 
         // Helper to create character events

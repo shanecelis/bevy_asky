@@ -188,7 +188,7 @@ mod test {
         let mut app = App::new();
         app.add_plugins(MinimalPlugins)
             .add_plugins(AskyPlugin)
-            .add_event::<bevy::input::keyboard::KeyboardInput>()
+            .add_message::<bevy::input::keyboard::KeyboardInput>()
             .init_resource::<ButtonInput<KeyCode>>()
             .init_resource::<bevy::input_focus::InputFocus>();
 

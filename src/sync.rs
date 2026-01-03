@@ -24,7 +24,7 @@ pub trait AskyCommands {
         &mut self,
         props: impl Into<T::Props>,
         dest: impl Into<Dest>,
-    ) -> EntityCommands
+    ) -> EntityCommands<'_>
     where
         <T as Construct>::Props: Send,
         <T as Submitter>::Out: Clone + Debug + Send + Sync;
@@ -50,7 +50,7 @@ impl AskyCommands for Commands<'_, '_> {
         &mut self,
         props: impl Into<T::Props>,
         dest: impl Into<Dest>,
-    ) -> EntityCommands
+    ) -> EntityCommands<'_>
     where
         <T as Construct>::Props: Send,
         <T as Submitter>::Out: Clone + Debug + Send + Sync,

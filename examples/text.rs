@@ -22,7 +22,7 @@ fn setup(mut commands: Commands) {
             .construct::<View>(())
             .construct::<TextField>("Name? ")
             .construct::<Placeholder>("John Smith")
-            .observe(move |trigger: Trigger<Submit<String>>| {
+            .observe(move |trigger: On<Submit<String>>| {
                 eprintln!("trigger {:?}", trigger.event());
             });
     });

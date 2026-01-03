@@ -22,7 +22,7 @@ fn setup(mut commands: Commands) {
             .column()
             .construct::<RadioGroup>("radio group 0")
             .construct_children::<Add0<Radio, View>>(["Money", "Time", "Power"])
-            .observe(move |trigger: Trigger<Submit<usize>>| {
+            .observe(move |trigger: On<Submit<usize>>| {
                 eprintln!("trigger {:?}", trigger.event());
             });
     });

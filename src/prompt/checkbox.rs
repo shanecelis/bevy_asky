@@ -73,7 +73,7 @@ fn checkbox_controller(
 
             // if input.just_pressed(Enter) {
             //     let yes = checkbox.checked;
-            //     // requests.send(NavRequest::Move(NavDirection::South));
+            //     // requestswrite_message(NavRequest::Move(NavDirection::South));
             //     // I had tried using triggers in bevy_ui_navigation to fix my issues.
             //     // commands.trigger(NavRequest::Move(NavDirection::South));
             //     commands.trigger_targets(Submit::<bool>(Ok(yes)), id);
@@ -185,7 +185,7 @@ mod test {
         let mut app = App::new();
         app.add_plugins(MinimalPlugins)
             .add_plugins(AskyPlugin)
-            .add_event::<bevy::input::keyboard::KeyboardInput>()
+            .add_message::<bevy::input::keyboard::KeyboardInput>()
             .init_resource::<ButtonInput<KeyCode>>()
             .init_resource::<bevy::input_focus::InputFocus>();
 

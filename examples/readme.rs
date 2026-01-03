@@ -20,7 +20,7 @@ fn setup(mut commands: Commands) {
         .construct::<View>(())
         .construct::<Confirm>("Do you like cats?")
         .observe(
-            move |mut trigger: Trigger<Submit<bool>>, mut commands: Commands| {
+            move |mut trigger: On<Submit<bool>>, mut commands: Commands| {
                 if let Ok(yes) = trigger.event_mut().take_result() {
                     commands
                         .entity(trigger.target())

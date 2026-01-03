@@ -20,7 +20,7 @@ fn setup(mut commands: Commands) {
         parent
             .construct::<View>(())
             .construct::<Toggle>(Toggle::new("Graphics?", ["high poly", "low poly"]))
-            .observe(move |trigger: Trigger<Submit<usize>>| {
+            .observe(move |trigger: On<Submit<usize>>| {
                 eprintln!("trigger {:?}", trigger.event());
             });
     });

@@ -32,7 +32,7 @@
 //! # use bevy_asky::view::click::{self, Click};
 //! fn setup(mut commands: Commands) {
 //!     commands.spawn(Button::default())
-//!         .observe(|trigger: Trigger<Click>|
+//!         .observe(|trigger: On<Click>|
 //!             eprintln!("Clicked on {}", trigger.target()));
 //! }
 //! ```
@@ -63,7 +63,7 @@ pub fn plugin(app: &mut App) {
 /// # use bevy_asky::view::click::{self, Click};
 /// fn setup(mut commands: Commands) {
 ///     commands.spawn(Button::default())
-///         .observe(|trigger: Trigger<Click>|
+///         .observe(|trigger: On<Click>|
 ///             eprintln!("Clicked on {}", trigger.target()));
 /// }
 /// ```

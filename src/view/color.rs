@@ -477,13 +477,13 @@ fn blink_cursor(
         *count = count.checked_add(1).unwrap_or(0);
         for (id, mut color) in &mut query {
             if focus.is_focused(id) || parent.iter_ancestors(id).any(|id| focus.is_focused(id)) {
-                color.0 = if *count % 2 == 0 {
+                color.0 = if (*count).is_multiple_of(2) {
                     Color::WHITE
                 } else {
                     Color::NONE
                 };
 
-                *writer.color(id, 0) = if *count % 2 == 0 {
+                *writer.color(id, 0) = if (*count).is_multiple_of(2) {
                     Color::BLACK.into()
                 } else {
                     palette.text_color.into()

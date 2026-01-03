@@ -4,7 +4,7 @@ use bevy_alt_ui_navigation_lite::{
 };
 
 pub(crate) fn plugin(app: &mut App) {
-    app.add_event::<BlockRequest>()
+    app.add_message::<BlockRequest>()
         .add_systems(Startup, setup)
         .add_systems(Update, handle_block_requests.after(NavRequestSystem))
         .add_plugins(DefaultNavigationPlugins);
