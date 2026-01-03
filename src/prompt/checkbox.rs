@@ -218,43 +218,43 @@ mod test {
 
         // Verify initial state
         let checkbox = app.world().get::<Checkbox>(entity).unwrap();
-        assert_eq!(checkbox.checked, false);
+        assert!(!checkbox.checked);
 
         // Simulate Space key press (should toggle to true)
         simulate_key_press(&mut app, KeyCode::Space);
 
         // Verify checkbox is now checked
         let checkbox = app.world().get::<Checkbox>(entity).unwrap();
-        assert_eq!(checkbox.checked, true);
+        assert!(checkbox.checked);
 
         // Simulate Space key press again (should toggle back to false)
         simulate_key_press(&mut app, KeyCode::Space);
 
         // Verify checkbox is unchecked again
         let checkbox = app.world().get::<Checkbox>(entity).unwrap();
-        assert_eq!(checkbox.checked, false);
+        assert!(!checkbox.checked);
 
         // Simulate KeyY press (should set to true)
         simulate_key_press(&mut app, KeyCode::KeyY);
 
         // Verify checkbox is checked
         let checkbox = app.world().get::<Checkbox>(entity).unwrap();
-        assert_eq!(checkbox.checked, true);
+        assert!(checkbox.checked);
 
         // Simulate KeyN press (should set to false)
         simulate_key_press(&mut app, KeyCode::KeyN);
 
         // Verify checkbox is unchecked
         let checkbox = app.world().get::<Checkbox>(entity).unwrap();
-        assert_eq!(checkbox.checked, false);
+        assert!(!checkbox.checked);
 
         // Test toggle again with Space
         simulate_key_press(&mut app, KeyCode::Space);
         let checkbox = app.world().get::<Checkbox>(entity).unwrap();
-        assert_eq!(checkbox.checked, true);
+        assert!(checkbox.checked);
 
         simulate_key_press(&mut app, KeyCode::Space);
         let checkbox = app.world().get::<Checkbox>(entity).unwrap();
-        assert_eq!(checkbox.checked, false);
+        assert!(!checkbox.checked);
     }
 }

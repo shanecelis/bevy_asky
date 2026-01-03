@@ -222,43 +222,43 @@ mod test {
 
         // Verify initial state
         let radio = app.world().get::<Radio>(entity).unwrap();
-        assert_eq!(radio.checked, false);
+        assert!(!radio.checked);
 
         // Simulate Space key press (should toggle to true)
         simulate_key_press(&mut app, KeyCode::Space);
 
         // Verify radio is now checked
         let radio = app.world().get::<Radio>(entity).unwrap();
-        assert_eq!(radio.checked, true);
+        assert!(radio.checked);
 
         // Simulate Space key press again (should toggle back to false)
         simulate_key_press(&mut app, KeyCode::Space);
 
         // Verify radio is unchecked again
         let radio = app.world().get::<Radio>(entity).unwrap();
-        assert_eq!(radio.checked, false);
+        assert!(!radio.checked);
 
         // Simulate KeyL press (should set to true)
         simulate_key_press(&mut app, KeyCode::KeyL);
 
         // Verify radio is checked
         let radio = app.world().get::<Radio>(entity).unwrap();
-        assert_eq!(radio.checked, true);
+        assert!(radio.checked);
 
         // Simulate KeyH press (should set to false)
         simulate_key_press(&mut app, KeyCode::KeyH);
 
         // Verify radio is unchecked
         let radio = app.world().get::<Radio>(entity).unwrap();
-        assert_eq!(radio.checked, false);
+        assert!(!radio.checked);
 
         // Test toggle again with Space
         simulate_key_press(&mut app, KeyCode::Space);
         let radio = app.world().get::<Radio>(entity).unwrap();
-        assert_eq!(radio.checked, true);
+        assert!(radio.checked);
 
         simulate_key_press(&mut app, KeyCode::Space);
         let radio = app.world().get::<Radio>(entity).unwrap();
-        assert_eq!(radio.checked, false);
+        assert!(!radio.checked);
     }
 }
