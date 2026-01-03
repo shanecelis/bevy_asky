@@ -108,15 +108,6 @@ mod test {
     use bevy::ecs::system::RunSystemOnce;
     use bevy::input::keyboard::KeyCode;
 
-    // Temporary resource to pass entity to focus system
-    #[derive(Resource)]
-    struct FocusTarget(Entity);
-
-    // Helper system to set focus
-    fn set_focus_system(target: Res<FocusTarget>, mut focus: FocusParam) {
-        focus.move_focus_to(target.0);
-    }
-
     // Temporary resource to pass key code to press system
     #[derive(Resource)]
     struct KeyToPress(KeyCode);
@@ -149,15 +140,11 @@ mod test {
                 Toggle::new("Choose:", ["Option A", "Option B"]),
                 Focusable::default(),
                 Prompt(Cow::Borrowed("Choose:")),
-                GlobalTransform::default(),
             ))
             .id();
 
-        // Set the focus target resource
-        app.world_mut().insert_resource(FocusTarget(entity));
-
-        // Set focus on the entity using a one-shot system
-        app.world_mut().run_system_once(set_focus_system);
+        // Run update to let reset_focus system automatically set focus
+        app.update();
 
         // Helper to simulate a key press
         fn simulate_key_press(app: &mut App, key: KeyCode) {
