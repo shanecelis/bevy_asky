@@ -93,7 +93,7 @@ pub struct Submit<T> {
 }
 
 #[derive(Debug, Clone)]
-enum SubmitState<T> {
+pub enum SubmitState<T> {
     /// Submit has not been handled yet.
     Unhandled(Result<T, Error>),
     /// Submit has been handled.

@@ -59,15 +59,18 @@ fn text_controller(
     mut commands: Commands,
 ) {
     let mut any_focused_text = false;
-    for (id, mut text_state) in query.iter_mut() {
-        if !focus.is_focused(id) {
+    // NOTE: Read from the event reader every frame lest you be plagued with
+    // bugs from left over input from a prior frame.
+    for ev in input.read() {
+        if ev.state != ButtonState::Pressed {
             continue;
         }
-        any_focused_text |= true;
-        for ev in input.read() {
-            if ev.state != ButtonState::Pressed {
+        for (id, mut text_state) in query.iter_mut() {
+            if !focus.is_focused(id) {
                 continue;
             }
+        any_focused_text |= true;
+            trace!("text_controller handling button {ev:?}");
             match &ev.logical_key {
                 Key::Character(s) => {
                     for c in s.chars() {
@@ -82,15 +85,12 @@ fn text_controller(
                 Key::ArrowRight => text_state.move_cursor(CursorDirection::Right),
                 Key::Enter => {
                     commands.trigger(Submit::new(id, Ok(text_state.value.clone())));
-                    // focus.block_and_move(id);
                 }
                 Key::Escape => {
                     commands.trigger(Submit::<String>::new(id, Err(Error::Cancel)));
-                    // commands.entity(id).try_insert(Feedback::error("canceled"));
-                    // focus.block(id);
                 }
-                _x => {
-                    // info!("Unhandled key {x:?}");
+                x => {
+                    warn!("Unhandled key {x:?}");
                 }
             }
         }
