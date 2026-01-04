@@ -1,10 +1,7 @@
 //! Helper traits for creating common widgets
 
 use bevy::{
-    ecs::{
-        relationship::RelatedSpawnerCommands,
-        system::EntityCommands,
-    },
+    ecs::{relationship::RelatedSpawnerCommands, system::EntityCommands},
     prelude::*,
     // ui::Val::*
 };

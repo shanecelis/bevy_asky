@@ -1,6 +1,4 @@
-use bevy::{ecs::system::SystemParam, math::CompassQuadrant, prelude::*,
-input_focus:: InputFocus,
-};
+use bevy::{ecs::system::SystemParam, input_focus::InputFocus, math::CompassQuadrant, prelude::*};
 
 #[cfg(not(test))]
 use bevy::input_focus::InputDispatchPlugin;
@@ -71,9 +69,8 @@ pub(crate) fn plugin(app: &mut App) {
     // Only add it when not in test configuration.
     #[cfg(not(test))]
     app.add_plugins(InputDispatchPlugin);
-    
-    app
-        .register_type::<Focusable>()
+
+    app.register_type::<Focusable>()
         .insert_resource(KeyboardNav(true))
         .add_systems(PreUpdate, (sync_focus_to_focusable, focus_keys))
         .add_systems(Update, reset_focus);
@@ -86,21 +83,23 @@ fn sync_focus_to_focusable(
     mut last_focus: Local<Option<Entity>>,
 ) {
     let current_focus = input_focus.get();
-    
+
     // If focus changed, touch the old and new focusable
     if *last_focus != current_focus {
         // Touch the old focused entity
         if let Some(old_id) = *last_focus
-            && let Ok((_, mut focusable)) = focusables.get_mut(old_id) {
-                focusable.touch();
-            }
-        
+            && let Ok((_, mut focusable)) = focusables.get_mut(old_id)
+        {
+            focusable.touch();
+        }
+
         // Touch the new focused entity
         if let Some(new_id) = current_focus
-            && let Ok((_, mut focusable)) = focusables.get_mut(new_id) {
-                focusable.touch();
-            }
-        
+            && let Ok((_, mut focusable)) = focusables.get_mut(new_id)
+        {
+            focusable.touch();
+        }
+
         *last_focus = current_focus;
     }
 }
@@ -121,7 +120,7 @@ impl FocusParam<'_, '_> {
     }
 
     /// Move the focus in a direction if possible.
-    /// 
+    ///
     /// For directional navigation, we use creation order:
     /// - North/Up: previous (lower created ID)
     /// - South/Down: next (higher created ID)
@@ -139,16 +138,15 @@ impl FocusParam<'_, '_> {
             self.move_focus_from(None);
             return;
         };
-        
+
         use CompassQuadrant::*;
-        let candidates: Vec<_> = self.query
+        let candidates: Vec<_> = self
+            .query
             .iter()
-            .filter(|(id, focusable)| {
-                *id != self.focus.0.unwrap() && !focusable.block
-            })
+            .filter(|(id, focusable)| *id != self.focus.0.unwrap() && !focusable.block)
             .map(|(id, focusable)| (id, focusable.created))
             .collect();
-        
+
         let result = match dir {
             North | West => {
                 // Previous: find highest created ID that is less than current
@@ -167,21 +165,27 @@ impl FocusParam<'_, '_> {
                     .map(|(id, _)| *id)
             }
         };
-        
+
         // If no result in direction, wrap around
         let result = result.or_else(|| {
             match dir {
                 North | West => {
                     // Wrap: find highest created ID overall
-                    candidates.iter().max_by_key(|(_, created)| *created).map(|(id, _)| *id)
+                    candidates
+                        .iter()
+                        .max_by_key(|(_, created)| *created)
+                        .map(|(id, _)| *id)
                 }
                 South | East => {
                     // Wrap: find lowest created ID overall
-                    candidates.iter().min_by_key(|(_, created)| *created).map(|(id, _)| *id)
+                    candidates
+                        .iter()
+                        .min_by_key(|(_, created)| *created)
+                        .map(|(id, _)| *id)
                 }
             }
         });
-        
+
         if let Some(id) = result {
             self.move_focus_to(id);
         }
@@ -193,44 +197,45 @@ impl FocusParam<'_, '_> {
     }
 
     /// Move focus away from an entity.
-    /// 
+    ///
     /// Uses creation order: moves to the next unblocked entity after the current one.
     pub fn move_focus_from(&mut self, id_maybe: impl Into<Option<Entity>>) {
         if let Some(focus_id) = id_maybe.into().or(self.focus.0) {
             // Get the creation order of the current focus
-            let current_created = self.query
+            let current_created = self
+                .query
                 .get(focus_id)
                 .map(|(_, focusable)| focusable.created)
                 .unwrap_or(0);
-            
+
             // Find the next unblocked entity with higher creation order
-            let mut candidates: Vec<_> = self.query
+            let mut candidates: Vec<_> = self
+                .query
                 .iter()
-                .filter(|(id, focusable)| {
-                    *id != focus_id && !focusable.block
-                })
+                .filter(|(id, focusable)| *id != focus_id && !focusable.block)
                 .map(|(id, focusable)| (id, focusable.created))
                 .collect();
-            
+
             // Sort by creation order
             candidates.sort_by_key(|(_, created)| *created);
-            
+
             // Find next after current, or wrap to first
             let result = candidates
                 .iter()
                 .find(|(_, created)| *created > current_created)
                 .map(|(id, _)| *id)
                 .or_else(|| candidates.first().map(|(id, _)| *id));
-            
+
             self.focus.0 = result;
         } else {
             // We're moving to any available id - pick the first (lowest created ID).
-            let mut candidates: Vec<_> = self.query
+            let mut candidates: Vec<_> = self
+                .query
                 .iter()
                 .filter(|(_, focusable)| !focusable.block)
                 .map(|(id, focusable)| (id, focusable.created))
                 .collect();
-            
+
             candidates.sort_by_key(|(_, created)| *created);
             self.focus.0 = candidates.first().map(|(id, _)| *id);
         }
@@ -332,4 +337,3 @@ fn reset_focus(mut focus: FocusParam) {
         }
     }
 }
-

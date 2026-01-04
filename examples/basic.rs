@@ -1,8 +1,6 @@
 use bevy::{
+    input_focus::{InputFocus, InputFocusVisible},
     prelude::*,
-input_focus::{
-        InputFocus, InputFocusVisible,
-    },
 };
 use bevy_asky::prelude::*;
 
@@ -13,9 +11,7 @@ const FOCUSED_BORDER: Srgba = bevy::color::palettes::tailwind::BLUE_50;
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins,
-                      AskyPlugin,
-        ))
+        .add_plugins((DefaultPlugins, AskyPlugin))
         .insert_resource(InputFocusVisible(true))
         .add_plugins(common::views)
         .add_systems(Startup, setup)
@@ -24,7 +20,8 @@ fn main() {
             (
                 // We need to show which button is currently focused
                 highlight_focused_element,
-            ))
+            ),
+        )
         .run();
 }
 
@@ -73,22 +70,24 @@ fn setup(mut commands: Commands, mut input_focus: ResMut<InputFocus>) {
                         parent
                             .construct::<View>(())
                             .construct::<Confirm>("Do you prefer color?")
-                            .observe(move |mut trigger: On<Submit<bool>>, mut commands: Commands| {
-                                let answer = trigger.event_mut().take_result().unwrap_or(false);
-                                commands.entity(column).with_children(|parent| {
-                                    parent.spawn(Text::new(if answer {
-                                        "Me too!"
-                                    } else {
-                                        "Oh, yeah, too vibrant."
-                                    }));
-                                });
-                                commands.entity(trigger.event().event_target()).despawn();
-                            });
+                            .observe(
+                                move |mut trigger: On<Submit<bool>>, mut commands: Commands| {
+                                    let answer = trigger.event_mut().take_result().unwrap_or(false);
+                                    commands.entity(column).with_children(|parent| {
+                                        parent.spawn(Text::new(if answer {
+                                            "Me too!"
+                                        } else {
+                                            "Oh, yeah, too vibrant."
+                                        }));
+                                    });
+                                    commands.entity(trigger.event().event_target()).despawn();
+                                },
+                            );
                     });
                     commands.entity(trigger.event().event_target()).despawn();
                 },
-            ).id();
+            )
+            .id();
         input_focus.set(question);
-
     });
 }

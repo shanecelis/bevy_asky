@@ -1,4 +1,4 @@
-use crate::{construct::*, prelude::*, Part};
+use crate::{Part, construct::*, prelude::*};
 use accesskit::{Node as Accessible, Role};
 use bevy::prelude::*;
 use bevy_a11y::AccessibilityNode;

@@ -18,11 +18,7 @@ impl OptionPrompt for Confirm {
         }
     }
     fn state(&self) -> usize {
-        if self.yes {
-            1
-        } else {
-            0
-        }
+        if self.yes { 1 } else { 0 }
     }
 }
 

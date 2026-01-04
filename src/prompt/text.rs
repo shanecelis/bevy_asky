@@ -1,8 +1,8 @@
 use crate::{prelude::*, string_cursor::*};
 use bevy::{
     input::{
-        keyboard::{Key, KeyboardInput},
         ButtonState,
+        keyboard::{Key, KeyboardInput},
     },
     prelude::*,
 };
@@ -69,7 +69,7 @@ fn text_controller(
             if !focus.is_focused(id) {
                 continue;
             }
-        any_focused_text |= true;
+            any_focused_text |= true;
             trace!("text_controller handling button {ev:?}");
             match &ev.logical_key {
                 Key::Character(s) => {

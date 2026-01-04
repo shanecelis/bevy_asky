@@ -77,11 +77,7 @@ pub(crate) fn confirm_view(
         writer.text(id, ViewPart::Options as usize).replace_range(
             ..,
             if focus.is_focused(id) {
-                if confirm.yes {
-                    " no/YES"
-                } else {
-                    " NO/yes"
-                }
+                if confirm.yes { " no/YES" } else { " NO/yes" }
             } else if confirm.yes {
                 " Yes"
             } else {

@@ -47,12 +47,10 @@ impl Construct for Password {
 mod test {
     use super::*;
 
-        use bevy::{
-                input::{
-                        keyboard::{Key, KeyboardInput},
-                        ButtonState,
-                },
-        };
+    use bevy::input::{
+        ButtonState,
+        keyboard::{Key, KeyboardInput},
+    };
 
     #[test]
     fn test_password_key_presses() {
@@ -103,7 +101,7 @@ mod test {
                 '3' => KeyCode::Digit3,
                 '@' => KeyCode::Digit2, // '@' is typically Shift+2, use Digit2 as fallback
                 '#' => KeyCode::Digit3, // '#' is typically Shift+3, use Digit3 as fallback
-                _ => KeyCode::KeyA, // fallback
+                _ => KeyCode::KeyA,     // fallback
             };
             KeyboardInput {
                 logical_key: Key::Character(c.to_string().into()),

@@ -63,9 +63,9 @@ pub struct Add0<
 >(pub A, pub B);
 
 unsafe impl<
-        A: Submitter + Sync + Send + 'static + Bundle + Component,
-        B: Sync + Send + 'static + Bundle + Component,
-    > Submitter for Add0<A, B>
+    A: Submitter + Sync + Send + 'static + Bundle + Component,
+    B: Sync + Send + 'static + Bundle + Component,
+> Submitter for Add0<A, B>
 {
     /// Output of submitter.
     type Out = A::Out;
@@ -156,7 +156,10 @@ impl ConstructContext<'_> {
 /// The main touch point for the user.
 pub trait ConstructExt {
     /// Construct a type using the given properties.
-    fn construct<T: Construct + Bundle>(&mut self, props: impl Into<T::Props>) -> EntityCommands<'_>
+    fn construct<T: Construct + Bundle>(
+        &mut self,
+        props: impl Into<T::Props>,
+    ) -> EntityCommands<'_>
     where
         <T as Construct>::Props: Send;
 }
@@ -278,10 +281,8 @@ pub struct ConstructPatch<C: Construct, F> {
     _marker: PhantomData<C>,
 }
 
-impl<
-        C: Construct + Sync + Send + 'static + Bundle,
-        F: FnMut(&mut C::Props) + Sync + Send + 'static,
-    > Patch for ConstructPatch<C, F>
+impl<C: Construct + Sync + Send + 'static + Bundle, F: FnMut(&mut C::Props) + Sync + Send + 'static>
+    Patch for ConstructPatch<C, F>
 {
     type Construct = C;
     fn patch(&mut self, props: &mut <Self::Construct as Construct>::Props) {

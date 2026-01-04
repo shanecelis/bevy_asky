@@ -14,9 +14,9 @@ pub mod prompt;
 pub mod string_cursor;
 pub mod view;
 #[cfg(feature = "async")]
-use futures::channel::oneshot;
-#[cfg(feature = "async")]
 pub use r#async::*;
+#[cfg(feature = "async")]
+use futures::channel::oneshot;
 mod dest;
 pub mod sync;
 pub use dest::Dest;
@@ -26,13 +26,13 @@ pub mod prelude {
     #[cfg(feature = "async")]
     pub use super::r#async::*;
     pub use super::{
+        AskyPlugin, AskySet, Dest, Error, Submit, Submitter,
         construct::*,
         focus::*,
         num_like::NumLike,
         prompt::*,
         sync::{AskyCommands, AskyEntityCommands},
         view::{widget::Widgets, *},
-        AskyPlugin, AskySet, Dest, Error, Submit, Submitter,
     };
 }
 

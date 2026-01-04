@@ -1,8 +1,8 @@
 use crate::{construct::*, prelude::*, string_cursor::*};
 use bevy::{
     input::{
-        keyboard::{Key, KeyboardInput},
         ButtonState,
+        keyboard::{Key, KeyboardInput},
     },
     prelude::*,
 };

@@ -1,4 +1,4 @@
-use crate::{construct::*, prelude::*, Part};
+use crate::{Part, construct::*, prelude::*};
 use bevy::prelude::*;
 
 use std::borrow::Cow;
