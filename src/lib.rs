@@ -89,7 +89,7 @@ pub struct Submit<T> {
     /// The entity that triggered this submit event.
     pub entity: Entity,
     /// The state of the submit event.
-    state: SubmitState<T>,
+    pub state: SubmitState<T>,
 }
 
 #[derive(Debug, Clone)]

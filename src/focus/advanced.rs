@@ -85,7 +85,7 @@ impl<'w, 's> FocusParam<'w, 's> {
 
     pub fn block_and_move(&mut self, id_maybe: impl Into<Option<Entity>>) {
         let id = id_maybe.into();
-        self.move_focus_from(id.clone());
+        self.move_focus_from(id);
         self.block(id);
     }
 }
