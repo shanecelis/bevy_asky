@@ -1,10 +1,7 @@
 use bevy::{
     prelude::*,
 input_focus::{
-        directional_navigation::{
-            DirectionalNavigation, DirectionalNavigationMap, DirectionalNavigationPlugin,
-        },
-        InputDispatchPlugin, InputFocus, InputFocusVisible,
+        InputFocus, InputFocusVisible,
     },
 };
 use bevy_asky::prelude::*;
@@ -12,8 +9,6 @@ use bevy_asky::prelude::*;
 #[path = "common/lib.rs"]
 mod common;
 use common::View;
-const NORMAL_BUTTON: Srgba = bevy::color::palettes::tailwind::BLUE_400;
-const PRESSED_BUTTON: Srgba = bevy::color::palettes::tailwind::BLUE_500;
 const FOCUSED_BORDER: Srgba = bevy::color::palettes::tailwind::BLUE_50;
 
 fn main() {
@@ -87,10 +82,10 @@ fn setup(mut commands: Commands, mut input_focus: ResMut<InputFocus>) {
                                         "Oh, yeah, too vibrant."
                                     }));
                                 });
-                                commands.entity(trigger.target()).despawn();
+                                commands.entity(trigger.event().event_target()).despawn();
                             });
                     });
-                    commands.entity(trigger.target()).despawn();
+                    commands.entity(trigger.event().event_target()).despawn();
                 },
             ).id();
         input_focus.set(question);

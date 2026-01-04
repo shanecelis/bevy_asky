@@ -151,11 +151,11 @@ mod test {
             // Set the key to press
             app.world_mut().insert_resource(KeyToPress(key));
             // Press the key using a system
-            app.world_mut().run_system_once(press_key_system);
+            app.world_mut().run_system_once(press_key_system).unwrap();
             // Run update to process the key press
             app.update();
             // Clear the key press state
-            app.world_mut().run_system_once(clear_keys_system);
+            app.world_mut().run_system_once(clear_keys_system).unwrap();
             // Run update again to clear the "just_pressed" state
             app.update();
         }

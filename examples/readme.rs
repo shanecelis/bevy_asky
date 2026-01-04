@@ -23,7 +23,7 @@ fn setup(mut commands: Commands) {
             move |mut trigger: On<Submit<bool>>, mut commands: Commands| {
                 if let Ok(yes) = trigger.event_mut().take_result() {
                     commands
-                        .entity(trigger.target())
+                        .entity(trigger.event().event_target())
                         .construct::<Feedback>(Feedback::info(if yes { "Me too!" } else { "Ok." }));
                 }
             },

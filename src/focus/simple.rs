@@ -90,18 +90,16 @@ fn sync_focus_to_focusable(
     // If focus changed, touch the old and new focusable
     if *last_focus != current_focus {
         // Touch the old focused entity
-        if let Some(old_id) = *last_focus {
-            if let Ok((_, mut focusable)) = focusables.get_mut(old_id) {
+        if let Some(old_id) = *last_focus
+            && let Ok((_, mut focusable)) = focusables.get_mut(old_id) {
                 focusable.touch();
             }
-        }
         
         // Touch the new focused entity
-        if let Some(new_id) = current_focus {
-            if let Ok((_, mut focusable)) = focusables.get_mut(new_id) {
+        if let Some(new_id) = current_focus
+            && let Ok((_, mut focusable)) = focusables.get_mut(new_id) {
                 focusable.touch();
             }
-        }
         
         *last_focus = current_focus;
     }
