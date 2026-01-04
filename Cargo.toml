@@ -35,6 +35,7 @@ ascii = []
 [dev-dependencies]
 bevy = "0.17"
 bevy-inspector-egui = "0.35"
+version-sync = "0.9.5"
 
 [[example]]
 name = "text-async"
