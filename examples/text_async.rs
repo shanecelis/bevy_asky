@@ -24,12 +24,12 @@ fn setup(mut commands: Commands, mut asky: AskyAsync) {
         let response: Result<String, Error> = asky
             .prompt::<Add0<TextField, View>>("What up? ", Dest::ReplaceChildren(id))
             .await;
-        dbg!(response);
+        let _ = dbg!(response);
 
         let response: Result<String, Error> = asky
             .prompt::<Add0<TextField, View>>("Really? ", Dest::ReplaceChildren(id))
             .await;
-        dbg!(response);
+        let _ = dbg!(response);
         Ok(())
     });
 }

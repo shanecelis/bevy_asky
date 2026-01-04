@@ -280,7 +280,9 @@ pub fn text_view<F: bevy::ecs::query::QueryFilter>(
             .replace_range(.., &text_state.value[0..text_state.index]);
         writer.text(id, ViewPart::Cursor).replace_range(
             ..,
-            if text_state.value.is_empty() && let Some(p) = placeholder {
+            if text_state.value.is_empty()
+                && let Some(p) = placeholder
+            {
                 &p[0..ceil_char_boundary(p, 1)]
             } else if text_state.index >= text_state.value.len() {
                 " "
@@ -291,7 +293,9 @@ pub fn text_view<F: bevy::ecs::query::QueryFilter>(
         commands
             .entity(writer.entity(id, ViewPart::Cursor))
             .insert(Cursor);
-        if text_state.value.is_empty() && let Some(p) = placeholder {
+        if text_state.value.is_empty()
+            && let Some(p) = placeholder
+        {
             writer
                 .text(id, ViewPart::PostCursor)
                 .replace_range(.., &p[ceil_char_boundary(p, 1)..]);
@@ -326,7 +330,9 @@ pub fn opaque_view<F: bevy::ecs::query::QueryFilter>(
         let _ = write_rep(&mut *pre, glyph, text_state.index);
         let mut cursor = writer.text(id, ViewPart::Cursor);
         cursor.clear();
-        if text_state.value.is_empty() && let Some(p) = placeholder {
+        if text_state.value.is_empty()
+            && let Some(p) = placeholder
+        {
             cursor.replace_range(.., &p[0..ceil_char_boundary(p, 1)]);
         } else if text_state.index >= text_state.value.len() {
             cursor.replace_range(.., " ");
@@ -336,7 +342,9 @@ pub fn opaque_view<F: bevy::ecs::query::QueryFilter>(
         commands
             .entity(writer.entity(id, ViewPart::Cursor))
             .insert(Cursor);
-        if text_state.value.is_empty() && let Some(p) = placeholder {
+        if text_state.value.is_empty()
+            && let Some(p) = placeholder
+        {
             writer
                 .text(id, ViewPart::PostCursor)
                 .replace_range(.., &p[ceil_char_boundary(p, 1)..]);

@@ -3,7 +3,7 @@ use super::*;
 use crate::prelude::*;
 use bevy::ecs::system::{EntityCommands, SystemParam};
 use bevy_defer::AsyncWorld;
-use futures::{channel::oneshot, Future};
+use futures::{Future, channel::oneshot};
 use std::fmt::Debug;
 
 /// Uses promises
@@ -36,7 +36,7 @@ impl AskyAsync {
                 ecommands.observe(move |mut trigger: On<Submit<T::Out>>| {
                     if let Some(sender) = send_once.take() {
                         sender
-                            write_message(trigger.event_mut().take_result())
+                            .send(trigger.event_mut().take_result())
                             .expect("send");
                     }
                     // TODO: This should be the result of some policy not de facto.
