@@ -39,10 +39,10 @@ version-sync = "0.9.5"
 
 [[example]]
 name = "text-async"
-path = "examples/text_async.rs"
+path = "examples/async/text.rs"
 required-features = ["async"]
 
 [[example]]
 name = "checkbox-group-async"
-path = "examples/async/checkbox_group.rs"
+path = "examples/async/checkbox-group.rs"
 required-features = ["async"]

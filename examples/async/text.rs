@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_asky::prelude::*;
 use bevy_defer::{AsyncCommandsExtension, AsyncPlugin};
 
-#[path = "common/lib.rs"]
+#[path = "../common/lib.rs"]
 mod common;
 use common::View;
 

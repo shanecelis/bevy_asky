@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_asky::prelude::*;
 
-#[path = "../common/lib.rs"]
+#[path = "common/lib.rs"]
 mod common;
 use common::View;
 
@@ -16,10 +16,10 @@ fn main() {
 
 fn setup(mut commands: Commands) {
     // UI camera
-    commands.spawn(Camera2d::default());
+    commands.spawn(Camera2d);
     commands.column().with_children(|parent| {
         parent
-            .spawn(NodeBundle::default())
+            .spawn(Node::default())
             .construct::<CheckboxGroup>("checkbox group 0")
             .construct_children::<Add0<Checkbox, View>>(["Money", "Time", "Power"])
             .observe(move |trigger: On<Submit<Vec<bool>>>| {

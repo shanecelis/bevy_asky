@@ -25,5 +25,13 @@ fn setup(mut commands: Commands) {
             .observe(move |trigger: On<Submit<usize>>| {
                 eprintln!("trigger {:?}", trigger.event());
             });
+
+        parent
+            .column()
+            .construct::<RadioGroup>("radio group 1")
+            .construct_children::<Add0<Radio, View>>(["Live", "Laugh", "Love"])
+            .observe(move |trigger: On<Submit<usize>>| {
+                eprintln!("trigger {:?}", trigger.event());
+            });
     });
 }

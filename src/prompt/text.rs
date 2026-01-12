@@ -90,7 +90,7 @@ fn text_controller(
                     commands.trigger(Submit::<String>::new(id, Err(Error::Cancel)));
                 }
                 x => {
-                    warn!("Unhandled key {x:?}");
+                    debug!("Unhandled key {x:?}");
                 }
             }
         }
