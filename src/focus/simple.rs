@@ -46,7 +46,7 @@ impl Default for Focusable {
         Self {
             version: 0,
             block: false,
-            created: FOCUSABLE_COUNTER.fetch_add(1, Ordering::Relaxed),
+            created: FOCUSABLE_COUNTER.fetch_add(1, Ordering::SeqCst),
         }
     }
 }
@@ -205,8 +205,7 @@ impl FocusParam<'_, '_> {
             let current_created = self
                 .query
                 .get(focus_id)
-                .map(|(_, focusable)| focusable.created)
-                .unwrap_or(0);
+                .map(|(_, focusable)| focusable.created);
 
             // Find the next unblocked entity with higher creation order
             let mut candidates: Vec<_> = self
@@ -222,8 +221,7 @@ impl FocusParam<'_, '_> {
             // Find next after current, or wrap to first
             let result = candidates
                 .iter()
-                .find(|(_, created)| *created > current_created)
-                .map(|(id, _)| *id)
+                .find_map(|(id, created)| current_created.map(|id| *created > id).unwrap_or(true).then_some(*id))
                 .or_else(|| candidates.first().map(|(id, _)| *id));
 
             self.focus.0 = result;
