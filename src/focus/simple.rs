@@ -221,7 +221,12 @@ impl FocusParam<'_, '_> {
             // Find next after current, or wrap to first
             let result = candidates
                 .iter()
-                .find_map(|(id, created)| current_created.map(|id| *created > id).unwrap_or(true).then_some(*id))
+                .find_map(|(id, created)| {
+                    current_created
+                        .map(|id| *created > id)
+                        .unwrap_or(true)
+                        .then_some(*id)
+                })
                 .or_else(|| candidates.first().map(|(id, _)| *id));
 
             self.focus.0 = result;
