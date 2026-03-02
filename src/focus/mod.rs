@@ -1,10 +1,5 @@
 //! Handles focus between UI elements
-#[cfg(feature = "focus")]
-mod advanced;
-#[cfg(feature = "focus")]
-pub use advanced::*;
-
-#[cfg(not(feature = "focus"))]
+//! Uses Bevy's built-in input_focus (simple). The optional `focus` feature and
+//! bevy-alt-ui-navigation-lite were removed for Bevy 0.18 compatibility.
 mod simple;
-#[cfg(not(feature = "focus"))]
 pub use simple::*;

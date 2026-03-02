@@ -33,7 +33,7 @@
 //! fn setup(mut commands: Commands) {
 //!     commands.spawn(Button::default())
 //!         .observe(|trigger: On<Click>|
-//!             eprintln!("Clicked on {}", trigger.target()));
+//!             eprintln!("Clicked on {}", trigger.event_target()));
 //! }
 //! ```
 use bevy::ecs::entity::EntityHashMap;
@@ -64,7 +64,7 @@ pub fn plugin(app: &mut App) {
 /// fn setup(mut commands: Commands) {
 ///     commands.spawn(Button::default())
 ///         .observe(|trigger: On<Click>|
-///             eprintln!("Clicked on {}", trigger.target()));
+///             eprintln!("Clicked on {}", trigger.event_target()));
 /// }
 /// ```
 /// [1]: https://gist.github.com/shanecelis/06b2d1a598e1e06d0a00671596e9f74f
