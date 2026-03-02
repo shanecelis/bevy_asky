@@ -89,12 +89,13 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
     mut commands: Commands,
     mut focus: FocusParam,
 ) {
-    for (id, mut text_state) in query.iter_mut() {
-        if !focus.is_focused(id) {
+
+    for ev in input.read() {
+        if ev.state != ButtonState::Pressed {
             continue;
         }
-        for ev in input.read() {
-            if ev.state != ButtonState::Pressed {
+        for (id, mut text_state) in query.iter_mut() {
+            if !focus.is_focused(id) {
                 continue;
             }
             // commands.entity(id).remove::<Feedback>();
