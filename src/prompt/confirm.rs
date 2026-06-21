@@ -41,7 +41,7 @@ impl Construct for Confirm {
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
-            .insert(Focusable::default())
+            .insert(next_tab_index())
             .insert(Prompt(props.clone()));
         context.world.flush();
         Ok(Confirm { yes: false })
@@ -52,10 +52,10 @@ fn confirm_controller(
     mut query: Query<(Entity, &mut Confirm)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
-    focus: FocusParam,
+    input_focus: Res<InputFocus>,
 ) {
     for (id, mut confirm) in query.iter_mut() {
-        if !focus.is_focused(id) {
+        if input_focus.get() != Some(id) {
             continue;
         }
         if input.any_just_pressed([
@@ -125,7 +125,7 @@ mod test {
             .world_mut()
             .spawn((
                 Confirm { yes: false },
-                Focusable::default(),
+                next_tab_index(),
                 Prompt(Cow::Borrowed("Do you confirm?")),
             ))
             .id();

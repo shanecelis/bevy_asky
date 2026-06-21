@@ -94,7 +94,7 @@ pub(crate) fn confirm_view(
         (
             With<View>,
             With<Confirm>,
-            Or<(Changed<Focusable>, Changed<Confirm>, Changed<Prompt>)>,
+            Or<(Changed<TabIndex>, Changed<Confirm>, Changed<Prompt>)>,
         ),
     >,
     mut question: Query<&mut Text, With<Question>>,

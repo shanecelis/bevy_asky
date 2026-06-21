@@ -249,14 +249,23 @@ pub(crate) fn clear_feedback<T: Component>(
 }
 
 pub(crate) fn focus_view(
-    focus: Focus,
-    mut query: Query<Entity, Or<(Changed<View>, Changed<Focusable>)>>,
+    input_focus: Res<InputFocus>,
+    mut query: Query<Entity, With<View>>,
     mut writer: ViewWriter,
 ) {
+    if !input_focus.is_changed() {
+        return;
+    }
+
     for id in query.iter_mut() {
-        writer
-            .text(id, ViewPart::Focus)
-            .replace_range(.., if focus.is_focused(id) { "> " } else { "  " });
+        writer.text(id, ViewPart::Focus).replace_range(
+            ..,
+            if input_focus.get() == Some(id) {
+                "> "
+            } else {
+                "  "
+            },
+        );
     }
 }
 
@@ -264,11 +273,7 @@ pub(crate) fn focus_view(
 pub fn text_view<F: bevy::ecs::query::QueryFilter>(
     query: Query<
         (Entity, &StringCursor, Option<&Placeholder>),
-        (
-            With<View>,
-            F,
-            Or<(Changed<StringCursor>, Changed<Focusable>)>,
-        ),
+        (With<View>, F, Changed<StringCursor>),
     >,
     palette: Res<Palette>,
     mut commands: Commands,
@@ -313,11 +318,7 @@ pub fn text_view<F: bevy::ecs::query::QueryFilter>(
 pub fn opaque_view<F: bevy::ecs::query::QueryFilter>(
     query: Query<
         (Entity, &StringCursor, Option<&Placeholder>),
-        (
-            With<View>,
-            F,
-            Or<(Changed<StringCursor>, Changed<Focusable>)>,
-        ),
+        (With<View>, F, Changed<StringCursor>),
     >,
     palette: Res<Palette>,
     mut commands: Commands,
@@ -363,7 +364,7 @@ pub fn opaque_view<F: bevy::ecs::query::QueryFilter>(
 }
 
 pub(crate) fn option_view<C: Component + OptionPrompt>(
-    mut query: Query<(Entity, &C), (With<View>, Or<(Changed<Focusable>, Changed<C>)>)>,
+    mut query: Query<(Entity, &C), (With<View>, Changed<C>)>,
     palette: Res<Palette>,
     mut commands: Commands,
     mut writer: ViewWriter,
@@ -429,19 +430,20 @@ pub(crate) fn option_view<C: Component + OptionPrompt>(
 }
 
 pub(crate) fn checkbox_view(
-    mut query: Query<
-        (Entity, &Checkbox),
-        (With<View>, Or<(Changed<Checkbox>, Changed<Focusable>)>),
-    >,
+    mut query: Query<(Entity, &Checkbox), With<View>>,
     palette: Res<Palette>,
     mut writer: ViewWriter,
-    focus: Focus,
+    input_focus: Res<InputFocus>,
 ) {
+    if !input_focus.is_changed() && query.is_empty() {
+        return;
+    }
+
     for (id, checkbox) in query.iter_mut() {
         writer
             .text(id, ViewPart::PreQuestion)
             .replace_range(.., if checkbox.checked { "[x] " } else { "[ ] " });
-        *writer.color(id, ViewPart::PreQuestion) = if focus.is_focused(id) {
+        *writer.color(id, ViewPart::PreQuestion) = if input_focus.get() == Some(id) {
             palette.highlight.into()
         } else {
             palette.text_color.into()
@@ -450,16 +452,20 @@ pub(crate) fn checkbox_view(
 }
 
 pub(crate) fn radio_view(
-    mut query: Query<(Entity, &Radio), (With<View>, Or<(Changed<Radio>, Changed<Focusable>)>)>,
+    mut query: Query<(Entity, &Radio), With<View>>,
     palette: Res<Palette>,
     mut writer: ViewWriter,
-    focus: Focus,
+    input_focus: Res<InputFocus>,
 ) {
+    if !input_focus.is_changed() && query.is_empty() {
+        return;
+    }
+
     for (id, radio) in query.iter_mut() {
         writer
             .text(id, ViewPart::PreQuestion)
             .replace_range(.., if radio.checked { "(x) " } else { "( ) " });
-        *writer.color(id, ViewPart::PreQuestion) = if focus.is_focused(id) {
+        *writer.color(id, ViewPart::PreQuestion) = if input_focus.get() == Some(id) {
             palette.highlight.into()
         } else {
             palette.text_color.into()
@@ -473,7 +479,7 @@ fn blink_cursor(
     mut timer: ResMut<CursorBlink>,
     time: Res<Time>,
     mut count: Local<u8>,
-    focus: Focus,
+    input_focus: Res<InputFocus>,
     palette: Res<Palette>,
     mut writer: TextUiWriter,
     parent: Query<&ChildOf>,
@@ -481,7 +487,11 @@ fn blink_cursor(
     if timer.tick(time.delta()).just_finished() {
         *count = count.checked_add(1).unwrap_or(0);
         for (id, mut color) in &mut query {
-            if focus.is_focused(id) || parent.iter_ancestors(id).any(|id| focus.is_focused(id)) {
+            if input_focus.get() == Some(id)
+                || parent
+                    .iter_ancestors(id)
+                    .any(|id| input_focus.get() == Some(id))
+            {
                 color.0 = if (*count).is_multiple_of(2) {
                     Color::WHITE
                 } else {

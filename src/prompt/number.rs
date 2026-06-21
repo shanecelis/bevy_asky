@@ -67,7 +67,7 @@ impl<T: NumLike> Construct for Number<T> {
             .entity(context.id)
             .insert(Prompt(props))
             .insert(input_state)
-            .insert(Focusable::default());
+            .insert(next_tab_index());
         context.world.flush();
         Ok(Number {
             default_value: None,
@@ -87,15 +87,15 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
     mut query: Query<(Entity, &mut StringCursor), With<Number<T>>>,
     mut input: MessageReader<KeyboardInput>,
     mut commands: Commands,
-    mut focus: FocusParam,
+    nav: TabNavigation,
+    mut input_focus: ResMut<InputFocus>,
 ) {
-
     for ev in input.read() {
         if ev.state != ButtonState::Pressed {
             continue;
         }
         for (id, mut text_state) in query.iter_mut() {
-            if !focus.is_focused(id) {
+            if input_focus.get() != Some(id) {
                 continue;
             }
             // commands.entity(id).remove::<Feedback>();
@@ -116,9 +116,7 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                     match T::from_str(&text_state.value) {
                         Ok(number) => {
                             commands.trigger(Submit::new(id, Ok(number)));
-                            focus.block(id);
-                            // focus.unfocus(id, true);
-                            focus.move_focus_from(id);
+                            crate::block_and_move_focus(&mut commands, id, &nav, &mut input_focus);
                         }
                         Err(_) => {
                             // commands
@@ -134,8 +132,7 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                 Key::Escape => {
                     commands.trigger(Submit::<String>::new(id, Err(Error::Cancel)));
                     commands.entity(id).try_insert(Feedback::error("canceled"));
-                    focus.block(id);
-                    focus.move_focus_from(id);
+                    crate::block_and_move_focus(&mut commands, id, &nav, &mut input_focus);
                     // focus.unfocus(id, false);
                 }
                 x => info!("Unhandled key {x:?}"),
@@ -196,7 +193,7 @@ mod test {
                     default_value: None,
                 },
                 StringCursor::default(),
-                Focusable::default(),
+                next_tab_index(),
                 Prompt(Cow::Borrowed("Enter a number: ")),
             ))
             .id();
@@ -363,7 +360,7 @@ mod test {
                     default_value: None,
                 },
                 StringCursor::default(),
-                Focusable::default(),
+                next_tab_index(),
                 Prompt(Cow::Borrowed("Enter a number: ")),
             ))
             .id();

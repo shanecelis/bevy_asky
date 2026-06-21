@@ -46,19 +46,18 @@ impl Construct for TextField {
             .entity(context.id)
             .insert(Prompt(props))
             .insert(input_state)
-            .insert(Focusable::default());
+            .insert(next_tab_index());
         context.world.flush();
         Ok(TextField)
     }
 }
 
 fn text_controller(
-    mut focus: FocusParam,
+    input_focus: Res<InputFocus>,
     mut query: Query<(Entity, &mut StringCursor), Or<(With<TextField>, With<Password>)>>,
     mut input: MessageReader<KeyboardInput>,
     mut commands: Commands,
 ) {
-    let mut any_focused_text = false;
     // NOTE: Read from the event reader every frame lest you be plagued with
     // bugs from left over input from a prior frame.
     for ev in input.read() {
@@ -66,10 +65,9 @@ fn text_controller(
             continue;
         }
         for (id, mut text_state) in query.iter_mut() {
-            if !focus.is_focused(id) {
+            if input_focus.get() != Some(id) {
                 continue;
             }
-            any_focused_text |= true;
             trace!("text_controller handling button {ev:?}");
             match &ev.logical_key {
                 Key::Character(s) => {
@@ -95,7 +93,6 @@ fn text_controller(
             }
         }
     }
-    focus.set_keyboard_nav(!any_focused_text);
 }
 
 #[cfg(test)]
@@ -118,7 +115,7 @@ mod test {
             .spawn((
                 TextField,
                 StringCursor::default(),
-                Focusable::default(),
+                next_tab_index(),
                 Prompt(Cow::Borrowed("Test: ")),
             ))
             .id();

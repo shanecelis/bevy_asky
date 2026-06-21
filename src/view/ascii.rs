@@ -62,21 +62,14 @@ pub fn plugin(app: &mut App) {
 }
 
 pub(crate) fn confirm_view(
-    mut query: Query<
-        (Entity, &Confirm),
-        (
-            With<View>,
-            With<Text>,
-            Or<(Changed<Focusable>, Changed<Confirm>)>,
-        ),
-    >,
+    mut query: Query<(Entity, &Confirm), (With<View>, With<Text>)>,
     mut writer: TextUiWriter,
-    focus: Focus,
+    input_focus: Res<InputFocus>,
 ) {
     for (id, confirm) in query.iter_mut() {
         writer.text(id, ViewPart::Options as usize).replace_range(
             ..,
-            if focus.is_focused(id) {
+            if input_focus.get() == Some(id) {
                 if confirm.yes { " no/YES" } else { " NO/yes" }
             } else if confirm.yes {
                 " Yes"
@@ -99,14 +92,23 @@ pub(crate) fn checkbox_view(
 }
 
 pub(crate) fn focus_view(
-    mut query: Query<Entity, (With<View>, With<Text>, Changed<Focusable>)>,
-    focus: Focus,
+    mut query: Query<Entity, (With<View>, With<Text>)>,
+    input_focus: Res<InputFocus>,
     mut writer: TextUiWriter,
 ) {
+    if !input_focus.is_changed() {
+        return;
+    }
+
     for id in query.iter_mut() {
-        writer
-            .text(id, ViewPart::Focus as usize)
-            .replace_range(.., if focus.is_focused(id) { "> " } else { "  " });
+        writer.text(id, ViewPart::Focus as usize).replace_range(
+            ..,
+            if input_focus.get() == Some(id) {
+                "> "
+            } else {
+                "  "
+            },
+        );
     }
 }
 
@@ -152,21 +154,14 @@ pub(crate) fn radio_view(
 }
 
 pub(crate) fn toggle_view(
-    mut query: Query<
-        (Entity, &Toggle),
-        (
-            With<View>,
-            With<Text>,
-            Or<(Changed<Focusable>, Changed<Toggle>)>,
-        ),
-    >,
-    focus: Focus,
+    mut query: Query<(Entity, &Toggle), (With<View>, With<Text>)>,
+    input_focus: Res<InputFocus>,
     mut writer: TextUiWriter,
 ) {
     for (id, toggle) in query.iter_mut() {
         let mut text = writer.text(id, ViewPart::Options as usize);
         text.clear();
-        if focus.is_focused(id) {
+        if input_focus.get() == Some(id) {
             if toggle.index == 0 {
                 let _ = write!(text, " [{}] _{}_", toggle.options[0], toggle.options[1]);
             } else {

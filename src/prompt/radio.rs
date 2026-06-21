@@ -32,7 +32,7 @@ impl Construct for Radio {
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
-            .insert(Focusable::default())
+            .insert(next_tab_index())
             .insert(Prompt(props.clone()))
             .insert(AccessibilityNode(Accessible::new(Role::RadioButton)));
         // commands.trigger(AddView(context.id));
@@ -42,7 +42,7 @@ impl Construct for Radio {
 }
 
 fn radio_controller(
-    focus: FocusParam,
+    input_focus: Res<InputFocus>,
     mut query: Query<(Entity, &mut Radio, Option<&ChildOf>)>,
     child_query: Query<&Children>,
     input: Res<ButtonInput<KeyCode>>,
@@ -53,7 +53,7 @@ fn radio_controller(
     }
     toggled.clear();
     for (id, mut radio, parent) in query.iter_mut() {
-        if !focus.is_focused(id) {
+        if input_focus.get() != Some(id) {
             continue;
         }
         let was_checked = radio.checked;
@@ -122,7 +122,7 @@ impl Construct for RadioGroup {
 fn radio_group_controller(
     mut query: Query<(Entity, &Children), With<RadioGroup>>,
     radios: Query<(Entity, &Radio)>,
-    focus: FocusParam,
+    input_focus: Res<InputFocus>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
 ) {
@@ -137,7 +137,7 @@ fn radio_group_controller(
     for (id, children) in query.iter_mut() {
         if let Some(_index) = radios
             .iter_many(children)
-            .position(|(id, _)| focus.is_focused(id))
+            .position(|(id, _)| input_focus.get() == Some(id))
         {
             if input.just_pressed(KeyCode::Enter) {
                 if let Some(selection) = radios
@@ -197,7 +197,7 @@ mod test {
             .world_mut()
             .spawn((
                 Radio { checked: false },
-                Focusable::default(),
+                next_tab_index(),
                 Prompt(Cow::Borrowed("Option 1")),
                 AccessibilityNode(accesskit::Node::new(accesskit::Role::RadioButton)),
             ))

@@ -37,7 +37,7 @@ impl Construct for Password {
             .entity(context.id)
             .insert(Prompt(props))
             .insert(input_state)
-            .insert(Focusable::default());
+            .insert(next_tab_index());
         context.world.flush();
         Ok(Password)
     }
@@ -67,7 +67,7 @@ mod test {
             .spawn((
                 Password,
                 StringCursor::default(),
-                Focusable::default(),
+                next_tab_index(),
                 Prompt(Cow::Borrowed("Password: ")),
             ))
             .id();

@@ -57,7 +57,7 @@ impl Construct for Toggle {
         commands
             .entity(context.id)
             .insert(Prompt(props.message.clone()))
-            .insert(Focusable::default());
+            .insert(next_tab_index());
         context.world.flush();
         Ok(props)
     }
@@ -67,10 +67,11 @@ fn toggle_controller(
     mut query: Query<(Entity, &mut Toggle)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
-    mut focus: FocusParam,
+    nav: TabNavigation,
+    mut input_focus: ResMut<InputFocus>,
 ) {
     for (id, mut toggle) in query.iter_mut() {
-        if !focus.is_focused(id) {
+        if input_focus.get() != Some(id) {
             continue;
         }
         if input.any_just_pressed([
@@ -89,12 +90,12 @@ fn toggle_controller(
             }
             if input.just_pressed(KeyCode::Enter) {
                 commands.trigger(Submit::new(id, Ok(toggle.index)));
-                focus.block_and_move(id);
+                crate::block_and_move_focus(&mut commands, id, &nav, &mut input_focus);
             }
 
             if input.just_pressed(KeyCode::Escape) {
                 commands.trigger(Submit::<bool>::new(id, Err(Error::Cancel)));
-                focus.move_focus_from(id);
+                crate::move_focus_from(&nav, &mut input_focus);
                 // focus.unfocus(id, false);
                 commands.entity(id).try_insert(Feedback::error("canceled"));
             }
@@ -138,7 +139,7 @@ mod test {
             .world_mut()
             .spawn((
                 Toggle::new("Choose:", ["Option A", "Option B"]),
-                Focusable::default(),
+                next_tab_index(),
                 Prompt(Cow::Borrowed("Choose:")),
             ))
             .id();

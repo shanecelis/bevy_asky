@@ -41,7 +41,7 @@ impl Construct for Checkbox {
         let mut commands = context.world.commands();
         commands
             .entity(context.id)
-            .insert(Focusable::default())
+            .insert(next_tab_index())
             .insert(Prompt(props.clone()));
         context.world.flush();
         Ok(Checkbox { checked: false })
@@ -49,7 +49,7 @@ impl Construct for Checkbox {
 }
 
 fn checkbox_controller(
-    focus: Focus,
+    input_focus: Res<InputFocus>,
     mut query: Query<(Entity, &mut Checkbox)>,
     input: Res<ButtonInput<KeyCode>>,
     // mut requests: EventWriter<NavRequest>,
@@ -58,7 +58,7 @@ fn checkbox_controller(
 
     if input.any_just_pressed([Space, KeyY, KeyN]) {
         for (id, mut checkbox) in query.iter_mut() {
-            if !focus.is_focused(id) {
+            if input_focus.get() != Some(id) {
                 continue;
             }
             if input.just_pressed(Space) {
@@ -136,13 +136,13 @@ fn checkbox_group_controller(
     checkboxes: Query<(Entity, &Checkbox)>,
     input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
-    focus: FocusParam,
+    input_focus: Res<InputFocus>,
 ) {
     if !input.any_just_pressed([KeyCode::Escape, KeyCode::Enter]) {
         return;
     }
     for (id, children) in query.iter_mut() {
-        if children.iter().any(|id| focus.is_focused(id)) {
+        if children.iter().any(|id| input_focus.get() == Some(id)) {
             if input.just_pressed(KeyCode::Enter) {
                 let result: Vec<bool> = checkboxes
                     .iter_many(children)
@@ -194,7 +194,7 @@ mod test {
             .world_mut()
             .spawn((
                 Checkbox { checked: false },
-                Focusable::default(),
+                next_tab_index(),
                 Prompt(Cow::Borrowed("Test checkbox")),
             ))
             .id();

@@ -2,9 +2,15 @@
 #![doc = include_str!("../README.md")]
 // #![forbid(missing_docs)]
 #![allow(clippy::type_complexity)]
-use bevy::{app::PluginGroupBuilder, prelude::*};
-
-pub mod focus;
+use bevy::{
+    app::PluginGroupBuilder,
+    input_focus::{
+        FocusCause, InputFocus,
+        tab_navigation::{NavAction, TabGroup, TabIndex, TabNavigation, TabNavigationPlugin},
+    },
+    prelude::*,
+};
+use std::sync::atomic::{AtomicI32, Ordering};
 
 #[cfg(feature = "async")]
 mod r#async;
@@ -28,11 +34,15 @@ pub mod prelude {
     pub use super::{
         AskyPlugin, AskySet, Dest, Error, Submit, Submitter,
         construct::*,
-        focus::*,
+        next_tab_index,
         num_like::NumLike,
         prompt::*,
         sync::{AskyCommands, AskyEntityCommands},
         view::{widget::Widgets, *},
+    };
+    pub use bevy::input_focus::{
+        FocusCause, InputFocus, InputFocusPlugin, InputFocusVisible,
+        tab_navigation::{NavAction, TabGroup, TabIndex, TabNavigation, TabNavigationPlugin},
     };
 }
 
@@ -66,12 +76,27 @@ pub enum AskySet {
     View,
 }
 
+static TAB_INDEX_COUNTER: AtomicI32 = AtomicI32::new(0);
+
+/// Return the next Bevy tab index for an Asky prompt.
+pub fn next_tab_index() -> TabIndex {
+    TabIndex(TAB_INDEX_COUNTER.fetch_add(1, Ordering::Relaxed))
+}
+
 impl Plugin for AskyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(prompt::plugin)
+        app.add_plugins(TabNavigationPlugin)
+            .add_plugins(prompt::plugin)
             .add_plugins(view::plugin)
-            .add_plugins(focus::plugin)
-            .configure_sets(Update, (AskySet::Controller, AskySet::View).chain());
+            .configure_sets(Update, (AskySet::Controller, AskySet::View).chain())
+            .add_systems(
+                PreUpdate,
+                (
+                    ensure_tab_groups,
+                    initialize_focus,
+                    arrow_key_navigation.after(ensure_tab_groups),
+                ),
+            );
         // AsyncPlugin may require a special configuration, so we're not
         // including it ourselves.
 
@@ -79,6 +104,83 @@ impl Plugin for AskyPlugin {
         // app
         //     .add_plugins(bevy_defer::AsyncPlugin::default_settings());
     }
+}
+
+fn ensure_tab_groups(
+    mut commands: Commands,
+    focusables: Query<&ChildOf, Added<TabIndex>>,
+    tab_groups: Query<(), With<TabGroup>>,
+) {
+    for child_of in &focusables {
+        let parent = child_of.parent();
+        if !tab_groups.contains(parent) {
+            commands.entity(parent).try_insert(TabGroup::new(0));
+        }
+    }
+}
+
+fn initialize_focus(
+    mut input_focus: ResMut<InputFocus>,
+    focusables: Query<(Entity, &TabIndex), Without<TabGroup>>,
+) {
+    if input_focus.get().is_some_and(|entity| {
+        focusables
+            .get(entity)
+            .is_ok_and(|(_, tab_index)| tab_index.0 >= 0)
+    }) {
+        return;
+    }
+
+    if let Some((entity, _)) = focusables
+        .iter()
+        .filter(|(_, tab_index)| tab_index.0 >= 0)
+        .min_by_key(|(_, tab_index)| tab_index.0)
+    {
+        input_focus.set(entity, FocusCause::Navigated);
+    }
+}
+
+fn arrow_key_navigation(
+    input: Res<ButtonInput<KeyCode>>,
+    nav: TabNavigation,
+    mut input_focus: ResMut<InputFocus>,
+    text_inputs: Query<(), With<string_cursor::StringCursor>>,
+) {
+    let action = if input.any_just_pressed([KeyCode::ArrowDown, KeyCode::ArrowRight]) {
+        NavAction::Next
+    } else if input.any_just_pressed([KeyCode::ArrowUp, KeyCode::ArrowLeft]) {
+        NavAction::Previous
+    } else {
+        return;
+    };
+
+    if input_focus
+        .get()
+        .is_some_and(|entity| text_inputs.contains(entity))
+    {
+        return;
+    }
+
+    if let Ok(next) = nav.navigate(&input_focus, action) {
+        input_focus.set(next, FocusCause::Navigated);
+    }
+}
+
+pub(crate) fn move_focus_from(nav: &TabNavigation, input_focus: &mut InputFocus) {
+    match nav.navigate(input_focus, NavAction::Next) {
+        Ok(next) => input_focus.set(next, FocusCause::Navigated),
+        Err(_) => input_focus.clear(),
+    }
+}
+
+pub(crate) fn block_and_move_focus(
+    commands: &mut Commands,
+    id: Entity,
+    nav: &TabNavigation,
+    input_focus: &mut InputFocus,
+) {
+    move_focus_from(nav, input_focus);
+    commands.entity(id).try_insert(TabIndex(-1));
 }
 
 /// Prompts trigger an Submit
