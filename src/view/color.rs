@@ -141,7 +141,7 @@ impl Construct for View {
 /// The color palette
 ///
 /// TODO: Make sure we have all the colors defined here.
-#[derive(Debug, Resource, Component, Reflect)]
+#[derive(Debug, Resource, Reflect)]
 #[reflect(Resource)]
 pub struct Palette {
     /// Text color

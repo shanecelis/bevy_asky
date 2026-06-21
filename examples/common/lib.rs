@@ -6,10 +6,8 @@ pub fn views(app: &mut App) {
     app.add_plugins(view::ascii::plugin);
     #[cfg(feature = "color")]
     app.add_plugins(view::color::plugin);
-    #[cfg(feature = "button")]
-    app.add_plugins(view::button::plugin);
-    #[cfg(not(any(feature = "color", feature = "ascii", feature = "button")))]
-    panic!("Please use a view feature: ascii, color, or button.");
+    #[cfg(not(any(feature = "color", feature = "ascii")))]
+    panic!("Please use a view feature: ascii or color.");
 }
 
 #[cfg(all(not(feature = "color"), feature = "ascii"))]

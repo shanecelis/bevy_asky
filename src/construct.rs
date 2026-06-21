@@ -181,7 +181,9 @@ impl<T: Construct + Bundle> bevy::ecs::system::EntityCommand for ConstructComman
 where
     <T as Construct>::Props: Send,
 {
-    fn apply(self, mut entity_world: EntityWorldMut) {
+    type Out = ();
+
+    fn apply(self, mut entity_world: EntityWorldMut) -> Self::Out {
         let id = entity_world.id();
         entity_world.world_scope(move |world: &mut World| {
             let mut context = ConstructContext { id, world };
@@ -326,7 +328,7 @@ mod test {
         };
         assert_eq!(player.name, "shane");
 
-        let mut patch = Player::patch(|props| {
+        let mut patch = <Player as Construct>::patch(|props| {
             props.name = "fred".to_string();
         });
         patch.patch(&mut player);

@@ -16,10 +16,10 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/shanecelis/bevy_asky"
 
 [dependencies]
-accesskit = "0.21"
-bevy = { version = "0.18", default-features = false, features = [ "bevy_text", "bevy_ui", "default_font", "std", "async_executor", "bevy_log", "bevy_input_focus", "keyboard", "mouse" ] }
-bevy_a11y = "0.18"
-bevy_defer = { version = "0.17", optional = true }
+accesskit = "0.24"
+bevy = { version = "0.19", default-features = false, features = [ "bevy_text", "bevy_ui", "default_font", "std", "async_executor", "bevy_log", "bevy_input_focus", "keyboard", "mouse" ] }
+bevy_a11y = "0.19"
+bevy_defer = { version = "0.18", optional = true }
 futures = { version = "0.3.30", optional = true }
 thiserror = "2.0"
 
@@ -31,7 +31,7 @@ color = []
 ascii = []
 
 [dev-dependencies]
-bevy = "0.18"
+bevy = "0.19"
 bevy-inspector-egui = "0.36"
 version-sync = "0.9.5"
 
@@ -44,3 +44,6 @@ required-features = ["async"]
 name = "checkbox-group-async"
 path = "examples/async/checkbox-group.rs"
 required-features = ["async"]
+
+[patch.crates-io]
+bevy_defer = { path = "../bevy_defer" }

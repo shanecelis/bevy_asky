@@ -1,7 +1,10 @@
-use bevy::{ecs::system::SystemParam, input_focus::InputFocus, math::CompassQuadrant, prelude::*};
+use bevy::{
+    ecs::system::SystemParam,
+    input_focus::{FocusCause, InputFocus},
+    math::CompassQuadrant,
+    prelude::*,
+};
 
-#[cfg(not(test))]
-use bevy::input_focus::InputDispatchPlugin;
 use std::fmt::Debug;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -21,7 +24,7 @@ impl Focus<'_> {
 
     /// Focus on given entity.
     pub fn focus_on(&mut self, id: Entity) {
-        self.focus.0 = Some(id);
+        self.focus.set(id, FocusCause::Navigated);
     }
 }
 
@@ -64,12 +67,6 @@ impl Focusable {
 // pub struct Blocked;
 
 pub(crate) fn plugin(app: &mut App) {
-    // InputDispatchPlugin is needed for InputFocus to work in Bevy 0.17,
-    // but it requires message types that aren't available in test mode.
-    // Only add it when not in test configuration.
-    #[cfg(not(test))]
-    app.add_plugins(InputDispatchPlugin);
-
     app.register_type::<Focusable>()
         .insert_resource(KeyboardNav(true))
         .add_systems(PreUpdate, (sync_focus_to_focusable, focus_keys))
@@ -114,6 +111,18 @@ pub struct FocusParam<'w, 's> {
 }
 
 impl FocusParam<'_, '_> {
+    fn current_focus(&self) -> Option<Entity> {
+        self.focus.get()
+    }
+
+    fn set_focus(&mut self, id: Option<Entity>) {
+        if let Some(id) = id {
+            self.focus.set(id, FocusCause::Navigated);
+        } else {
+            self.focus.clear();
+        }
+    }
+
     /// Is entity focused?
     pub fn is_focused(&self, id: Entity) -> bool {
         self.focus.get() == Some(id)
@@ -127,13 +136,13 @@ impl FocusParam<'_, '_> {
     /// - East/Right: next (higher created ID)
     /// - West/Left: previous (lower created ID)
     pub fn move_focus(&mut self, dir: CompassQuadrant) {
-        let old_created = if let Some(old_focus) = self.focus.0 {
-            if let Ok((_, focusable)) = self.query.get(old_focus) {
-                focusable.created
-            } else {
-                self.move_focus_from(None);
-                return;
-            }
+        let Some(current_focus) = self.current_focus() else {
+            self.move_focus_from(None);
+            return;
+        };
+
+        let old_created = if let Ok((_, focusable)) = self.query.get(current_focus) {
+            focusable.created
         } else {
             self.move_focus_from(None);
             return;
@@ -143,7 +152,7 @@ impl FocusParam<'_, '_> {
         let candidates: Vec<_> = self
             .query
             .iter()
-            .filter(|(id, focusable)| *id != self.focus.0.unwrap() && !focusable.block)
+            .filter(|(id, focusable)| *id != current_focus && !focusable.block)
             .map(|(id, focusable)| (id, focusable.created))
             .collect();
 
@@ -193,14 +202,14 @@ impl FocusParam<'_, '_> {
 
     /// Move focus to an entity.
     pub fn move_focus_to(&mut self, id: Entity) {
-        self.focus.0 = Some(id);
+        self.set_focus(Some(id));
     }
 
     /// Move focus away from an entity.
     ///
     /// Uses creation order: moves to the next unblocked entity after the current one.
     pub fn move_focus_from(&mut self, id_maybe: impl Into<Option<Entity>>) {
-        if let Some(focus_id) = id_maybe.into().or(self.focus.0) {
+        if let Some(focus_id) = id_maybe.into().or(self.current_focus()) {
             // Get the creation order of the current focus
             let current_created = self
                 .query
@@ -229,7 +238,7 @@ impl FocusParam<'_, '_> {
                 })
                 .or_else(|| candidates.first().map(|(id, _)| *id));
 
-            self.focus.0 = result;
+            self.set_focus(result);
         } else {
             // We're moving to any available id - pick the first (lowest created ID).
             let mut candidates: Vec<_> = self
@@ -240,7 +249,7 @@ impl FocusParam<'_, '_> {
                 .collect();
 
             candidates.sort_by_key(|(_, created)| *created);
-            self.focus.0 = candidates.first().map(|(id, _)| *id);
+            self.set_focus(candidates.first().map(|(id, _)| *id));
         }
     }
 
@@ -271,7 +280,7 @@ impl FocusParam<'_, '_> {
 
     /// Block focus on current or given entity.
     pub fn block(&mut self, id_maybe: impl Into<Option<Entity>>) {
-        if let Some(id) = id_maybe.into().or(self.focus.0) {
+        if let Some(id) = id_maybe.into().or(self.current_focus()) {
             if let Ok((_, mut focus)) = self.query.get_mut(id) {
                 focus.block = true;
             } else {
@@ -286,7 +295,7 @@ impl FocusParam<'_, '_> {
 
     /// Unblock focus on current or given entity.
     pub fn unblock(&mut self, id_maybe: impl Into<Option<Entity>>) {
-        if let Some(id) = id_maybe.into().or(self.focus.0) {
+        if let Some(id) = id_maybe.into().or(self.current_focus()) {
             if let Ok((_, mut focus)) = self.query.get_mut(id) {
                 focus.block = false;
             } else {
@@ -331,7 +340,7 @@ fn focus_on_tab(input: Res<ButtonInput<KeyCode>>, mut focus: FocusParam) {
 
 /// Reset focus if None or focus is blocked.
 fn reset_focus(mut focus: FocusParam) {
-    match focus.focus.0 {
+    match focus.current_focus() {
         None => focus.move_focus_from(None),
         Some(id) => {
             if focus.is_blocked(id) {
