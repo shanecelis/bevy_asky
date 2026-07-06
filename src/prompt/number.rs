@@ -84,7 +84,7 @@ impl<T: NumLike> Number<T> {
 }
 
 fn number_controller<T: NumLike + Sync + 'static + TypePath>(
-    mut query: Query<(Entity, &mut StringCursor), With<Number<T>>>,
+    mut query: Query<(Entity, &Number<T>, &mut StringCursor)>,
     mut input: MessageReader<KeyboardInput>,
     mut commands: Commands,
     nav: TabNavigation,
@@ -94,7 +94,7 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
         if ev.state != ButtonState::Pressed {
             continue;
         }
-        for (id, mut text_state) in query.iter_mut() {
+        for (id, number_prompt, mut text_state) in query.iter_mut() {
             if input_focus.get() != Some(id) {
                 continue;
             }
@@ -113,7 +113,14 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                 Key::ArrowLeft => text_state.move_cursor(CursorDirection::Left),
                 Key::ArrowRight => text_state.move_cursor(CursorDirection::Right),
                 Key::Enter => {
-                    match T::from_str(&text_state.value) {
+                    match text_state
+                        .value
+                        .is_empty()
+                        .then_some(number_prompt.default_value)
+                        .flatten()
+                        .map(Ok)
+                        .unwrap_or_else(|| T::from_str(&text_state.value))
+                    {
                         Ok(number) => {
                             commands.trigger(Submit::new(id, Ok(number)));
                             crate::block_and_move_focus(&mut commands, id, &nav, &mut input_focus);
@@ -130,7 +137,7 @@ fn number_controller<T: NumLike + Sync + 'static + TypePath>(
                     }
                 }
                 Key::Escape => {
-                    commands.trigger(Submit::<String>::new(id, Err(Error::Cancel)));
+                    commands.trigger(Submit::<T>::new(id, Err(Error::Cancel)));
                     commands.entity(id).try_insert(Feedback::error("canceled"));
                     crate::block_and_move_focus(&mut commands, id, &nav, &mut input_focus);
                     // focus.unfocus(id, false);

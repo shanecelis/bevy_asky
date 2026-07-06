@@ -94,7 +94,7 @@ fn toggle_controller(
             }
 
             if input.just_pressed(KeyCode::Escape) {
-                commands.trigger(Submit::<bool>::new(id, Err(Error::Cancel)));
+                commands.trigger(Submit::<usize>::new(id, Err(Error::Cancel)));
                 crate::move_focus_from(&nav, &mut input_focus);
                 // focus.unfocus(id, false);
                 commands.entity(id).try_insert(Feedback::error("canceled"));
