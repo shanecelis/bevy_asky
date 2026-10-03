@@ -146,6 +146,7 @@ fn checkbox_group_controller(
             if input.just_pressed(KeyCode::Enter) {
                 let result: Vec<bool> = checkboxes
                     .iter_many(children)
+                    .matched()
                     .map(|(_, checkbox)| checkbox.checked)
                     .collect();
                 commands.trigger(Submit::new(id, Ok(result)));

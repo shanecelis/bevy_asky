@@ -137,11 +137,13 @@ fn radio_group_controller(
     for (id, children) in query.iter_mut() {
         if let Some(_index) = radios
             .iter_many(children)
+            .matched()
             .position(|(id, _)| input_focus.get() == Some(id))
         {
             if input.just_pressed(KeyCode::Enter) {
                 if let Some(selection) = radios
                     .iter_many(children)
+                    .matched()
                     .position(|(_, radio)| radio.checked)
                 {
                     // commands.trigger(Submit::new(id, selection.ok_or(Error::InvalidInput)));

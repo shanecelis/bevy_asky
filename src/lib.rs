@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/bevy_asky/0.6.0")]
+#![doc(html_root_url = "https://docs.rs/bevy_asky/0.7.0")]
 #![doc = include_str!("../README.md")]
 // #![forbid(missing_docs)]
 #![allow(clippy::type_complexity)]

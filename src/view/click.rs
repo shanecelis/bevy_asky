@@ -8,9 +8,9 @@
 
 //! Click event for Bevy
 //!
-//! [Interaction::Pressed] is not the same as a click. A click is a press and
-//! release of a mouse button on the same UI element. A press that leaves a UI
-//! element and releases elsewhere is not considered a click.
+//! A click is a press and release of a mouse button on the same UI element, or
+//! an Enter/Space activation while the button is focused. A press that leaves a
+//! UI element and releases elsewhere is not considered a click.
 //!
 //! # Setup
 //!
@@ -29,18 +29,20 @@
 //!
 //! ```
 //! # use bevy::prelude::*;
+//! # use bevy::ui_widgets::Button;
 //! # use bevy_asky::view::click::{self, Click};
 //! fn setup(mut commands: Commands) {
-//!     commands.spawn(Button::default())
+//!     commands.spawn(Button)
 //!         .observe(|trigger: On<Click>|
 //!             eprintln!("Clicked on {}", trigger.event_target()));
 //! }
 //! ```
-use bevy::ecs::entity::EntityHashMap;
 use bevy::prelude::*;
+use bevy::ui_widgets::{Activate, Button, ButtonPlugin};
 
-/// Adds a system that triggers a [Click] event when [Button] with an
-/// [Interaction] component is pressed and released.
+/// Adds an observer that triggers a [Click] when a [Button] is activated.
+///
+/// Also adds [ButtonPlugin] if it is not already present.
 ///
 /// ```
 /// # use bevy::prelude::*;
@@ -49,20 +51,20 @@ use bevy::prelude::*;
 /// app.add_plugins(click::plugin);
 /// ```
 pub fn plugin(app: &mut App) {
-    app.add_systems(Update, button_click);
+    if !app.is_plugin_added::<ButtonPlugin>() {
+        app.add_plugins(ButtonPlugin);
+    }
+    app.add_observer(button_click);
 }
 
-/// Excerpt from this gist[1].
-///
-/// * * *
-///
 /// A trigger event that signifies a click on a button.
 ///
 /// ```
 /// # use bevy::prelude::*;
+/// # use bevy::ui_widgets::Button;
 /// # use bevy_asky::view::click::{self, Click};
 /// fn setup(mut commands: Commands) {
-///     commands.spawn(Button::default())
+///     commands.spawn(Button)
 ///         .observe(|trigger: On<Click>|
 ///             eprintln!("Clicked on {}", trigger.event_target()));
 /// }
@@ -74,22 +76,14 @@ pub struct Click {
     pub entity: Entity,
 }
 
-/// This system looks at [Button] [Interaction] changes. If that state changes
-/// from [Interaction::Pressed] to [Interaction::Hovered] then it will trigger a
-/// [Click] event targeting the Entity with the [Interaction] component.
-///
-/// TODO: The `Local<EntityHashMap>` should be reset or drop elements that are stale
-/// so it doesn't grow unbounded.
+/// Forwards a button [`Activate`] into a [`Click`] on that same entity.
 fn button_click(
-    mut interaction_query: Query<(Entity, &Interaction), (Changed<Interaction>, With<Button>)>,
-    mut last_state: Local<EntityHashMap<Interaction>>,
+    activate: On<Activate>,
+    buttons: Query<(), With<Button>>,
     mut commands: Commands,
 ) {
-    for (id, interaction) in &mut interaction_query {
-        let last = last_state.get(&id);
-        if *interaction == Interaction::Hovered && matches!(last, Some(Interaction::Pressed)) {
-            commands.trigger(Click { entity: id });
-        }
-        last_state.insert(id, *interaction);
+    let entity = activate.event_target();
+    if buttons.contains(entity) {
+        commands.trigger(Click { entity });
     }
 }
