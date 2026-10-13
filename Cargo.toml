@@ -16,9 +16,9 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/shanecelis/bevy_asky"
 
 [dependencies]
-accesskit = "0.24"
-bevy = { version = "0.20.0-rc.1", default-features = false, features = [ "bevy_text", "bevy_ui", "bevy_ui_widgets", "default_font", "std", "async_executor", "bevy_log", "bevy_input_focus", "keyboard", "mouse" ] }
-bevy_a11y = "0.20.0-rc.1"
+accesskit = "0.24.1"
+bevy = { version = "0.20.0", default-features = false, features = [ "bevy_text", "bevy_ui", "bevy_ui_widgets", "default_font", "std", "async_executor", "bevy_log", "bevy_input_focus", "keyboard", "mouse" ] }
+bevy_a11y = "0.20.0"
 bevy_defer = { path = "../bevy_defer", optional = true }
 futures = { version = "0.3.30", optional = true }
 thiserror = "2.0"
@@ -31,7 +31,7 @@ color = []
 ascii = []
 
 [dev-dependencies]
-bevy = "0.20.0-rc.1"
+bevy = "0.20.0"
 bevy-inspector-egui = "0.37"
 version-sync = "0.9.5"
 
