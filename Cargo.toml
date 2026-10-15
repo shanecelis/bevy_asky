@@ -19,7 +19,7 @@ repository = "https://github.com/shanecelis/bevy_asky"
 accesskit = "0.24.1"
 bevy = { version = "0.20.0", default-features = false, features = [ "bevy_text", "bevy_ui", "bevy_ui_widgets", "default_font", "std", "async_executor", "bevy_log", "bevy_input_focus", "keyboard", "mouse" ] }
 bevy_a11y = "0.20.0"
-bevy_defer = { path = "../bevy_defer", optional = true }
+bevy_defer = { version = "0.19", optional = true }
 futures = { version = "0.3.30", optional = true }
 thiserror = "2.0"
 
@@ -46,5 +46,4 @@ path = "examples/async/checkbox-group.rs"
 required-features = ["async"]
 
 [patch.crates-io]
-bevy_egui = { git = "https://github.com/taboky-dev/bevy_egui.git", rev = "3cd933b" }
-bevy-inspector-egui = { git = "https://github.com/taboky-dev/bevy-inspector-egui.git", rev = "bd1788b" }
+# bevy-inspector-egui = { path = "../bevy-inspector-egui/crates/bevy-inspector-egui" }
